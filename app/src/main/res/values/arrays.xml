@@ -1,0 +1,41 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+
+    <!-- Temas -->
+
+    <string-array name="themes_entries">
+        <item>@string/theme_auto</item>
+        <item>@string/theme_light</item>
+        <item>@string/theme_dark</item>
+    </string-array>
+
+    <string-array name="themes_values">
+        <item>@string/theme_value_auto</item>
+        <item>@string/theme_value_light</item>
+        <item>@string/theme_value_dark</item>
+    </string-array>
+
+
+    <!-- Idioma -->
+    <string-array name="language_entries">
+        <item>@string/language_spanish</item>
+        <item>@string/language_english</item>
+        <item>@string/language_basque</item>
+    </string-array>
+
+    <string-array name="language_values">
+        <item>@string/language_value_spanish</item>
+        <item>@string/language_value_english</item>
+        <item>@string/language_value_basque</item>
+    </string-array>
+
+</resources>
