@@ -41,7 +41,7 @@ import javax.inject.Inject
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), LocationListener {
+class MainActivity : AppCompatActivity() {
 
     @Inject
     lateinit var networkConnectionManager: NetworkConnectionManager
@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 }
                 return true
             }
-            
+
         })
 
         //networkConnectionManager.startListenNetworkState()
@@ -102,13 +102,8 @@ class MainActivity : AppCompatActivity(), LocationListener {
 //
 //        timer.schedule(CheckConnection(this), 0, MILLISECONDS.toLong())
 
-
-
-
-
-
         val navView: BottomNavigationView = mainActivityBinding.navView
-
+        Log.i("Aimar", "MAIN")
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
@@ -121,22 +116,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
         navView.setupWithNavController(navController)
 
 
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        if ((ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), locationPermissionCode)
-        }
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
-
-        getLocation()
 
 
     }
 
-
-    // Geolocation
-    override fun onLocationChanged(location: Location) {
-    Log.i("GPS","Latitude: " + location.latitude + " , Longitude: " + location.longitude)
-}
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionCode) {

@@ -4,14 +4,17 @@ import android.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
@@ -21,17 +24,29 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.databinding.FragmentAuthScrollingRegisterBinding
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import java.io.ByteArrayOutputStream
 
+
+private const val ARG_USER = "usuario"
 
 class AuthScrollingRegisterFragment : Fragment() {
 
     private val REQUEST_CODE = "REQUEST_CODE"
     private val REQUEST_IMAGE_CAPTURE = 1
     private lateinit var registerBinding: FragmentAuthScrollingRegisterBinding
+    private var userNew: UserNew? = null
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            userNew = it.getParcelable(ARG_USER, UserNew::class.java)
+
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,11 +59,22 @@ class AuthScrollingRegisterFragment : Fragment() {
 
         registerBinding.registerButton.setOnClickListener() {
             if (checkAllInputs()) {
-                val newFragment = AuthLoginFragment()
-                val transaction = parentFragmentManager.beginTransaction()
-                transaction.replace(com.example.reto2_app_android.R.id.authFragmentContainerView, newFragment)
-                transaction.addToBackStack(null)
-                transaction.commit()
+                userNew?.name = registerBinding.registerName.text.toString()
+                userNew?.surname1 = registerBinding.registerSurname1.text.toString()
+                userNew?.surname2 = registerBinding.registerSurname2.text.toString()
+                userNew?.DNI = registerBinding.registerDocumentation.text.toString()
+                userNew?.telephone1 = registerBinding.registerTelephone1.text.toString().toInt()
+                userNew?.telephone2 = registerBinding.registerTelephone2.text.toString().toInt()
+
+                val imageView: ImageView = registerBinding.registerUserPhoto
+                val drawable = imageView.drawable
+                val bitmap = (drawable as BitmapDrawable).bitmap
+                val outputStream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                val byteArray = outputStream.toByteArray()
+                val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
+                userNew?.photo = encodedImage
+
             }
         }
 

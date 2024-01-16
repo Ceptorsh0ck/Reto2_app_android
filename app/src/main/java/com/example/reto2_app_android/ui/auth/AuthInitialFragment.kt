@@ -133,7 +133,7 @@ class AuthInitialFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
 
-        const val PROGRESS_INCREMENT = 5
+        const val PROGRESS_INCREMENT = 50
 
         @JvmStatic
         fun newInstance(param1: String, param2: String) =

@@ -1,18 +1,25 @@
 package com.example.reto2_app_android.ui.auth
 
+import android.graphics.Bitmap
+import android.opengl.Visibility
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.databinding.FragmentAuthChangePasswordBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
+private const val ARG_USER = "usuario"
 
 /**
  * A simple [Fragment] subclass.
@@ -23,6 +30,7 @@ class AuthChangePasswordFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private var userNew: UserNew? = null
     private lateinit var changePasswordBinding: FragmentAuthChangePasswordBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +38,8 @@ class AuthChangePasswordFragment : Fragment() {
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+            userNew = it.getParcelable(ARG_USER, UserNew::class.java)
+
         }
     }
 
@@ -41,15 +51,48 @@ class AuthChangePasswordFragment : Fragment() {
 
         changePasswordBinding = FragmentAuthChangePasswordBinding.inflate(layoutInflater,container,false)
 
+        changePasswordBinding.changePassword1.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                if (changePasswordBinding.changePassword1.text.length >= 8) {
+                    changePasswordBinding.changePasswordButton.isEnabled = true
+                    changePasswordBinding.textViewPassCorta.visibility = INVISIBLE
+
+                }else {
+                    changePasswordBinding.changePasswordButton.isEnabled = false
+                    changePasswordBinding.textViewPassCorta.visibility = VISIBLE
+                }
+            }
+        }
+
+        changePasswordBinding.changePassword2.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                if (changePasswordBinding.changePassword1 == changePasswordBinding.changePassword2) {
+                    changePasswordBinding.changePasswordButton.isEnabled = true
+                    changePasswordBinding.textViewContraseAsNoCoinciden.visibility = INVISIBLE
+
+                }else {
+                    changePasswordBinding.changePasswordButton.isEnabled = false
+                    changePasswordBinding.textViewContraseAsNoCoinciden.visibility = VISIBLE
+                }
+            }
+        }
+
         changePasswordBinding.changePasswordButton.setOnClickListener() {
-            val password1 = changePasswordBinding.changePassword1
-            val password2 = changePasswordBinding.changePassword2
+            val password1 = changePasswordBinding.changePassword1.text.toString()
+            val password2 = changePasswordBinding.changePassword2.text.toString()
             // TODO Comproprobar que Password1 cumple los requisitos y que Password2 es identica.
-            val newFragment = AuthScrollingRegisterFragment()
-            val transaction = parentFragmentManager.beginTransaction()
-            transaction.replace(R.id.authFragmentContainerView, newFragment)
-            transaction.addToBackStack(null)
-            transaction.commit()
+
+            if(password1 == password2){
+                userNew?.newPassword = password1
+                val newFragment = AuthScrollingRegisterFragment()
+                val args = Bundle()
+                args.putParcelable("usuario", userNew)
+                newFragment.arguments = args
+                val transaction = parentFragmentManager.beginTransaction()
+                transaction.replace(R.id.authFragmentContainerView, newFragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+            }
         }
 
         changePasswordBinding.changePasswordBackButton.setOnClickListener() {
@@ -58,26 +101,6 @@ class AuthChangePasswordFragment : Fragment() {
 
         return changePasswordBinding.root
 
-//        val view =  inflater.inflate(R.layout.fragment_auth_change_password, container, false)
-//
-//        val changePasswordButton : Button = view.findViewById(R.id.changePasswordButton2)
-//        changePasswordButton.setOnClickListener() {
-//            val newFragment = AuthChangePasswordFragment()
-//            val transaction = parentFragmentManager.beginTransaction()
-//            transaction.replace(R.id.authFragmentContainerView, newFragment)
-//            transaction.addToBackStack(null)
-//            transaction.commit()
-//        }
-//
-//        val backButton : Button = view.findViewById(R.id.backButtonChangePassword)
-//        backButton.setOnClickListener() {
-//            val newFragment = AuthUserConfirmationFragment()
-//            val transaction = parentFragmentManager.beginTransaction()
-//            transaction.replace(R.id.authFragmentContainerView, newFragment)
-//            transaction.addToBackStack(null)
-//            transaction.commit()
-//        }
-//        return view
     }
 
     companion object {

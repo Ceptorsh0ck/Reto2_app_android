@@ -23,6 +23,7 @@
     <string name="register">Izena eman</string>
 
     <!-- Register -->
+    <string name="wrongLogin">Usuario o contraseña incorrectos</string>
     <string name="name">Izena</string>
     <string name="surname1">Lehen Abizena</string>
     <string name="surname2">Bigarren Abizena</string>
@@ -39,6 +40,8 @@
     <string name="termsOfUseCheckBox">Estoy de acuerdo con las condiciones de uso y con vender mi alma al diablo.</string>
 
     <!-- Register Errors -->
+    <string name="passwordDontMatch">Pasahitzak ez datoz bat</string>
+    <string name="passwordValidationLenth">Pasahitzaren luzerak 8 baino handiagoa izan behar du</string>
     <string name="notEqualPassword">Pasahitza ez da berdina</string>
     <string name="wrongFormatPassword">Pasahitzak zifra bat (0-9), letra bat (a-z) eta ikur bat izan behar ditu</string>
     <string name="inputEmpty">Derrigorrezkoa da betetzea</string>
@@ -188,5 +191,10 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
+    <!-- Chats miniature -->
+    <string name="chats_name">Nombre del chat</string>
+    <string name="last_messaga">Ultimo mensanje</string>
+    <string name="last_message_time">00:00</string>
+    <string name="messages_not_read">11</string>
 
 </resources>

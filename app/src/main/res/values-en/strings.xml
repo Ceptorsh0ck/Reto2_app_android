@@ -24,6 +24,7 @@
 
 
     <!-- Register -->
+    <string name="wrongLogin">Usuario o contraseña incorrectos</string>
     <string name="name">Name</string>
     <string name="surname1">First Surname</string>
     <string name="surname2">Second Surname</string>
@@ -40,6 +41,8 @@
     <string name="termsOfUseCheckBox">Estoy de acuerdo con las condiciones de uso y con vender mi alma al diablo.</string>
 
     <!-- Register Errors -->
+    <string name="passwordDontMatch">Passwords do not match</string>
+    <string name="passwordValidationLenth">Password length must be greater than 8</string>
     <string name="notEqualPassword">It\'s not the same password</string>
     <string name="wrongFormatPassword">The password must have a digit (0–9), a letter (a-z) and a symbol</string>
     <string name="inputEmpty">You must fill out the field</string>
@@ -189,5 +192,10 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
+    <!-- Chats miniature -->
+    <string name="chats_name">Nombre del chat</string>
+    <string name="last_messaga">Ultimo mensanje</string>
+    <string name="last_message_time">00:00</string>
+    <string name="messages_not_read">11</string>
 
 </resources>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginEnd="10dp"
+    android:layout_marginStart="10dp">
+
+    <ImageView
+        android:id="@+id/chatImage"
+        android:layout_width="67dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="16dp"
+        android:background="#00FFFFFF"
+        android:scaleType="centerCrop"
+        android:src="@drawable/elorrieta_logo" />
+
+    <LinearLayout
+        android:layout_width="225dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="14dp"
+        android:orientation="vertical">
+
+
+        <TextView
+            android:id="@+id/TextViewChatName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/chats_name"
+            android:textColor="@color/black"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/TextViewLastMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/last_messaga"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="70dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical"
+        android:gravity="end">
+
+
+        <TextView
+            android:id="@+id/TextViewLastMessageHour"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/last_message_time"
+            android:textAlignment="textEnd"
+            android:textColor="@color/black"
+            android:textSize="24sp" />
+
+
+        <ImageView
+            android:id="@+id/TextViewNumberOfNewMessages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="#00FFFFFF"
+            android:scaleType="centerInside"
+            android:src="@drawable/message1" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

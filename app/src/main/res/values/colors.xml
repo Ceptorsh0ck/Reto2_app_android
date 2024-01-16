@@ -7,4 +7,16 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorPrimary">#6200EE</color>
+
+    <!-- Colores para el chat "me" -->
+    <color name="colorChatMeBackground">#774df2</color>
+    <color name="colorChatMeText">#ffffff</color>
+    <color name="colorChatMeDate">#C0C0C0</color>
+
+    <!-- Colores para el chat "other" -->
+    <color name="colorChatOtherBackground">#eef1f6</color>
+    <color name="colorChatOtherText">#000000</color>
+    <color name="colorChatOtherDate">#C0C0C0</color>
+    <color name="colorDivider">#e0e0e0</color>
 </resources>

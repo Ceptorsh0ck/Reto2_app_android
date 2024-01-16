@@ -22,6 +22,7 @@
     <string name="login">Conectarse</string>
     <string name="resetPassword">Has olvidado la contraseña?</string>
     <string name="register">Registrarse</string>
+    <string name="wrongLogin">Usuario o contraseña incorrectos</string>
 
     <!-- Register -->
     <string name="name">Nombre</string>
@@ -38,6 +39,8 @@
     <string name="termsOfUse">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam pretium, tellus sed bibendum scelerisque, ante nisi venenatis quam, bibendum posuere ex neque nec neque. Donec imperdiet neque non enim ornare vestibulum. Proin sit amet ipsum nunc. Nam vitae imperdiet augue. Fusce dictum ornare pharetra. Suspendisse aliquam ex mi, vitae rutrum elit ullamcorper fermentum. Aenean odio magna, viverra id neque in, fringilla auctor ante. Praesent eu felis aliquet, consequat nunc quis, eleifend augue. Maecenas volutpat sed arcu nec tincidunt.
     Cras efficitur laoreet mi et auctor. Nullam nec feugiat nunc. Aliquam tempor ultrices lectus feugiat viverra. Phasellus commodo, nisl vitae gravida gravida, metus magna iaculis mauris, et efficitur ex felis quis justo. Ut non lectus nisi. Phasellus ut molestie purus, at fringilla tellus. Nunc efficitur lacinia erat ut sodales. Aliquam sodales imperdiet aliquam. Vestibulum purus lorem, scelerisque pulvinar sodales sed, faucibus at nunc. Suspendisse potenti. Donec quis nunc volutpat, auctor sapien eu, blandit dolor. Aenean dictum a sapien id viverra. Suspendisse imperdiet consectetur lorem sit amet tempus. </string>
     <string name="termsOfUseCheckBox">Estoy de acuerdo con las condiciones de uso y con vender mi alma al diablo.</string>
+    <string name="passwordDontMatch">Las contraseñas no coinciden</string>
+    <string name="passwordValidationLenth">La longitud de la contraseña debe de ser mayor a 8</string>
 
     <!-- Register Errors -->
     <string name="notEqualPassword">La contraseña no es identica</string>
@@ -197,5 +200,12 @@
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
+    <!-- Chats miniature -->
+    <string name="chats_name">Nombre del chat</string>
+    <string name="last_messaga">Ultimo mensanje</string>
+    <string name="last_message_time">00:00</string>
+    <string name="messages_not_read">11</string>
+
+    <string name="btn_connect">Conectarse</string>
 
 </resources>

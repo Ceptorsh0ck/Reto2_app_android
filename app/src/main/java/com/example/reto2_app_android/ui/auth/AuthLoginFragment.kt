@@ -1,15 +1,23 @@
 package com.example.reto2_app_android.ui.auth
 
+import android.content.ContentValues.TAG
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.UserNew
+import com.example.reto2_app_android.data.repository.remote.RemoteUsersDataSource
 import com.example.reto2_app_android.databinding.FragmentAuthLoginBinding
+import com.example.reto2_app_android.utils.Resource
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -30,6 +38,11 @@ class AuthLoginFragment : Fragment() {
     private lateinit var loginBinding: FragmentAuthLoginBinding
     private lateinit var loginUsername: String
     private lateinit var loginPassword: String
+    private var remember: String = ""
+    private val userRepository = RemoteUsersDataSource()
+    private val viewModel: AuthLoginViewModel by viewModels { AuthLoginViewModelFactory(
+        userRepository
+    ) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,26 +60,95 @@ class AuthLoginFragment : Fragment() {
         loginBinding = FragmentAuthLoginBinding.inflate(layoutInflater,container, false)
 
         loginBinding.loginButton.setOnClickListener() {
-            val intent = Intent(activity, MainActivity::class.java)
-            startActivity(intent)
-            activity?.finish()
+            //Recoge los datos
+            val login = loginBinding.loginUsername.text.toString()
+            val password = loginBinding.loginPassword.text.toString()
+
+            //Comprueba que contengan datos
+            if (login.isNotEmpty() && password.isNotEmpty()) {
+                viewModel.loginUser(
+                    login,
+                    password
+                )
+                //remember = loginBinding.loginPassword.text.toString()
+                loginBinding.loginUsername.setText("");
+                loginBinding.loginPassword.setText("");
+            } else {
+
+                //Si no estan todos los campos con datos, comprueba que cambo esta vacio y envia toast
+                /*if (login.isEmpty() && password.isEmpty()) {
+                    Toast.makeText(
+                        activity,
+                        getString(R.string.emptyLoginAndPassword),
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else if (login.isEmpty()) {
+                    Toast.makeText(activity, getString(R.string.emptyLogin), Toast.LENGTH_LONG)
+                        .show()
+                } else {
+                    Toast.makeText(activity, getString(R.string.emptyPassword), Toast.LENGTH_LONG)
+                        .show()
+                }*/
+            }
         }
 
-        loginBinding.loginRegisterButton.setOnClickListener() {
-            var arguments = Bundle()
-            if (loginBinding.loginUsername.text.isNotEmpty()) {
-                arguments.putString("loginUsername",loginBinding.loginUsername.text.toString())
+        viewModel.login.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    it.data?.let { data ->
+                        if(true == false){
+                            //MyApp.userPreferences.saveAuthToken(data.accessToken,data.id.toInt(),data.login)
+                            if (loginBinding.loginRememberMe.isChecked) {
+                                MyApp.userPreferences.saveRememberMe(remember)
+                                remember = ""
+                            } else {
+                                //Como el checkbox no esta seleccionado, borra la contraseña del userPreferences
+                                if (MyApp.userPreferences.fetchPassword() != null) {
+                                    MyApp.userPreferences.removeRememberMe()
+                                }
+                            }
+
+                            val intent = Intent(activity, MainActivity::class.java)
+                            startActivity(intent)
+                            activity?.finish()
+                        } else {
+                            var arguments = Bundle()
+                            if (loginBinding.loginUsername.text.isNotEmpty()) {
+                                arguments.putString("loginUsername",loginBinding.loginUsername.text.toString())
+                            }
+                            if (loginBinding.loginPassword.text.isNotEmpty()) {
+                                arguments.putString("loginPassword",loginBinding.loginPassword.text.toString())
+                            }
+                            var userNew = UserNew()
+                            userNew.email = loginBinding.loginUsername.text.toString()
+                            userNew.oldPassword = loginBinding.loginPassword.text.toString()
+                            val newFragment = AuthChangePasswordFragment()
+                            val args = Bundle()
+                            args.putParcelable("usuario", userNew)
+                            newFragment.arguments = args
+
+                            val transaction = parentFragmentManager.beginTransaction()
+                            transaction.replace(R.id.authFragmentContainerView, newFragment)
+                            transaction.addToBackStack(null)
+                            transaction.commit()
+                        }
+
+                    }
+                }
+
+                Resource.Status.ERROR -> {
+                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
+                    Log.i("Aimar",it.data?.accessToken.toString())
+                    Log.i("Aimar",it.data?.email.toString())
+                    Toast.makeText(activity,getString(R.string.wrongLogin), Toast.LENGTH_LONG).show()
+                }
+
+                Resource.Status.LOADING -> {
+                    //DE MOMENTO NADA
+                }
             }
-            if (loginBinding.loginPassword.text.isNotEmpty()) {
-                arguments.putString("loginPassword",loginBinding.loginPassword.text.toString())
-            }
-            val newFragment = AuthUserConfirmationFragment()
-            newFragment.arguments = arguments
-            val transaction = parentFragmentManager.beginTransaction()
-            transaction.replace(R.id.authFragmentContainerView, newFragment)
-            transaction.addToBackStack(null)
-            transaction.commit()
         }
+
 
         loginBinding.loginResetPasswordButton.setOnClickListener() {
             //TODO Realizar recordar contraseña

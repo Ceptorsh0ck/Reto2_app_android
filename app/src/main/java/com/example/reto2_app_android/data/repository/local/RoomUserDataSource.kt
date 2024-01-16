@@ -7,7 +7,7 @@ import com.example.reto2_app_android.data.DbUser
 import com.example.reto2_app_android.data.User
 import com.example.reto2_app_android.data.repository.CommonUserRepository
 import com.example.reto2_app_android.utils.Resource
-
+/*
 class RoomUserDataSource : CommonUserRepository {
 
 //    private val userDao: UserDao = MyApp.db.userDao()
@@ -27,4 +27,4 @@ interface UserDao {
 
     @Query("SELECT * FROM users")
     suspend fun getUsers(): List<DbUser>
-}
+}*/
