@@ -7,13 +7,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.reto2_app_android.data.Chat
+import com.example.reto2_app_android.data.UserChat
+import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.repository.CommonChatRepository
+import com.example.reto2_app_android.data.repository.local.dao.UserDao
+import com.example.reto2_app_android.data.repository.local.database.AppDatabase
+import com.example.reto2_app_android.data.repository.local.tables.RoomChat
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
+import com.example.reto2_app_android.data.repository.local.tables.RoomRole
+import com.example.reto2_app_android.data.repository.local.tables.RoomUser
+import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
+import com.example.reto2_app_android.data.repository.local.tables.RoomUserRol
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.sql.Date
+import javax.sql.rowset.serial.SerialBlob
 
 class HomeViewModelFactory(
     private val chatRepository: RemoteChatsDataSource
@@ -33,12 +44,11 @@ class HomeViewModel (
     }
     val text: LiveData<String> = _text
 
-    private val _items = MutableLiveData<Resource<List<Chat>>>()
+    private val _items = MutableLiveData<Resource<ChatResponse_User>>()
 
-    val items: LiveData<Resource<List<Chat>>> get() = _items
+    val items: LiveData<Resource<ChatResponse_User>> get() = _items
 
     init {
-        Log.i("Aimar", "Funciona")
         updateChatsList()
     }
 
@@ -49,11 +59,149 @@ class HomeViewModel (
         }
     }
 
-    suspend fun getChatsFromRepository(): Resource<List<Chat>>{
-        Log.i("Aimar", "Fuasdanciona")
+    suspend fun getChatsFromRepository(): Resource<ChatResponse_User>{
         return withContext((Dispatchers.IO)){
             chatRepository.getChats();
         }
     }
+
+    suspend fun safeChatsInRoom(data: ChatResponse_User?, db: AppDatabase): Boolean {
+        try {
+            if (data != null) {
+                val chatDao = db.chatDao()
+                val messagesDao = db.messageDao()
+                val userDao = db.userDao()
+                val userChatDao = db.userChatDao()
+                val roleDao = db.roleDao()
+                val userRoleDao = db.userRoleDao()
+
+                val user = data.id?.let {
+                    RoomUser(
+                        id = it,
+                        email = data.email,
+                        name = data.name,
+                        surname1 = data.surname1,
+                        surname2 = data.surname2,
+                        address = data.address,
+                        phoneNumber1 = data.phoneNumber1,
+                        phoneNumber2 = data.phoneNumber2,
+                        firstLogin = data.firstLogin,
+                    )
+                }
+
+                if (user != null) {
+                    userDao.insertUser(user)
+                };
+
+                data.roles?.forEach{
+                    val role = RoomRole(
+                        id = it.id,
+                        name = it.name,
+                        createdAt = null,
+                        updatedAt = null
+                    )
+
+                    roleDao.insertRole(role)
+
+                    val userRole = user?.let { it1 ->
+                        RoomUserRol(
+                            roleId = role.id,
+                            userId = it1.id,
+                            createdAt = null,
+                            updatedAt = null
+                        )
+                    }
+
+                    if (userRole != null) {
+                        userRoleDao.insertUserRole(userRole)
+                    }
+                }
+
+                data.listChats?.forEach {
+
+                    val roomChat = RoomChat(
+                        id = it.id,
+                        name = it.name,
+                        isPublic = it.public,
+                        createdAt = null,
+                        updatedAt = null
+                    )
+
+                    chatDao.insertChat(roomChat)
+
+                    it.listUsers.forEach {
+                        val user = it.user.id?.let { it1 ->
+                            RoomUser(
+                                id = it1,
+                                email = it.user.email,
+                                name = it.user.name,
+                                surname1 = null,
+                                surname2 = null,
+                                address = null,
+                                phoneNumber1 = null,
+                                phoneNumber2 = null,
+                                firstLogin = null
+                            )
+                        }
+                        if (user != null) {
+                            userDao.insertUser(user)
+                        }
+
+                        val userChat = it.user.id?.let { it1 ->
+                            RoomUserChat(
+                                userId = it1,
+                                chatId = roomChat.id,
+                                isAdmin = it.admin,
+                                createdAt = null,
+                                updatedAt = null
+                            )
+                        }
+
+                        if (userChat != null) {
+                            userChatDao.insertUserChat(userChat)
+                        }
+
+                    }
+                    //Añadir a la base de datos los mensajes
+                    it.listMessages.forEach{
+                        val message = RoomMessages(
+                            id = it.id,
+                            content = it.content,
+                            dataType = it.dataType,
+                            createdAt = it.createdAt,
+                            updatedAt = null,
+                            chatId =  roomChat.id,
+                            userId = it.userId?.id ?: 0,
+                        )
+                        Log.i("Message", it.createdAt.toString())
+                        messagesDao.insertMessage(message)
+
+                        val user = it.userId.id?.let { it1 ->
+                            RoomUser(
+                                id = it1,
+                                name = it.userId.name,
+                                email = it.userId.email,
+                                surname1 = it.userId.surname1,
+                                surname2 = it.userId.surname2,
+                                address = null,
+                                phoneNumber1 = it.userId.phoneNumber1,
+                                phoneNumber2 = null,
+                                firstLogin = null
+                            )
+                        }
+                        if (user != null) {
+                            userDao.insertUser(user)
+                        }
+                    }
+                }
+            }
+            return true
+        }catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+
+    }
+
 
 }

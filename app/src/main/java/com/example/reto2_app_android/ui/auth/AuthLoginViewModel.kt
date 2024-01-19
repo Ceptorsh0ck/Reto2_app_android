@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class AuthLoginViewModel (
-    private val userRepository: CommonUserRepository
+    private val userRepositoryRemote: CommonUserRepository
 ) : ViewModel(){
     private val _login = MutableLiveData<Resource<AuthenticationResponse>>();
     val login : LiveData<Resource<AuthenticationResponse>> get() = _login
@@ -26,20 +26,21 @@ class AuthLoginViewModel (
         viewModelScope.launch {
             _login.value = logUserInRepository(user)
         }
+
     }
 
     private suspend fun logUserInRepository(user: UserLogin) : Resource<AuthenticationResponse> {
         Log.i("Aimar", user.toString())
         return withContext(Dispatchers.IO) {
-            userRepository.loginUser(user)
+            userRepositoryRemote.loginUser(user)
         }
     }
 }
 
 class AuthLoginViewModelFactory(
-    private val userRepository: CommonUserRepository
+    private val userRepositoryRemote: CommonUserRepository
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return AuthLoginViewModel(userRepository) as T
+        return AuthLoginViewModel(userRepositoryRemote) as T
     }
 }
