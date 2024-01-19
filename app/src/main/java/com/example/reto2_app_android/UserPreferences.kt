@@ -28,9 +28,8 @@ class UserPreferences() {
         editor.apply()
     }
 
-    fun saveAuthToken(token: String,id: Int, login: String) {
+    fun saveAuthToken(token: String, login: String) {
         val editor = sharedPreferences.edit()
-        editor.putInt(USER_ID,id)
         editor.putString(USER_LOGIN,login.substring(0,1).uppercase() + login.substring(1).lowercase())
         editor.putString(USER_TOKEN,token)
         editor.apply()

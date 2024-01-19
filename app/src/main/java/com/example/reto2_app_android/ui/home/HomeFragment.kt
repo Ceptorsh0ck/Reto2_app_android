@@ -28,15 +28,22 @@ import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.room.Room
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.appServices.AndroidServices
 import com.example.reto2_app_android.data.appServices.AudioRecord
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.CommonChatRepository
+import com.example.reto2_app_android.data.repository.local.database.AppDatabase
+import com.example.reto2_app_android.data.repository.local.tables.RoomChat
+import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.utils.Resource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
 
@@ -48,7 +55,7 @@ class HomeFragment : Fragment(), LocationListener {
     lateinit var networkConnectionManager: NetworkConnectionManager
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
-
+    private lateinit var db: AppDatabase
     private var _binding: FragmentHomeBinding? = null
     private var ubicacionObtenida = false
     private val chatRepository = RemoteChatsDataSource();
@@ -72,7 +79,6 @@ class HomeFragment : Fragment(), LocationListener {
     ): View {
         val homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
 
-        Log.i("Aimar", "HomeViewModeldsasd")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -80,28 +86,36 @@ class HomeFragment : Fragment(), LocationListener {
 
         homeAdapter = HomeAdapter()
 
+        db = Room.databaseBuilder(
+            requireContext(), AppDatabase::class.java, "elor-chat-room"
+        ).build()
+        Log.i("Aimar", "BD")
+        lifecycleScope.launch(Dispatchers.IO) {
+            val user = RoomUser(id = 1, email = "usuario@example.com", name = "Nombre", surname1 = "Apellido1", surname2 = "Apellido2", phoneNumber1 = 123456789)
+            db.userDao().insertUser(user)
+        }
+
         binding.chatList.adapter = homeAdapter
 
-        viewModel.items.observe(viewLifecycleOwner, {
-            when (it.status){
+        viewModel.items.observe(viewLifecycleOwner) {
+            when (it.status) {
                 Resource.Status.SUCCESS -> {
                     if (!it.data.isNullOrEmpty()) {
                         homeAdapter.submitList(it.data)
-                    }
-                    else{
+                    } else {
                         homeAdapter.submitList(null)
                     }
                 }
 
                 Resource.Status.ERROR -> {
-                        Log.i("Aimar", "Error conexion")
+                    Log.i("Aimar", "Error conexion")
                 }
 
                 Resource.Status.LOADING -> {
 
                 }
             }
-        })
+        }
 
         binding.buttonLocation.setOnClickListener {
             viewModel.updateChatsList()

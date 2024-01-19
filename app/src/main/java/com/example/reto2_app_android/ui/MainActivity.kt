@@ -103,7 +103,6 @@ class MainActivity : AppCompatActivity() {
 //        timer.schedule(CheckConnection(this), 0, MILLISECONDS.toLong())
 
         val navView: BottomNavigationView = mainActivityBinding.navView
-        Log.i("Aimar", "MAIN")
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.

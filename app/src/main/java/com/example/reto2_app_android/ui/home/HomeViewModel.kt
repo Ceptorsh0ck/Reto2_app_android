@@ -38,7 +38,6 @@ class HomeViewModel (
     val items: LiveData<Resource<List<Chat>>> get() = _items
 
     init {
-        Log.i("Aimar", "Funciona")
         updateChatsList()
     }
 
@@ -50,7 +49,6 @@ class HomeViewModel (
     }
 
     suspend fun getChatsFromRepository(): Resource<List<Chat>>{
-        Log.i("Aimar", "Fuasdanciona")
         return withContext((Dispatchers.IO)){
             chatRepository.getChats();
         }

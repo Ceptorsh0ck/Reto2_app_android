@@ -39,9 +39,9 @@ class AuthLoginFragment : Fragment() {
     private lateinit var loginUsername: String
     private lateinit var loginPassword: String
     private var remember: String = ""
-    private val userRepository = RemoteUsersDataSource()
+    private val userRepositoryRemote = RemoteUsersDataSource()
     private val viewModel: AuthLoginViewModel by viewModels { AuthLoginViewModelFactory(
-        userRepository
+        userRepositoryRemote
     ) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,8 +96,8 @@ class AuthLoginFragment : Fragment() {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     it.data?.let { data ->
-                        if(true == false){
-                            //MyApp.userPreferences.saveAuthToken(data.accessToken,data.id.toInt(),data.login)
+                        if(true == true){
+                            MyApp.userPreferences.saveAuthToken(data.accessToken, data.email)
                             if (loginBinding.loginRememberMe.isChecked) {
                                 MyApp.userPreferences.saveRememberMe(remember)
                                 remember = ""

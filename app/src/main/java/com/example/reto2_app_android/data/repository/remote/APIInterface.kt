@@ -20,4 +20,5 @@ interface APIInterface {
     @POST("auth/login")
     suspend fun loginUser(@Body user: UserLogin): Response<AuthenticationResponse>
 
+
 }
