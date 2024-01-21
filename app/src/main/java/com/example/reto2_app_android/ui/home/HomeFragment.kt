@@ -79,6 +79,7 @@ class HomeFragment : Fragment(), LocationListener {
     ): View {
         val homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
 
+        Log.i("Aimar", "HomeViewModeldsasd")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
