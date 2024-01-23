@@ -1,19 +1,19 @@
-package com.example.reto2_app_android.ui.dashboard
+package com.example.reto2_app_android.ui.messages
 
 import android.os.Bundle
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import com.example.reto2_app_android.data.UserNew
+import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.utils.Resource
+
+private const val ARG_CHAT = "chat"
 
 class DashboardFragment : Fragment() {
 
@@ -25,8 +25,16 @@ class DashboardFragment : Fragment() {
     private val TAG = "SocketActivity"
     private lateinit var messageAdapter: DashboardAdapter
     private val viewModel: DashboardViewModel by viewModels { DashboardViewModelFactory() }
-
+    private var chat: ChatResponse_Chat? = null
     private val binding get() = _binding!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            chat = it.getParcelable(ARG_CHAT, ChatResponse_Chat::class.java)
+
+        }
+    }
 
     override fun onCreateView(
             inflater: LayoutInflater,

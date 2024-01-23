@@ -6,8 +6,8 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class ChatResponse_Chat(
     val id: Int,
-    val name: String,
-    val listMessages: List<ChatResponse_Message>,
-    val listUsers: List<ChatResponse_UserMessage>,
+    val name: String?,
+    val listMessages: List<ChatResponse_Message>?,
+    val listUsers: List<ChatResponse_UserMessage>?,
     val public: Boolean
 ): Parcelable

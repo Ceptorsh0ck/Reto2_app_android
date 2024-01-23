@@ -26,7 +26,6 @@
             android:id="@+id/TextViewChatName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/chats_name"
             android:textColor="@color/black"
             android:textSize="24sp" />
 
@@ -34,7 +33,6 @@
             android:id="@+id/TextViewLastMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/last_messaga"
             android:textColor="@color/black"
             android:textSize="16sp" />
 
@@ -53,7 +51,6 @@
             android:id="@+id/TextViewLastMessageHour"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/last_message_time"
             android:textAlignment="textEnd"
             android:textColor="@color/black"
             android:textSize="24sp" />

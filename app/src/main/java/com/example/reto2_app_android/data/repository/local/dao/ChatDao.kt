@@ -33,4 +33,7 @@ interface ChatDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertChat(user: RoomChat)
 
+    @Query("select chats.* from chats join user_chat on chats.id = user_chat.chat_id where user_chat.user_id = :userId" )
+    suspend fun getChatsByUserId(userId: Int): List<RoomChat>
+
 }

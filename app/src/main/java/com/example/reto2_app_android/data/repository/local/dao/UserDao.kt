@@ -10,5 +10,8 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertUser(user: RoomUser)
+    suspend fun insertUser(user: RoomUser): Long
+
+    @Query("Select users.* from users join messages on users.id = messages.user_Id where messages.id = :messageId")
+    suspend fun selectUserOfMessage(messageId: Int): RoomUser
 }
