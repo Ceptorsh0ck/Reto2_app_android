@@ -1,17 +1,17 @@
-package com.example.reto2_app_android.ui.dashboard
+package com.example.reto2_app_android.ui.messages
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.databinding.ItemMessageMeBinding
 import com.example.reto2_app_android.databinding.ItemMessageOtherBinding
 
-class DashboardAdapter()  : ListAdapter<MessageRecive, DashboardAdapter.DashboardViewHolder>(DashboardDiffCallback()) {
+class DashboardAdapter()  : ListAdapter<MessageRecive, DashboardAdapter.DashboardViewHolder>(
+    DashboardDiffCallback()
+) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DashboardViewHolder {
         val binding = ItemMessageMeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return DashboardViewHolder(binding)

@@ -1,4 +1,4 @@
-package com.example.reto2_app_android.ui.dashboard
+package com.example.reto2_app_android.ui.messages
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -33,7 +33,7 @@ class DashboardViewModel (
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
 
-    private val SOCKET_HOST = "http://192.168.2.2:8085/"
+    private val SOCKET_HOST = "http://10.5.2.2:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket

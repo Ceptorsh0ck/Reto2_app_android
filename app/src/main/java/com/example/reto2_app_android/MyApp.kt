@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import androidx.room.Room
+import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import dagger.hilt.android.HiltAndroidApp
 import kotlin.properties.Delegates
 
@@ -16,7 +17,7 @@ class MyApp : Application() {
         lateinit var rootPreferences: RootPreferences
         var wifiStatus by Delegates.notNull<Boolean>()
 
-//        lateinit var db: MyAppRoomDataBase
+        lateinit var db: AppDatabase
 
     }
 
@@ -28,9 +29,9 @@ class MyApp : Application() {
         userPreferences = UserPreferences()
         rootPreferences = RootPreferences()
 
-//        db = Room
-//            .databaseBuilder(this,MyAppRoomDataBase::class.java,getString(R.string.room_database_name))
-//            .build()
+        db = Room
+            .databaseBuilder(this,AppDatabase::class.java,getString(R.string.room_database_name))
+            .build()
         // Required initialization logic here!
 
     }
