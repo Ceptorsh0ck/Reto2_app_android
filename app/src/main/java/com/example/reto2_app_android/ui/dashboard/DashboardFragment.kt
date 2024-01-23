@@ -12,6 +12,10 @@ import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBindings
+import com.example.reto2_app_android.R
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.utils.Resource
 
@@ -36,6 +40,7 @@ class DashboardFragment : Fragment() {
         val dashboardViewModel =
                 ViewModelProvider(this).get(DashboardViewModel::class.java)
 
+
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -43,6 +48,11 @@ class DashboardFragment : Fragment() {
         binding.recyclerGroupChat.adapter = messageAdapter
 
         binding.buttonGroupChatSend.isEnabled = false
+        val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
+        if (recyclerView != null) {
+            recyclerView.layoutManager = LinearLayoutManager(context)
+
+        }
 
         onConnectedChange(binding)
         onMessagesChange()
@@ -111,8 +121,8 @@ class DashboardFragment : Fragment() {
         binding.buttonGroupChatSend.setOnClickListener() {
             Log.i("Aimar", "Buton send")
             val message = binding.editGroupChatMessage.text.toString();
-            binding.editGroupChatMessage.setText("")
             viewModel.onSendMessage(message)
+            binding.editGroupChatMessage.text.clear()
         }
     }
 }

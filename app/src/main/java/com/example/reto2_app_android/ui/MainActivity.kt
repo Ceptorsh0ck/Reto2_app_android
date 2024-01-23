@@ -20,6 +20,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
@@ -32,7 +33,11 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
+import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.databinding.ActivityMainBinding
+import com.example.reto2_app_android.ui.dashboard.DashboardAdapter
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
@@ -42,6 +47,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
 
     @Inject
     lateinit var networkConnectionManager: NetworkConnectionManager
