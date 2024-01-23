@@ -1,4 +1,4 @@
-package com.example.reto2_app_android.ui.home
+package com.example.reto2_app_android.ui.publicChats
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -7,10 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import com.example.reto2_app_android.data.UserChat
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.repository.CommonChatRepository
-import com.example.reto2_app_android.data.repository.local.dao.UserDao
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
@@ -18,7 +17,6 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomRole
 import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserRol
-import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,16 +25,18 @@ import java.sql.Date
 import javax.sql.rowset.serial.SerialBlob
 
 class HomeViewModelFactory(
-    private val chatRepository: RemoteChatsDataSource
+    private val remoteChatRepository: CommonChatRepository,
+    private val roomChatRepository: CommonChatRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        return HomeViewModel(chatRepository) as T
+        return HomeViewModel(remoteChatRepository, roomChatRepository) as T
     }
 
 }
 
 class HomeViewModel (
-    private val chatRepository: CommonChatRepository
+    private val chatRepository: CommonChatRepository,
+    private val roomChatRepository: CommonChatRepository
 ) : ViewModel(){
 
     private val _text = MutableLiveData<String>().apply {
@@ -49,13 +49,31 @@ class HomeViewModel (
     val items: LiveData<Resource<ChatResponse_User>> get() = _items
 
     init {
+        getChatFromRoom()
         updateChatsList()
+
+    }
+
+    fun getChatFromRoom(){
+        viewModelScope.launch {
+            val roomResponse = getChatsFromRoom()
+            _items.value = roomResponse
+        }
     }
 
     fun updateChatsList(){
         viewModelScope.launch {
             val repoResponse = getChatsFromRepository()
-            _items.value = repoResponse
+            //_items.value = repoResponse
+            // tODO meter en room los que no estan y meter en items.value los mismos
+            //
+          safeChatsInRoom(repoResponse.data, MyApp.db)
+        }
+    }
+
+    suspend fun getChatsFromRoom(): Resource<ChatResponse_User>{
+        return  withContext(Dispatchers.IO){
+            roomChatRepository.getChats()
         }
     }
 
@@ -163,7 +181,8 @@ class HomeViewModel (
 
                     }
                     //Añadir a la base de datos los mensajes
-                    it.listMessages.forEach{
+                    it.listMessages?.forEach{
+
                         val message = RoomMessages(
                             id = it.id,
                             content = it.content,
@@ -176,15 +195,15 @@ class HomeViewModel (
                         Log.i("Message", it.createdAt.toString())
                         messagesDao.insertMessage(message)
 
-                        val user = it.userId.id?.let { it1 ->
+                        val user = it.userId?.id?.let { it1 ->
                             RoomUser(
                                 id = it1,
-                                name = it.userId.name,
-                                email = it.userId.email,
-                                surname1 = it.userId.surname1,
-                                surname2 = it.userId.surname2,
+                                name = it.userId!!.name,
+                                email = it.userId!!.email,
+                                surname1 = it.userId!!.surname1,
+                                surname2 = it.userId!!.surname2,
                                 address = null,
-                                phoneNumber1 = it.userId.phoneNumber1,
+                                phoneNumber1 = it.userId!!.phoneNumber1,
                                 phoneNumber2 = null,
                                 firstLogin = null
                             )
@@ -195,6 +214,7 @@ class HomeViewModel (
                     }
                 }
             }
+            getChatFromRoom()
             return true
         }catch (e: Exception) {
             e.printStackTrace()

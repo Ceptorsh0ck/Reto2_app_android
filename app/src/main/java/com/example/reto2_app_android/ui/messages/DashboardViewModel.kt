@@ -110,7 +110,6 @@ class DashboardViewModel (
             // Manejar el mensaje recibido
             val message = data as String
             Log.d(TAG, "mensaje recibido $message")
-
             // ojo aqui no estoy actualizando la lista. aunque no deberiamos recibir strings
         } catch (ex: Exception) {
             Log.e(TAG, ex.message!!)

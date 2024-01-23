@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import com.example.reto2_app_android.data.DataType
-import java.sql.Date
+import java.util.Date
 import javax.sql.rowset.serial.SerialBlob
 
 @Entity(tableName = "messages",
