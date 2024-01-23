@@ -147,7 +147,7 @@ class HomeViewModel (
 
                     chatDao.insertChat(roomChat)
 
-                    it.listUsers.forEach {
+                    it.listUsers?.forEach {
                         val user = it.user.id?.let { it1 ->
                             RoomUser(
                                 id = it1,

@@ -25,7 +25,7 @@ import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.auth.AuthScrollingRegisterFragment
-import com.example.reto2_app_android.ui.messages.DashboardFragment
+import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.utils.Resource
 import javax.inject.Inject
 
@@ -95,7 +95,7 @@ class HomeFragment : Fragment(), LocationListener {
                 }
 
                 Resource.Status.ERROR -> {
-                    Log.i("Aimar", "Error conexion")
+                    Log.i("Aimar", it.message.toString())
 
                 }
 
