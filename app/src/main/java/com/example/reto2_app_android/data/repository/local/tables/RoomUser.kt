@@ -17,4 +17,4 @@ data class RoomUser(
     @ColumnInfo(name = "phone_number1") val phoneNumber1: Int?,
     @ColumnInfo(name = "phone_number2") val phoneNumber2: Int?,
     @ColumnInfo(name = "firstLogin") val firstLogin: Boolean?,
-)
+    )

@@ -1,4 +1,4 @@
-package com.example.reto2_app_android.ui.messages
+package com.example.reto2_app_android.ui.dashboard
 
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.utils.Resource
 import com.example.socketapp.data.socket.SocketEvents
@@ -33,7 +34,7 @@ class DashboardViewModel (
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
 
-    private val SOCKET_HOST = "http://10.5.2.2:8085/"
+    private val SOCKET_HOST = "http://10.5.7.28:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket
@@ -67,7 +68,7 @@ class DashboardViewModel (
         // Add custom headers
         val headers = mutableMapOf<String, MutableList<String>>()
         // TODO el token tendria que salir de las sharedPrefernces para conectarse
-        headers[AUTHORIZATION_HEADER] = mutableListOf("Bearer AppJwt:1:Mikel")
+        headers[AUTHORIZATION_HEADER] = mutableListOf("Bearer ${MyApp.userPreferences.fetchAuthToken()}")
 
         options.extraHeaders = headers
         return options
@@ -96,6 +97,7 @@ class DashboardViewModel (
         return Emitter.Listener {
             // en teoria deberia ser siempre jsonObject, obviamente si siempre lo gestionamos asi
             if (it[0] is JSONObject) {
+                Log.d(TAG, "mensaje recibido on new message ${it[0]}")
                 onNewMessageJsonObject(it[0])
             } else if (it[0] is String) {
                 onNewMessageString(it[0])
@@ -145,8 +147,8 @@ class DashboardViewModel (
     }
 
     fun onSendMessage(message: String) {
-        Log.d(TAG, "onSendMessage $message")
         // la sala esta hardcodeada..
+        Log.i("message", message)
         val socketMessage = SocketMessageReq(SOCKET_ROOM, message)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)

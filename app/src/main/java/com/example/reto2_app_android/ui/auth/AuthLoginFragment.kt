@@ -63,6 +63,9 @@ class AuthLoginFragment : Fragment() {
             //Recoge los datos
             val login = loginBinding.loginUsername.text.toString()
             val password = loginBinding.loginPassword.text.toString()
+            MyApp.userPreferences.saveUsername(login)
+            Log.i("Jon", MyApp.userPreferences.fetchLogin().toString() + " " + "OnLogin")
+
 
             //Comprueba que contengan datos
             if (login.isNotEmpty() && password.isNotEmpty()) {

@@ -1,4 +1,4 @@
-package com.example.reto2_app_android.ui.messages
+package com.example.reto2_app_android.ui.dashboard
 
 import android.os.Bundle
 import android.util.Log
@@ -8,6 +8,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBindings
+import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
@@ -44,6 +48,7 @@ class DashboardFragment : Fragment() {
         val dashboardViewModel =
                 ViewModelProvider(this).get(DashboardViewModel::class.java)
 
+
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -51,6 +56,11 @@ class DashboardFragment : Fragment() {
         binding.recyclerGroupChat.adapter = messageAdapter
 
         binding.buttonGroupChatSend.isEnabled = false
+        val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
+        if (recyclerView != null) {
+            recyclerView.layoutManager = LinearLayoutManager(context)
+
+        }
 
         onConnectedChange(binding)
         onMessagesChange()
@@ -119,8 +129,8 @@ class DashboardFragment : Fragment() {
         binding.buttonGroupChatSend.setOnClickListener() {
             Log.i("Aimar", "Buton send")
             val message = binding.editGroupChatMessage.text.toString();
-            binding.editGroupChatMessage.setText("")
             viewModel.onSendMessage(message)
+            binding.editGroupChatMessage.text.clear()
         }
     }
 }
