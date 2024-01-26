@@ -40,9 +40,11 @@ class AuthLoginFragment : Fragment() {
     private lateinit var loginPassword: String
     private var remember: String = ""
     private val userRepositoryRemote = RemoteUsersDataSource()
-    private val viewModel: AuthLoginViewModel by viewModels { AuthLoginViewModelFactory(
-        userRepositoryRemote
-    ) }
+    private val viewModel: AuthLoginViewModel by viewModels {
+        AuthLoginViewModelFactory(
+            userRepositoryRemote
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +52,8 @@ class AuthLoginFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+       
     }
 
     override fun onCreateView(
@@ -57,59 +61,37 @@ class AuthLoginFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        loginBinding = FragmentAuthLoginBinding.inflate(layoutInflater,container, false)
+        loginBinding = FragmentAuthLoginBinding.inflate(layoutInflater, container, false)
 
         loginBinding.loginButton.setOnClickListener() {
-            //Recoge los datos
-            val login = loginBinding.loginUsername.text.toString()
-            val password = loginBinding.loginPassword.text.toString()
-            MyApp.userPreferences.saveUsername(login)
-            Log.i("Jon", MyApp.userPreferences.fetchLogin().toString() + " " + "OnLogin")
-
-
-            //Comprueba que contengan datos
-            if (login.isNotEmpty() && password.isNotEmpty()) {
+            if (loginBinding.loginUsername.text.isNotEmpty() && loginBinding.loginPassword.text.isNotEmpty()) {
+                val login = loginBinding.loginUsername.text.toString()
+                val password = loginBinding.loginPassword.text.toString()
                 viewModel.loginUser(
                     login,
-                    password
-                )
-                //remember = loginBinding.loginPassword.text.toString()
-                loginBinding.loginUsername.setText("");
-                loginBinding.loginPassword.setText("");
-            } else {
+                    password,
+                    loginBinding.loginRememberMe.isChecked
 
-                //Si no estan todos los campos con datos, comprueba que cambo esta vacio y envia toast
-                /*if (login.isEmpty() && password.isEmpty()) {
-                    Toast.makeText(
-                        activity,
-                        getString(R.string.emptyLoginAndPassword),
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else if (login.isEmpty()) {
-                    Toast.makeText(activity, getString(R.string.emptyLogin), Toast.LENGTH_LONG)
-                        .show()
-                } else {
-                    Toast.makeText(activity, getString(R.string.emptyPassword), Toast.LENGTH_LONG)
-                        .show()
-                }*/
+                )
+                loginBinding.loginUsername.text.clear()
+                loginBinding.loginPassword.text.clear()
+            } else {
+                loginBinding.loginUsername.error = getString(R.string.emptyLogin)
+
             }
+
+
         }
 
         viewModel.login.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     it.data?.let { data ->
-                        if(true == true){
-                            MyApp.userPreferences.saveAuthToken(data.accessToken, data.email)
-                            if (loginBinding.loginRememberMe.isChecked) {
-                                MyApp.userPreferences.saveRememberMe(remember)
-                                remember = ""
-                            } else {
-                                //Como el checkbox no esta seleccionado, borra la contraseña del userPreferences
-                                if (MyApp.userPreferences.fetchPassword() != null) {
-                                    MyApp.userPreferences.removeRememberMe()
-                                }
-                            }
+
+                        if (MyApp.userPreferences.getLoggedUser()?.firstLogin == true) {
+                            val rememberMe = loginBinding.loginRememberMe.isChecked
+                            MyApp.userPreferences.saveRememberMeStatus(rememberMe)
+
 
                             val intent = Intent(activity, MainActivity::class.java)
                             startActivity(intent)
@@ -117,10 +99,16 @@ class AuthLoginFragment : Fragment() {
                         } else {
                             var arguments = Bundle()
                             if (loginBinding.loginUsername.text.isNotEmpty()) {
-                                arguments.putString("loginUsername",loginBinding.loginUsername.text.toString())
+                                arguments.putString(
+                                    "loginUsername",
+                                    loginBinding.loginUsername.text.toString()
+                                )
                             }
                             if (loginBinding.loginPassword.text.isNotEmpty()) {
-                                arguments.putString("loginPassword",loginBinding.loginPassword.text.toString())
+                                arguments.putString(
+                                    "loginPassword",
+                                    loginBinding.loginPassword.text.toString()
+                                )
                             }
                             var userNew = UserNew()
                             userNew.email = loginBinding.loginUsername.text.toString()
@@ -141,9 +129,10 @@ class AuthLoginFragment : Fragment() {
 
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.i("Aimar",it.data?.accessToken.toString())
-                    Log.i("Aimar",it.data?.email.toString())
-                    Toast.makeText(activity,getString(R.string.wrongLogin), Toast.LENGTH_LONG).show()
+                    Log.i("Aimar", it.data?.accessToken.toString())
+                    Log.i("Aimar", it.data?.email.toString())
+                    Toast.makeText(activity, getString(R.string.wrongLogin), Toast.LENGTH_LONG)
+                        .show()
                 }
 
                 Resource.Status.LOADING -> {
@@ -155,7 +144,7 @@ class AuthLoginFragment : Fragment() {
 
         loginBinding.loginResetPasswordButton.setOnClickListener() {
             //TODO Realizar recordar contraseña
-            Toast.makeText(activity,"Recordar Contraseña",Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, "Recordar Contraseña", Toast.LENGTH_SHORT).show()
         }
 
 //        val view =  inflater.inflate(R.layout.fragment_auth_login, container, false)

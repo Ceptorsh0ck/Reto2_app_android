@@ -16,7 +16,7 @@ class RoomChatDataSource: CommonChatRepository {
     private val chatDao: ChatDao = MyApp.db.chatDao()
     private val messageDao: MessageDao = MyApp.db.messageDao()
     private val userDao: UserDao = MyApp.db.userDao()
-    private val userId: Int? = MyApp.userPreferences.fetchUserId();
+    private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
 
     override suspend fun getChats(): Resource<ChatResponse_User> {
         if (userId != null) {

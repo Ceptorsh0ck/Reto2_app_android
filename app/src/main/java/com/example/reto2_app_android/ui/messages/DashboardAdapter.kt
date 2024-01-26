@@ -32,7 +32,7 @@ class DashboardAdapter() :
     }
     override fun getItemViewType(position: Int): Int {
         val message = getItem(position)
-        val currentUser = userPreferences.fetchLogin().toString().lowercase()
+        val currentUser = userPreferences.getLoggedUser()?.email
 
 
         return if (message.authorName == currentUser) {
