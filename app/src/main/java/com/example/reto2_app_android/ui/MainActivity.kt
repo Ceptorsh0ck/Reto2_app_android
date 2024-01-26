@@ -114,6 +114,9 @@ class MainActivity : AppCompatActivity() {
             R.id.navigation_public -> {
                 navigateToFragment(R.id.navigation_public)
             }
+            R.id.navigation_settings -> {
+                navigateToFragment(R.id.navigation_settings)
+            }
         }
     }
     private fun navigateToFragment(destinationId: Int) {
