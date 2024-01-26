@@ -100,7 +100,7 @@ class AuthLoginFragment : Fragment() {
                 Resource.Status.SUCCESS -> {
                     it.data?.let { data ->
                         if(true == true){
-                            MyApp.userPreferences.saveAuthToken(data.accessToken, data.email)
+                            MyApp.userPreferences.saveAuthToken(data.accessToken, data.email, )
                             if (loginBinding.loginRememberMe.isChecked) {
                                 MyApp.userPreferences.saveRememberMe(remember)
                                 remember = ""

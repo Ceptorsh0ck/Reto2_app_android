@@ -5,12 +5,12 @@
         android:id="@+id/navigation_public"
         android:icon="@drawable/ic_home_black_24dp"
         android:title="@string/title_home" />
-
+<!--
     <item
         android:id="@+id/navigation_private"
         android:icon="@drawable/ic_dashboard_black_24dp"
         android:title="@string/title_dashboard" />
-
+-->
     <item
         android:id="@+id/navigation_settings"
         android:icon="@android:drawable/ic_menu_preferences"
