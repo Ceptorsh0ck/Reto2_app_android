@@ -7,6 +7,8 @@ plugins {
     id("kotlin-kapt")
     //NetworkConnectionManager
     id("dagger.hilt.android.plugin")
+    //Firebase
+    id("com.google.gms.google-services")
 
 }
 
@@ -62,6 +64,7 @@ dependencies {
 
     //NetworkConnectionManager
     implementation ("javax.inject:javax.inject:1")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
     val hiltVersion = "2.50"
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     kapt ("com.google.dagger:hilt-compiler:$hiltVersion")
@@ -83,10 +86,9 @@ dependencies {
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.preference:preference:1.2.0")
     // Room
-    val roomVersion = "2.5.0"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation ("androidx.room:room-runtime:2.6.1")
+    implementation ("androidx.room:room-ktx:2.6.1")
+    kapt ("androidx.room:room-compiler:2.6.1")
 
     // ADD para utilizar viewmodels
     api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
@@ -124,6 +126,12 @@ dependencies {
     api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     // conversiones
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation("org.jboss.spec.javax.sql:jboss-javax-sql-api_7.0_spec:2.0.0.Final")
+    implementation ("com.squareup.moshi:moshi:1.12.0")
+    //Firesebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+
 }
 
 kapt {
