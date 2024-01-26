@@ -91,8 +91,7 @@ class AuthLoginFragment : Fragment() {
                         if (MyApp.userPreferences.getLoggedUser()?.firstLogin == true) {
                             val rememberMe = loginBinding.loginRememberMe.isChecked
                             MyApp.userPreferences.saveRememberMeStatus(rememberMe)
-
-
+                            
                             val intent = Intent(activity, MainActivity::class.java)
                             startActivity(intent)
                             activity?.finish()

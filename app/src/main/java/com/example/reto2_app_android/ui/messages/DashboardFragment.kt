@@ -11,11 +11,18 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBindings
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
-import com.example.reto2_app_android.data.UserNew
+import com.example.reto2_app_android.data.MessageAdapter
+import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.utils.Resource
+import java.text.SimpleDateFormat
+import java.util.Date
 
 private const val ARG_CHAT = "chat"
 
@@ -25,10 +32,14 @@ class DashboardFragment : Fragment() {
 
     // This property is only valid between onCreateView and
     // onDestroyView.
-
+    private val roomMessageRepository = RoomMessageDataSource();
     private val TAG = "SocketActivity"
+    private val userId: Int? = MyApp.userPreferences.fetchUserId();
     private lateinit var messageAdapter: DashboardAdapter
-    private val viewModel: DashboardViewModel by viewModels { DashboardViewModelFactory() }
+    private val viewModel: DashboardViewModel by viewModels {
+        DashboardViewModelFactory(roomMessageRepository)
+    }
+    private var lastMessage: String = ""
     private var chat: ChatResponse_Chat? = null
     private val binding get() = _binding!!
 
@@ -45,8 +56,6 @@ class DashboardFragment : Fragment() {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        val dashboardViewModel =
-                ViewModelProvider(this).get(DashboardViewModel::class.java)
 
 
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
@@ -61,12 +70,73 @@ class DashboardFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(context)
 
         }
+        viewModel.getAllMessages(chat!!.id)
+        viewModel.startSocket()
 
+
+        showRoomMessage(binding)
         onConnectedChange(binding)
         onMessagesChange()
         buttonsListeners(binding)
-
+        onMessageSendRoom(binding)
         return root
+    }
+
+    private fun showRoomMessage(binding: FragmentDashboardBinding) {
+        viewModel.messagesRoom.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    var messages: List<MessageAdapter> = emptyList()
+                    it.data?.forEach { dataItem ->
+                        var message = dataItem.dataType?.let { dataType ->
+                            val fechaHora = dataItem.createdAt
+                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
+                            val timeFormat = SimpleDateFormat("HH:mm")
+                            dataItem.content?.let { content ->
+                                MessageAdapter(
+                                    dataItem.chatId.toString(),
+                                    content,
+                                    dataItem.userId.toString(),
+                                    dataItem.userId,
+                                    dataType,
+                                    dateFormat.format(fechaHora),
+                                    timeFormat.format(fechaHora)
+                                )
+                            }
+                        }
+                        Log.i("Fehca", message.toString())
+                        message?.let {
+                            messages = messages.plus(it)
+                        }
+                    }
+                    messageAdapter.addMessages(messages) // Cambio aquí
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+                    // Handle loading state if needed
+                }
+            }
+        }
+    }
+
+    private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
+        viewModel.message.observe(viewLifecycleOwner) {
+            when (it.status){
+                Resource.Status.SUCCESS-> {
+                    Log.i("gaardado en room", it.data.toString())
+                    viewModel.onSaveMessage(lastMessage, "Group- " +  chat?.id)
+                }
+                Resource.Status.ERROR -> {
+                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
+                    Log.d(TAG, "error al conectar...")
+                }
+
+                Resource.Status.LOADING -> {
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -99,10 +169,8 @@ class DashboardFragment : Fragment() {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.d(TAG, "messages observe success")
-                    if (!it.data.isNullOrEmpty()) {
-                        messageAdapter.submitList(it.data)
-                        messageAdapter.notifyDataSetChanged()
-                    }
+                    messageAdapter.addMessages(it.data!!)
+
                 }
 
                 Resource.Status.ERROR -> {
@@ -122,14 +190,14 @@ class DashboardFragment : Fragment() {
     }
 
     private fun buttonsListeners(binding: FragmentDashboardBinding) {
-        binding.btnConnect.setOnClickListener() {
-            Log.i("Aimar", "Button connect")
-            viewModel.startSocket()
-        }
         binding.buttonGroupChatSend.setOnClickListener() {
             Log.i("Aimar", "Buton send")
-            val message = binding.editGroupChatMessage.text.toString();
-            viewModel.onSendMessage(message)
+            lastMessage = binding.editGroupChatMessage.text.toString();
+            chat?.id?.let { it1 ->
+                if (userId != null) {
+                    viewModel.saveNewMessageRoom(lastMessage, it1, userId)
+                }
+            }
             binding.editGroupChatMessage.text.clear()
         }
     }

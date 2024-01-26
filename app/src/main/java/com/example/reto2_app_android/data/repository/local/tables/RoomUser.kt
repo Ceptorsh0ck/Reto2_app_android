@@ -6,9 +6,13 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "users",
-    indices = [Index(value = ["email"], unique = true)])
+    indices = [
+        Index(value = ["email"], unique = true),
+        Index(value = ["id_server"], unique = true)
+    ])
 data class RoomUser(
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "id_server") val idServer: Int? = null,
     @ColumnInfo(name = "email") val email: String?,
     @ColumnInfo(name = "name") val name: String?,
     @ColumnInfo(name = "surname1") val surname1: String?,

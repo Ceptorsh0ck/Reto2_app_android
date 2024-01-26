@@ -10,7 +10,7 @@ import java.sql.Date
 data class ChatResponse_Message(
     val id: Int,
     val dataType: RoomDataType?,
-    val content: ByteArray?,
+    val content: String,
     val createdAt: java.util.Date?,
     var userId: ChatResponse_UserOfMessage?
 

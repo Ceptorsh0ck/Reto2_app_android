@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui
 
+import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.os.Bundle
@@ -11,6 +12,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
@@ -33,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var networkConnectionManager: NetworkConnectionManager
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
-
+    private lateinit var navController: NavController
     private lateinit var mainActivityBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,15 +99,30 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_public, R.id.navigation_private, R.id.navigation_settings
+                R.id.navigation_public, R.id.navigation_settings
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        this.navController = findNavController(R.id.nav_host_fragment_activity_main)
 
-
-
+        mainActivityBinding.navView.setOnNavigationItemSelectedListener { item ->
+            handleNavigationItemClick(item.itemId)
+            true
+        }
+    }
+    private fun handleNavigationItemClick(itemId: Int) {
+        // Aquí puedes manejar el clic en cada elemento de la barra de navegación
+        when (itemId) {
+            R.id.navigation_public -> {
+                navigateToFragment(R.id.navigation_public)
+            }
+        }
+    }
+    private fun navigateToFragment(destinationId: Int) {
+        // Navegar al fragmento correspondiente
+        navController.navigate(destinationId)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -121,6 +138,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+
     override fun onPause() {
         super.onPause()
         networkConnectionManager.stopListenNetworkState()
@@ -134,6 +152,10 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         networkConnectionManager.stopListenNetworkState()
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp() || super.onSupportNavigateUp()
     }
 
 }

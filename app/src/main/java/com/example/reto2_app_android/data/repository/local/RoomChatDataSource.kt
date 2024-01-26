@@ -30,13 +30,15 @@ class RoomChatDataSource: CommonChatRepository {
                     // Crear una lista que contendrá chatMessage
                     val chatMessageList = mutableListOf<ChatResponse_Message>()
                     val chatMessage = mesage?.let { it1 ->
-                        ChatResponse_Message(
-                            it1.id,
-                            mesage.dataType,
-                            mesage.content,
-                            mesage.createdAt,
-                            null
-                        )
+                        mesage.content?.let { it2 ->
+                            ChatResponse_Message(
+                                it1.id,
+                                mesage.dataType,
+                                it2,
+                                mesage.createdAt,
+                                null
+                            )
+                        }
                     }
 
                     if (chatMessage != null) {

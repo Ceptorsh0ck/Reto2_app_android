@@ -8,7 +8,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.MessageRecive
+import com.example.reto2_app_android.data.repository.CommonMessageRepository
+import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.utils.Resource
 import com.example.socketapp.data.socket.SocketEvents
 import com.example.socketapp.data.socket.SocketMessageReq
@@ -21,26 +25,46 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+
+class DashboardViewModelFactory(
+    private val roomMessageRepository: CommonMessageRepository
+): ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+        return DashboardViewModel(roomMessageRepository) as T
+    }
+}
+
 
 class DashboardViewModel (
-    // repo?
+    private val roomMessageRepository: CommonMessageRepository
 ) : ViewModel() {
 
     private val TAG = "SocketViewModel"
 
-    private val _messages = MutableLiveData<Resource<List<MessageRecive>>>()
-    val messages : LiveData<Resource<List<MessageRecive>>> get() = _messages
+    private val _messages = MutableLiveData<Resource<List<MessageAdapter>>>()
+    val messages : LiveData<Resource<List<MessageAdapter>>> get() = _messages
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
 
-    private val SOCKET_HOST = "http://10.5.7.28:8085/"
+    private val _message = MutableLiveData<Resource<Int>>()
+
+    val message : MutableLiveData<Resource<Int>> get() = _message
+
+    private val _messagesRoom = MutableLiveData<Resource<List<RoomMessages>>>()
+
+    val messagesRoom : MutableLiveData<Resource<List<RoomMessages>>> get() = _messagesRoom
+
+    private val SOCKET_HOST = "http://10.5.7.37:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket
 
     // TODO esto esta hardcodeeado
     private val SOCKET_ROOM = "default-room"
+
 
     fun startSocket() {
         val socketOptions = createSocketOptions();
@@ -53,6 +77,19 @@ class DashboardViewModel (
 
         viewModelScope.launch {
             connect()
+        }
+    }
+
+    fun getAllMessages(id: Int) {
+        viewModelScope.launch {
+            val roomResponse = getMessagesFromRoom(id)
+            _messagesRoom.value = roomResponse
+        }
+    }
+
+    suspend fun getMessagesFromRoom(id: Int): Resource<List<RoomMessages>> {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.getAllMessagesById(id);
         }
     }
 
@@ -120,10 +157,23 @@ class DashboardViewModel (
             val jsonObject = data as JSONObject
             val jsonObjectString = jsonObject.toString()
             val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
+            Log.i(TAG, message.authorName)
 
-            Log.d(TAG, message.authorName)
-            Log.d(TAG, message.messageType.toString())
+            Log.i(TAG, message.messageType.toString())
+            val roomMessage = RoomMessages(
+                idServer = message.id,
+                content = message.message,  // Ajusta según tu caso
+                dataType = RoomDataType.TEXT,
+                createdAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+                updatedAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+                chatId = message.room.substring(message.room.length - 1, message.room.length).toInt(),
+                userId = message.authorId.toInt()
+            )
+            Log.i(TAG, roomMessage.toString())
 
+            viewModelScope.launch {
+                safeMessageInRomm(roomMessage)
+            }
             updateMessageListWithNewMessage(message)
         } catch (ex: Exception) {
             Log.e(TAG, ex.message!!)
@@ -132,7 +182,7 @@ class DashboardViewModel (
 
     private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
         try {
-            val incomingMessage = MessageRecive(SOCKET_ROOM, message.message, message.authorName)
+            val incomingMessage = MessageAdapter(SOCKET_ROOM, message.message, message.authorName, null, RoomDataType.TEXT, null, null)
             val msgsList = _messages.value?.data?.toMutableList()
             if (msgsList != null) {
                 msgsList.add(incomingMessage)
@@ -145,20 +195,44 @@ class DashboardViewModel (
         }
     }
 
-    fun onSendMessage(message: String) {
-        // la sala esta hardcodeada..
-        Log.i("message", message)
-        val socketMessage = SocketMessageReq(SOCKET_ROOM, message)
+
+    fun onSaveMessage(message: String, socketRoom: String){
+        val socketMessage = SocketMessageReq(socketRoom, message)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
-}
+
+    fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int) {
+        // la sala esta hardcodeada..
+        //Guardar en base de datos room
+        val currentDate = Date()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val formattedDateTime = dateFormat.format(currentDate)
+        Log.i(userId.toString(), socketRoom.toString())
+        val roomMessage = RoomMessages(
+            content = message,  // Ajusta según tu caso
+            dataType = RoomDataType.TEXT,
+            createdAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+            updatedAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+            chatId = socketRoom,
+            userId = 2
+        )
 
 
-class DashboardViewModelFactory(
-    // repo?
-): ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        return DashboardViewModel() as T
+        viewModelScope.launch {
+            if (roomMessage != null) {
+                val roomResponse = safeMessageInRomm(roomMessage)
+                _message.value = roomResponse
+            }
+        }
     }
+
+
+    suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.insertMessage(message)
+        }
+    }
+
+
 }

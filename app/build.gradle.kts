@@ -6,6 +6,7 @@ plugins {
     //Room
     id("kotlin-kapt")
     //NetworkConnectionManager
+
     id("dagger.hilt.android.plugin")
 
 }
