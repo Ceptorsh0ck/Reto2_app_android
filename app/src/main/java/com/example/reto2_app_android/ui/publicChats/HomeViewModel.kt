@@ -85,6 +85,7 @@ class HomeViewModel (
 
     suspend fun safeChatsInRoom(data: ChatResponse_User?, db: AppDatabase): Boolean {
         try {
+            Log.i("Chats", data.toString())
             if (data != null) {
                 val chatDao = db.chatDao()
                 val messagesDao = db.messageDao()
@@ -95,7 +96,7 @@ class HomeViewModel (
 
                 val user = data.id?.let {
                     RoomUser(
-                        id = it,
+                        idServer = it,
                         email = data.email,
                         name = data.name,
                         surname1 = data.surname1,
@@ -109,25 +110,28 @@ class HomeViewModel (
 
                 if (user != null) {
                     userDao.insertUser(user)
-                };
+                }
 
                 data.roles?.forEach{
                     val role = RoomRole(
-                        id = it.id,
+                        idServer = it.id,
                         name = it.name,
                         createdAt = null,
                         updatedAt = null
                     )
 
                     roleDao.insertRole(role)
-
                     val userRole = user?.let { it1 ->
-                        RoomUserRol(
-                            roleId = role.id,
-                            userId = it1.id,
-                            createdAt = null,
-                            updatedAt = null
-                        )
+                        role.idServer?.let { it2 ->
+                            it1.idServer?.let { it3 ->
+                                RoomUserRol(
+                                    roleId = it2,
+                                    userId = it3,
+                                    createdAt = null,
+                                    updatedAt = null
+                                )
+                            }
+                        }
                     }
 
                     if (userRole != null) {
@@ -138,7 +142,7 @@ class HomeViewModel (
                 data.listChats?.forEach {
 
                     val roomChat = RoomChat(
-                        id = it.id,
+                        idServer = it.id,
                         name = it.name,
                         isPublic = it.public,
                         createdAt = null,
@@ -150,7 +154,7 @@ class HomeViewModel (
                     it.listUsers?.forEach {
                         val user = it.user.id?.let { it1 ->
                             RoomUser(
-                                id = it1,
+                                idServer = it1,
                                 email = it.user.email,
                                 name = it.user.name,
                                 surname1 = null,
@@ -166,14 +170,17 @@ class HomeViewModel (
                         }
 
                         val userChat = it.user.id?.let { it1 ->
-                            RoomUserChat(
-                                userId = it1,
-                                chatId = roomChat.id,
-                                isAdmin = it.admin,
-                                createdAt = null,
-                                updatedAt = null
-                            )
+                            roomChat.idServer?.let { it2 ->
+                                RoomUserChat(
+                                    userId = it1,
+                                    chatId = it2,
+                                    isAdmin = it.admin,
+                                    createdAt = null,
+                                    updatedAt = null
+                                )
+                            }
                         }
+                        Log.i("Useeeee", userChat.toString())
 
                         if (userChat != null) {
                             userChatDao.insertUserChat(userChat)
@@ -183,21 +190,25 @@ class HomeViewModel (
                     //Añadir a la base de datos los mensajes
                     it.listMessages?.forEach{
 
-                        val message = RoomMessages(
-                            id = it.id,
-                            content = it.content,
-                            dataType = it.dataType,
-                            createdAt = it.createdAt,
-                            updatedAt = null,
-                            chatId =  roomChat.id,
-                            userId = it.userId?.id ?: 0,
-                        )
+                        val message = roomChat.idServer?.let { it1 ->
+                            RoomMessages(
+                                idServer = it.id,
+                                content = it.content,
+                                dataType = it.dataType,
+                                createdAt = it.createdAt,
+                                updatedAt = null,
+                                chatId = it1,
+                                userId = it.userId?.id ?: 0,
+                            )
+                        }
                         Log.i("Message", it.createdAt.toString())
-                        messagesDao.insertMessage(message)
+                        if (message != null) {
+                            messagesDao.insertMessage(message)
+                        }
 
                         val user = it.userId?.id?.let { it1 ->
                             RoomUser(
-                                id = it1,
+                                idServer = it1,
                                 name = it.userId!!.name,
                                 email = it.userId!!.email,
                                 surname1 = it.userId!!.surname1,
@@ -208,6 +219,8 @@ class HomeViewModel (
                                 firstLogin = null
                             )
                         }
+
+                        Log.d("Mesaje", user.toString())
                         if (user != null) {
                             userDao.insertUser(user)
                         }

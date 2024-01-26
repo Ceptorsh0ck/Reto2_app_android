@@ -6,20 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:id="@+id/btn_connect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_margin="16dp"
-        android:layout_marginTop="11dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/btn_connect"
-        app:layout_constraintBottom_toTopOf="@+id/recycler_group_chat"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_bar_group_chat" />
-
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_group_chat"
         android:layout_width="match_parent"
@@ -39,15 +25,14 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_group_chat"
-        android:layout_width="411dp"
-        android:layout_height="467dp"
-        android:layout_marginBottom="16dp"
+        android:layout_width="409dp"
+        android:layout_height="567dp"
         app:layout_constraintBottom_toTopOf="@+id/text_group_chat_indicator"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/app_bar_group_chat"
-        app:layout_constraintVertical_bias="0.652" />
+        app:layout_constraintVertical_bias="0.0" />
 
     <TextView
         android:id="@+id/text_group_chat_indicator"

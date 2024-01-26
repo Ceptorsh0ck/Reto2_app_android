@@ -19,4 +19,8 @@
     <color name="colorChatOtherText">#000000</color>
     <color name="colorChatOtherDate">#C0C0C0</color>
     <color name="colorDivider">#e0e0e0</color>
+
+
+    <color name="colorTextoClaro">#000000</color> <!-- Color del texto en modo claro -->
+    <color name="colorTextoOscuro">#FFFFFF</color> <!-- Color del texto en modo oscuro -->
 </resources>
