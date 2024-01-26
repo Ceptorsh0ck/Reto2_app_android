@@ -18,7 +18,7 @@ class RoomChatDataSource: CommonChatRepository {
     private val userDao: UserDao = MyApp.db.userDao()
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
 
-    override suspend fun getChats(): Resource<ChatResponse_User> {
+    override suspend fun getChats(): Resource<List<ChatResponse_Chat>> {
         if (userId != null) {
             val response = chatDao.getChatsByUserId(1)
             val user = ChatResponse_User()
@@ -77,7 +77,7 @@ class RoomChatDataSource: CommonChatRepository {
                     user.listChats = user.listChats?.plus(chat)
                 }
 
-                return Resource.success(user)
+                return Resource.success(user.listChats!!)
             } else {
                 return Resource.error("Response is null")
             }

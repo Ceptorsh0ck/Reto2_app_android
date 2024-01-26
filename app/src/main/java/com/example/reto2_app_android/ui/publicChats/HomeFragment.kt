@@ -89,9 +89,9 @@ class HomeFragment : Fragment(), LocationListener {
         viewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("Lista", it.data?.listChats.toString())
+                    Log.i("Lista", it.data.toString())
 
-                    homeAdapter.submitList(it.data?.listChats)
+                    homeAdapter.submitList(it.data)
                 }
 
                 Resource.Status.ERROR -> {

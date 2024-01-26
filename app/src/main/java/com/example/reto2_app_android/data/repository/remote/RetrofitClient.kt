@@ -18,7 +18,7 @@ object RetrofitClient {
 
     var client = OkHttpClient.Builder().addInterceptor {chain ->
         val authToken = MyApp.userPreferences.fetchAuthToken()
-
+        Log.i("RetrofitClient", authToken.toString())
         if (authToken != null) {
             val newRequest: Request = chain.request().newBuilder()
                 .addHeader("Authorization","Bearer $authToken")
