@@ -20,6 +20,6 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE chat_id = :chatId order by id desc limit 1")
     suspend fun getLastMessageByRoomId(chatId: Int): RoomMessages?
 
-    @Query("SELECT messages.*, users.name FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE chat_id = :chatId ORDER BY messages.id DESC")
+    @Query("SELECT messages.*, users.name FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE chat_id = :chatId ORDER BY messages.id")
     suspend fun getAllMessagesByChatId(chatId: Int): List<RoomMessages>
 }

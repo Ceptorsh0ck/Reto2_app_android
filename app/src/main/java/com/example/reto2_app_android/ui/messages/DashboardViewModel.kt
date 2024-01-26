@@ -57,7 +57,7 @@ class DashboardViewModel (
 
     val messagesRoom : MutableLiveData<Resource<List<RoomMessages>>> get() = _messagesRoom
 
-    private val SOCKET_HOST = "http://10.5.7.59:8085/"
+    private val SOCKET_HOST = "http://10.5.7.37:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket
