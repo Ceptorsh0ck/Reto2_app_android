@@ -17,6 +17,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.databinding.ActivityMainBinding
@@ -39,6 +40,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+
 
         var wifiIcon : MenuItem
 

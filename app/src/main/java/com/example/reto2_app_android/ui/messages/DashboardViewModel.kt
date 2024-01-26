@@ -104,7 +104,6 @@ class DashboardViewModel (
 
         // Add custom headers
         val headers = mutableMapOf<String, MutableList<String>>()
-        // TODO el token tendria que salir de las sharedPrefernces para conectarse
         headers[AUTHORIZATION_HEADER] = mutableListOf("Bearer ${MyApp.userPreferences.fetchAuthToken()}")
 
         options.extraHeaders = headers
