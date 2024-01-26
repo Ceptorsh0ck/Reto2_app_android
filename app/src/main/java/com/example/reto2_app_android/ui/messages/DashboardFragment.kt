@@ -34,7 +34,7 @@ class DashboardFragment : Fragment() {
     // onDestroyView.
     private val roomMessageRepository = RoomMessageDataSource();
     private val TAG = "SocketActivity"
-    private val userId: Int? = MyApp.userPreferences.fetchUserId();
+    private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt();
     private lateinit var messageAdapter: DashboardAdapter
     private val viewModel: DashboardViewModel by viewModels {
         DashboardViewModelFactory(roomMessageRepository)

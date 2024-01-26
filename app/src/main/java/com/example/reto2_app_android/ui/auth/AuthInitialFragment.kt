@@ -96,6 +96,7 @@ class AuthInitialFragment : Fragment() {
             progressBar.incrementProgressBy(PROGRESS_INCREMENT)
         }
         if (authActivity.networkConnectionManager.isNetworkConnected) {
+            MyApp.userPreferences.saveRememberMeStatus(false   )
             val rememberMe = MyApp.userPreferences.isRememberMeEnabled()
             val loggedUser = MyApp.userPreferences.getLoggedUser()
             if (rememberMe || loggedUser != null) {

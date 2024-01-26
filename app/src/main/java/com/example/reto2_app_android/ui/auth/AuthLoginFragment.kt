@@ -88,7 +88,7 @@ class AuthLoginFragment : Fragment() {
                 Resource.Status.SUCCESS -> {
                     it.data?.let { data ->
 
-                        if (MyApp.userPreferences.getLoggedUser()?.firstLogin == true) {
+                        if (MyApp.userPreferences.getLoggedUser()?.firstLogin == false) {
                             val rememberMe = loginBinding.loginRememberMe.isChecked
                             MyApp.userPreferences.saveRememberMeStatus(rememberMe)
                             
