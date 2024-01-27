@@ -1,5 +1,7 @@
 package com.example.socketapp.data.socket
 
+import java.util.Date
+
 data class SocketMessageRes (
     val id: Int,
     val messageType: MessageType,
@@ -9,4 +11,5 @@ data class SocketMessageRes (
     val authorId: Integer,
     val fecha: String?,
     val hora: String?,
+    val createdAt: Date? = null
 )

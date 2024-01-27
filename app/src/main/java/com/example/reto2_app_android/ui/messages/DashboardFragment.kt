@@ -142,13 +142,12 @@ class DashboardFragment : Fragment() {
         }
     }
 
-
     private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
                     Log.i("gaardado en room", it.data.toString())
-                    viewModel.onSaveMessage(lastMessage, "Group- " +  chat?.id)
+                    viewModel.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data!!)
                 }
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar

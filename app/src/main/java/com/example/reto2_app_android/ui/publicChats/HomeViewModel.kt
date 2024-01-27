@@ -179,6 +179,7 @@ class HomeViewModel (
                                     updatedAt = null,
                                     chatId = it1,
                                     userId = it.userId?.id ?: 0,
+                                    recived = null
                                 )
                             }
                             if (message != null) {

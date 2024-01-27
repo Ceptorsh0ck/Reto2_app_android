@@ -3,6 +3,7 @@ package com.example.reto2_app_android.ui
 import android.content.ContentValues.TAG
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -17,8 +18,8 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.network.broadcast.NetworkCallBack
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     private val locationPermissionCode = 2
     private lateinit var navController: NavController
     private lateinit var mainActivityBinding: ActivityMainBinding
-
+    private lateinit var networkCallback: NetworkCallBack
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,7 +69,9 @@ class MainActivity : AppCompatActivity() {
                         //tvIsNetworkConnected.setText(res)
                     }
                     .launchIn(lifecycleScope)
+
             }
+
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 Log.i("Gorka - Menu",menuItem.title.toString())
@@ -81,6 +84,10 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
+
+
+        networkCallback = NetworkCallBack(this)
+        networkCallback.register()
 
         //networkConnectionManager.startListenNetworkState()
 

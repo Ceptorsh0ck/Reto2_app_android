@@ -2,5 +2,6 @@ package com.example.socketapp.data.socket
 
 data class SocketMessageReq(
     val room: String,
-    val message: String
+    val message: String,
+    val idRoom: Int,
 )

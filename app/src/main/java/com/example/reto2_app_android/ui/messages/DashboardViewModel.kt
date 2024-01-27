@@ -13,6 +13,7 @@ import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
+import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.utils.Resource
 import com.example.socketapp.data.socket.SocketEvents
 import com.example.socketapp.data.socket.SocketMessageReq
@@ -57,6 +58,10 @@ class DashboardViewModel (
 
     val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
 
+    private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
+    val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
+
+
     private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
@@ -74,7 +79,7 @@ class DashboardViewModel (
         mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
 
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
-
+        mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
         viewModelScope.launch {
             connect()
         }
@@ -141,6 +146,19 @@ class DashboardViewModel (
         }
     }
 
+    private fun onReciveMessageId(): Emitter.Listener {
+        return Emitter.Listener {
+            Log.d("id recividas", "ids recividas ${it[0]}")
+            if (it[0] is JSONObject) {
+                onUpdateMessageJsonObject(it[0])
+                //onNewMessageJsonObject(it[0])
+            } else if (it[0] is String) {
+                //onNewMessageString(it[0])
+            }
+
+        }
+    }
+
     private fun onNewMessageString(data: Any) {
         try {
             // Manejar el mensaje recibido
@@ -151,6 +169,25 @@ class DashboardViewModel (
             Log.e(TAG, ex.message!!)
         }
     }
+    private fun onUpdateMessageJsonObject(data: Any?) {
+        try {
+            val jsonObject = data as JSONObject
+            val jsonObjectString = jsonObject.toString()
+            val message = Gson().fromJson(jsonObjectString, SocketMessageResUpdate::class.java)
+            Log.i(TAG, message.idRoom.toString())
+
+
+
+            viewModelScope.launch {
+                val roomResponse = updateMessageInRomm(message)
+                _messagesRoom.value = roomResponse
+            }
+
+        } catch (ex: Exception) {
+            Log.e(TAG, ex.message!!)
+        }
+    }
+
 
     private fun onNewMessageJsonObject(data : Any) {
         try {
@@ -162,12 +199,13 @@ class DashboardViewModel (
             Log.i(TAG, message.messageType.toString())
             val roomMessage = RoomMessages(
                 idServer = message.id,
-                content = message.message,  // Ajusta según tu caso
+                content = message.message,
                 dataType = RoomDataType.TEXT,
-                createdAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
-                updatedAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+                createdAt = Date(),
+                updatedAt = Date(),
                 chatId = message.room.substring(message.room.length - 1, message.room.length).toInt(),
-                userId = message.authorId.toInt()
+                userId = message.authorId.toInt(),
+                recived = null
             )
             Log.i(TAG, roomMessage.toString())
 
@@ -196,26 +234,21 @@ class DashboardViewModel (
     }
 
 
-    fun onSaveMessage(message: String, socketRoom: String){
-        val socketMessage = SocketMessageReq(socketRoom, message)
+    fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
+        val socketMessage = SocketMessageReq(socketRoom, message, idServer)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
 
     fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int) {
-        // la sala esta hardcodeada..
-        //Guardar en base de datos room
-        val currentDate = Date()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        val formattedDateTime = dateFormat.format(currentDate)
-        Log.i(userId.toString(), socketRoom.toString())
         val roomMessage = RoomMessages(
-            content = message,  // Ajusta según tu caso
+            content = message,
             dataType = RoomDataType.TEXT,
-            createdAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
-            updatedAt = Date(),  // Puedes cambiar a LocalDateTime.now() si estás usando java.time
+            createdAt = Date(),
+            updatedAt = Date(),
             chatId = socketRoom,
-            userId = 2
+            userId = userId,
+            recived = false
         )
 
 
@@ -231,6 +264,12 @@ class DashboardViewModel (
     suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.insertMessage(message)
+        }
+    }
+
+    suspend fun updateMessageInRomm(message: SocketMessageResUpdate): Resource<List<MessageAdapter>> {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.updateMessage(message)
         }
     }
 
