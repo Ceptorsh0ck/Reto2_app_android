@@ -1,6 +1,7 @@
 package com.example.reto2_app_android.data.repository.local
 
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.dao.MessageDao
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
@@ -13,7 +14,7 @@ class RoomMessageDataSource: CommonMessageRepository {
         return Resource.success(insertResult.toInt())  // Assuming you want to return Int
     }
 
-    override suspend fun getAllMessagesById(idUser: Int): Resource<List<RoomMessages>> {
+    override suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>> {
         val allMessages = messageDao.getAllMessagesByChatId(idUser)
         return Resource.success(allMessages)
     }

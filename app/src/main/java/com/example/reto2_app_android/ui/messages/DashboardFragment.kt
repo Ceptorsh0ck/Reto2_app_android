@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -42,6 +43,7 @@ class DashboardFragment : Fragment() {
     private var lastMessage: String = ""
     private var chat: ChatResponse_Chat? = null
     private val binding get() = _binding!!
+    private var isUserScrolling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,12 +70,13 @@ class DashboardFragment : Fragment() {
         val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
         if (recyclerView != null) {
             recyclerView.layoutManager = LinearLayoutManager(context)
-
+            recyclerView.addOnScrollListener(scrollListener)
         }
+        binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
         viewModel.startSocket()
 
-
+        onClickTeclado(binding)
         showRoomMessage(binding)
         onConnectedChange(binding)
         onMessagesChange()
@@ -81,11 +84,27 @@ class DashboardFragment : Fragment() {
         onMessageSendRoom(binding)
         return root
     }
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            isUserScrolling = newState != RecyclerView.SCROLL_STATE_IDLE
+        }
+    }
+    private fun onClickTeclado(binding: FragmentDashboardBinding) {
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val recyclerView: RecyclerView = binding.recyclerGroupChat
+                if (!isUserScrolling) {
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+                }
+            }
+        })
+    }
 
     private fun showRoomMessage(binding: FragmentDashboardBinding) {
         viewModel.messagesRoom.observe(viewLifecycleOwner) { it ->
             when (it.status) {
-                Resource.Status.SUCCESS -> {
+                Resource.Status.SUCCESS -> {/*
                     var messages: List<MessageAdapter> = emptyList()
                     it.data?.forEach { dataItem ->
                         var message = dataItem.dataType?.let { dataType ->
@@ -108,8 +127,10 @@ class DashboardFragment : Fragment() {
                         message?.let {
                             messages = messages.plus(it)
                         }
-                    }
-                    messageAdapter.addMessages(messages) // Cambio aquí
+                    }*/
+                    messageAdapter.addMessages(it.data!!)
+                    val recyclerView: RecyclerView = binding.recyclerGroupChat
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
                 }
                 Resource.Status.ERROR -> {
                     Log.d(TAG, "error al conectar...")
@@ -120,6 +141,7 @@ class DashboardFragment : Fragment() {
             }
         }
     }
+
 
     private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
         viewModel.message.observe(viewLifecycleOwner) {
@@ -168,9 +190,9 @@ class DashboardFragment : Fragment() {
             Log.d(TAG, "messages change")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.d(TAG, "messages observe success")
                     messageAdapter.addMessages(it.data!!)
-
+                    val recyclerView: RecyclerView = binding.recyclerGroupChat
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
                 }
 
                 Resource.Status.ERROR -> {

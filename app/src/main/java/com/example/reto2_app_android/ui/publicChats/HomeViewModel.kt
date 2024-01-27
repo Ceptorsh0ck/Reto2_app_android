@@ -142,7 +142,6 @@ class HomeViewModel (
                                     )
                                 }
                             }
-                            Log.i("Useeeee", userChat.toString())
 
                             if (userChat != null) {
                                 userChatDao.insertUserChat(userChat)
@@ -153,23 +152,6 @@ class HomeViewModel (
                     //Añadir a la base de datos los mensajes
                     if (it != null) {
                         it.listMessages?.forEach{
-
-                            val message = roomChat?.idServer?.let { it1 ->
-                                RoomMessages(
-                                    idServer = it.id,
-                                    content = it.content,
-                                    dataType = it.dataType,
-                                    createdAt = it.createdAt,
-                                    updatedAt = null,
-                                    chatId = it1,
-                                    userId = it.userId?.id ?: 0,
-                                )
-                            }
-                            Log.i("Message", it.createdAt.toString())
-                            if (message != null) {
-                                messagesDao.insertMessage(message)
-                            }
-
                             val user = it.userId?.id?.let { it1 ->
                                 RoomUser(
                                     idServer = it1,
@@ -184,9 +166,23 @@ class HomeViewModel (
                                 )
                             }
 
-                            Log.d("Mesaje", user.toString())
                             if (user != null) {
                                 userDao.insertUser(user)
+                            }
+
+                            val message = roomChat?.idServer?.let { it1 ->
+                                RoomMessages(
+                                    idServer = it.id,
+                                    content = it.content,
+                                    dataType = it.dataType,
+                                    createdAt = it.createdAt,
+                                    updatedAt = null,
+                                    chatId = it1,
+                                    userId = it.userId?.id ?: 0,
+                                )
+                            }
+                            if (message != null) {
+                                messagesDao.insertMessage(message)
                             }
                         }
                     }

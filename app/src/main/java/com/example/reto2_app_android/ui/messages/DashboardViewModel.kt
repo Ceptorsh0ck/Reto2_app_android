@@ -53,11 +53,11 @@ class DashboardViewModel (
 
     val message : MutableLiveData<Resource<Int>> get() = _message
 
-    private val _messagesRoom = MutableLiveData<Resource<List<RoomMessages>>>()
+    private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val messagesRoom : MutableLiveData<Resource<List<RoomMessages>>> get() = _messagesRoom
+    val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
 
-    private val SOCKET_HOST = "http://10.5.7.59:8085/"
+    private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket
@@ -87,7 +87,7 @@ class DashboardViewModel (
         }
     }
 
-    suspend fun getMessagesFromRoom(id: Int): Resource<List<RoomMessages>> {
+    suspend fun getMessagesFromRoom(id: Int): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.getAllMessagesById(id);
         }
@@ -182,7 +182,7 @@ class DashboardViewModel (
 
     private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
         try {
-            val incomingMessage = MessageAdapter(SOCKET_ROOM, message.message, message.authorName, null, RoomDataType.TEXT, null, null)
+            val incomingMessage = MessageAdapter(SOCKET_ROOM, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
             val msgsList = _messages.value?.data?.toMutableList()
             if (msgsList != null) {
                 msgsList.add(incomingMessage)

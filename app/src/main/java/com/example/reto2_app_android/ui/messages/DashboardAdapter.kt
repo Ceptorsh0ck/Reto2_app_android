@@ -24,7 +24,7 @@ class DashboardAdapter() :
 
     private val messageList = mutableListOf<MessageAdapter>()
 
-
+    private var lastDisplayedDate: String? = null
     fun addMessages(newMessages: List<MessageAdapter>) {
         messageList.addAll(newMessages)
         submitList(messageList.toList())
@@ -46,10 +46,11 @@ class DashboardAdapter() :
     }
     override fun getItemViewType(position: Int): Int {
         val message = getItem(position)
-        val currentUser = userPreferences.getLoggedUser()?.email
+        val currentUser = userPreferences.getLoggedUser()?.id!!
 
-
-        return if (message.authorName == currentUser) {
+        Log.d("UseridApp", currentUser.toString())
+        Log.d("UseridMessage", message.authorId.toString())
+        return if (message.authorId == currentUser) {
             MY_MESSAGE_TYPE
         } else {
             OTHER_MESSAGE_TYPE
