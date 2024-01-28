@@ -50,7 +50,6 @@ class AuthLoginViewModel (
     }
 
     private suspend fun logUserInRepository(user: UserLogin) : Resource<AuthenticationResponse> {
-        Log.i("Aimar", user.toString())
         return withContext(Dispatchers.IO) {
             userRepositoryRemote.loginUser(user)
         }

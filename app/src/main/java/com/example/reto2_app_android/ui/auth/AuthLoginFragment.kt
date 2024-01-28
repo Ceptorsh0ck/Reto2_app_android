@@ -128,8 +128,6 @@ class AuthLoginFragment : Fragment() {
 
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.i("Aimar", it.data?.accessToken.toString())
-                    Log.i("Aimar", it.data?.email.toString())
                     Toast.makeText(activity, getString(R.string.wrongLogin), Toast.LENGTH_LONG)
                         .show()
                 }

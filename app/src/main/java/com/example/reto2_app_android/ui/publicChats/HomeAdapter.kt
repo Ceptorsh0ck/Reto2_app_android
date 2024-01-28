@@ -1,19 +1,27 @@
 package com.example.reto2_app_android.ui.publicChats
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.model.ChatResponse_Message
+import com.example.reto2_app_android.data.model.ChatResponse_UserOfMessage
+import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.databinding.ItemChatsBinding
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 class HomeAdapter(
     private val onClickListener: (ChatResponse_Chat) -> Unit,
 ): ListAdapter <ChatResponse_Chat, HomeAdapter.HomeViewHolder>(ChatDiffCallback())   {
+
+    private lateinit var recyclerView: RecyclerView
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HomeViewHolder {
         val binding = ItemChatsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return HomeViewHolder(binding)
@@ -26,12 +34,62 @@ class HomeAdapter(
             onClickListener(chat)
         }
     }
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        this.recyclerView = recyclerView
+    }
+
+    //Actualizar la lista para cuando llega nuevo mensaje
+    fun scrollToItemById(id: Int, content: String, userId: Int, email: String) {
+
+        val position = currentList.indexOfFirst { it.id == id }
+        if (position != -1) {
+            val newList = currentList.toMutableList()
+            var itemToMove = newList.removeAt(position)
+
+            val highestMessageId = newList.maxByOrNull { it.listMessages?.maxOfOrNull { message -> message.id ?: 0 } ?: 0 }
+            val newMessageId = (highestMessageId?.listMessages?.maxOfOrNull { it.id ?: 0 } ?: 0) + 1
+
+            val newUser = ChatResponse_UserOfMessage(
+                id = userId,
+                email = email,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+            )
+
+            val newMessage = ChatResponse_Message(
+                id = newMessageId,
+                dataType = RoomDataType.TEXT,
+                content = content,
+                createdAt = Date(),
+                updatedAt = Date(),
+                userId = newUser 
+            )
+
+            itemToMove = itemToMove.copy(listMessages = (itemToMove.listMessages.orEmpty() + newMessage))
+            newList.add(0, itemToMove)
+            submitList(newList)
+
+            recyclerView.scrollToPosition(0)
+        }
+    }
+
 
     inner class HomeViewHolder(private val binding: ItemChatsBinding) :
 
         RecyclerView.ViewHolder(binding.root) {
         fun bind(chat: ChatResponse_Chat) {
             binding.TextViewChatName.text = chat.name
+            binding.TextViewChatId.text = chat.id.toString()
+            //TODO Hay que descomentar esta linea esta quitada para pruebas
+            //binding.TextViewChatId.visibility = View.INVISIBLE
             if (chat.public) {
                 binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_open)
             } else {
@@ -39,7 +97,17 @@ class HomeAdapter(
             }
 
             if(!chat.listMessages?.isEmpty()!!){
-                binding.TextViewLastMessage.text = chat.listMessages?.last()?.userId?.name.toString() + ": " + chat.listMessages?.last()?.content.toString()
+                var user = "null"
+                if(chat.listMessages?.last()?.userId?.name != null){
+                    user = chat.listMessages?.last()?.userId?.name.toString()
+                }else{
+                    if(chat.listMessages?.last()?.userId?.email != null){
+                        val email = chat.listMessages?.last()?.userId?.email.toString()
+                        user = email.substringBefore('@').capitalize()
+                    }
+                }
+
+                binding.TextViewLastMessage.text = user + ": " + chat.listMessages?.last()?.content.toString()
                 val lastMessageDate = chat.listMessages?.last()?.createdAt
 
                 if (lastMessageDate != null) {
@@ -50,7 +118,15 @@ class HomeAdapter(
                 }
             }else{
                 binding.TextViewLastMessage.text = "no hay mensajes"
-                binding.TextViewLastMessageHour.text = "null"
+                if(chat.createdAt != null) {
+                    val dateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    val formattedTime = dateFormat.format(chat.createdAt)
+                    binding.TextViewLastMessageHour.text = formattedTime
+                }
+                else{
+                    binding.TextViewLastMessageHour.text = "null"
+                }
+
             }
 
         }

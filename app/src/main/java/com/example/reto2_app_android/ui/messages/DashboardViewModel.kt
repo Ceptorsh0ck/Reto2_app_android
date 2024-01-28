@@ -71,7 +71,7 @@ class DashboardViewModel (
     private val SOCKET_ROOM = "default-room"
 
 
-    fun startSocket() {
+    /*fun startSocket() {
         val socketOptions = createSocketOptions();
         mSocket = IO.socket(SOCKET_HOST, socketOptions);
 
@@ -83,7 +83,7 @@ class DashboardViewModel (
         viewModelScope.launch {
             connect()
         }
-    }
+    }*/
 
     fun getAllMessages(id: Int) {
         viewModelScope.launch {
@@ -139,18 +139,18 @@ class DashboardViewModel (
             // en teoria deberia ser siempre jsonObject, obviamente si siempre lo gestionamos asi
             if (it[0] is JSONObject) {
                 Log.d(TAG, "mensaje recibido on new message ${it[0]}")
-                onNewMessageJsonObject(it[0])
+                //onNewMessageJsonObject(it[0])
             } else if (it[0] is String) {
                 onNewMessageString(it[0])
             }
         }
     }
 
-    private fun onReciveMessageId(): Emitter.Listener {
+    fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("id recividas", "ids recividas ${it[0]}")
             if (it[0] is JSONObject) {
-                onUpdateMessageJsonObject(it[0])
+                //onUpdateMessageJsonObject(it[0])
                 //onNewMessageJsonObject(it[0])
             } else if (it[0] is String) {
                 //onNewMessageString(it[0])
@@ -159,7 +159,7 @@ class DashboardViewModel (
         }
     }
 
-    private fun onNewMessageString(data: Any) {
+    fun onNewMessageString(data: Any) {
         try {
             // Manejar el mensaje recibido
             val message = data as String
@@ -169,14 +169,8 @@ class DashboardViewModel (
             Log.e(TAG, ex.message!!)
         }
     }
-    private fun onUpdateMessageJsonObject(data: Any?) {
+    fun onUpdateMessageJsonObject(message: SocketMessageResUpdate) {
         try {
-            val jsonObject = data as JSONObject
-            val jsonObjectString = jsonObject.toString()
-            val message = Gson().fromJson(jsonObjectString, SocketMessageResUpdate::class.java)
-            Log.i(TAG, message.idRoom.toString())
-
-
 
             viewModelScope.launch {
                 val roomResponse = updateMessageInRomm(message)
@@ -189,11 +183,8 @@ class DashboardViewModel (
     }
 
 
-    private fun onNewMessageJsonObject(data : Any) {
+    fun onNewMessageJsonObject(message : SocketMessageRes) {
         try {
-            val jsonObject = data as JSONObject
-            val jsonObjectString = jsonObject.toString()
-            val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
             Log.i(TAG, message.authorName)
 
             Log.i(TAG, message.messageType.toString())
@@ -220,7 +211,7 @@ class DashboardViewModel (
 
     private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
         try {
-            val incomingMessage = MessageAdapter(SOCKET_ROOM, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
+            val incomingMessage = MessageAdapter(message.room, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
             val msgsList = _messages.value?.data?.toMutableList()
             if (msgsList != null) {
                 msgsList.add(incomingMessage)

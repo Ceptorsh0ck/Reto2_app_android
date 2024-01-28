@@ -68,7 +68,6 @@ class HomeViewModel (
             //_items.value = repoResponse
             // tODO meter en room los que no estan y meter en items.value los mismos
             //
-            Log.i("Chats", repoResponse.data.toString())
           safeChatsInRoom(repoResponse.data!!, MyApp.db)
         }
     }
@@ -87,8 +86,6 @@ class HomeViewModel (
 
     suspend fun safeChatsInRoom(data: List<ChatResponse_Chat?>, db: AppDatabase): Boolean {
         try {
-            Log.i("Chats", data.toString())
-            Log.i("Chats", data.toString())
             if (data != null) {
                 val chatDao = db.chatDao()
                 val messagesDao = db.messageDao()
@@ -103,8 +100,8 @@ class HomeViewModel (
                             idServer = it?.id,
                             name = it?.name,
                             isPublic = it1.public,
-                            createdAt = null,
-                            updatedAt = null
+                            createdAt = it.createdAt,
+                            updatedAt = it.updatedAt
                         )
                     }
 
@@ -176,7 +173,7 @@ class HomeViewModel (
                                     content = it.content,
                                     dataType = it.dataType,
                                     createdAt = it.createdAt,
-                                    updatedAt = null,
+                                    updatedAt = it.updatedAt,
                                     chatId = it1,
                                     userId = it.userId?.id ?: 0,
                                     recived = null

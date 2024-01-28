@@ -1,16 +1,21 @@
 package com.example.reto2_app_android.ui
 
-import android.content.ContentValues.TAG
+import android.annotation.SuppressLint
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.net.ConnectivityManager
 import android.os.Bundle
+import android.os.IBinder
 import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
@@ -21,19 +26,28 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.broadcast.NetworkCallBack
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
+import com.example.reto2_app_android.data.repository.CommonMessageRepository
+import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.ActivityMainBinding
+import com.example.reto2_app_android.ui.publicChats.HomeFragment
+import com.example.reto2_app_android.utils.Resource
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
     @Inject
     lateinit var networkConnectionManager: NetworkConnectionManager
+
+    lateinit var myService: SocketIoService
+    private var isBind = false
+    var isConnected = false
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
     private lateinit var navController: NavController
@@ -42,8 +56,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-
+        val intent = Intent(this, SocketIoService::class.java)
+        ContextCompat.startForegroundService(this, intent)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
 
         var wifiIcon : MenuItem
 
@@ -82,28 +97,19 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
-
         })
-
 
         networkCallback = NetworkCallBack(this)
         networkCallback.register()
 
+
         //networkConnectionManager.startListenNetworkState()
+
 
         mainActivityBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mainActivityBinding.root)
-
-        //Rudimentaria
-//        val timer = Timer()
-//        val MILLISECONDS = 5000 //5 seconds
-//
-//        timer.schedule(CheckConnection(this), 0, MILLISECONDS.toLong())
-
         val navView: BottomNavigationView = mainActivityBinding.navView
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
+        navController = findNavController(R.id.nav_host_fragment_activity_main)
         val appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_public, R.id.navigation_settings
@@ -118,9 +124,41 @@ class MainActivity : AppCompatActivity() {
             handleNavigationItemClick(item.itemId)
             true
         }
+
+        comprobaSiSeMySocketSeHaInicializado()
     }
+
+    private fun comprobaSiSeMySocketSeHaInicializado() {
+        val timer = Timer()
+        val delay: Long = 500 // Retraso inicial
+        val period: Long = 500 // Intervalo de verificación en milisegundos (0.5 segundos)
+
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                if (::myService.isInitialized) {
+                    isConnected = true
+                    timer.cancel() // Detiene el temporizador una vez que se inicializa myService
+                } else {
+                    isConnected = false
+                    Log.d("MainActivity", "myService is not initialized yet")
+                }
+            }
+        }, delay, period)
+    }
+
+    private var serviceConnection: ServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val localService = service as SocketIoService.LocalService
+            myService = localService.service
+            isBind = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName) {
+            isBind = false
+        }
+    }
+
     private fun handleNavigationItemClick(itemId: Int) {
-        // Aquí puedes manejar el clic en cada elemento de la barra de navegación
         when (itemId) {
             R.id.navigation_public -> {
                 navigateToFragment(R.id.navigation_public)
@@ -131,7 +169,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
     private fun navigateToFragment(destinationId: Int) {
-        // Navegar al fragmento correspondiente
         navController.navigate(destinationId)
     }
 
@@ -146,7 +183,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
 
     override fun onPause() {
@@ -167,5 +203,9 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
+
+
+
+
 
 }

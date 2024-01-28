@@ -31,33 +31,33 @@ class RoomChatDataSource: CommonChatRepository {
                     val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
                         mesage.content?.let { it2 ->
                             ChatResponse_Message(
-                                it1.idServer!!,
+                                it1.idServer,
                                 mesage.dataType,
                                 it2,
                                 mesage.createdAt,
+                                mesage.updatedAt,
                                 null
                             )
                         }
                     }
 
                     if (chatMessage != null) {
-                        val userMessage = userDao.selectUserOfMessage(chatMessage.id)
-                        val chatMessageUser = userMessage?.let {it1 ->
-                            ChatResponse_UserOfMessage(
-                                it1.idServer,
-                                null,
-                                userMessage.name,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null
-                            )
 
-                        }
+                        val userFromRoom = userDao.selectUserOfMessage(mesage.userId)
+                        val chatMessageUser =ChatResponse_UserOfMessage(
+                            id = userFromRoom.idServer,
+                            email = userFromRoom.email,
+                            name = userFromRoom.name,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null
+                        )
+                        Log.i("messages change", chatMessageUser.toString())
                         chatMessage.userId = chatMessageUser
                     } else {
                         // Manejar el caso cuando chatMessage es nulo
@@ -67,6 +67,8 @@ class RoomChatDataSource: CommonChatRepository {
                     val chat = ChatResponse_Chat(
                         it.idServer!!,
                         it.name,
+                        it.createdAt,
+                        it.updatedAt,
                         chatMessageList,
                         null,
                         it.isPublic
