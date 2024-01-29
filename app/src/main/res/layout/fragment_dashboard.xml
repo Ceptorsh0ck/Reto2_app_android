@@ -12,6 +12,9 @@
         android:layout_height="wrap_content"
         android:fitsSystemWindows="true"
         android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/recycler_group_chat"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.appcompat.widget.Toolbar
@@ -19,45 +22,85 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:theme="@style/Widget.AppCompat.Toolbar"
-            app:popupTheme="@style/Theme.AppCompat.Light"></androidx.appcompat.widget.Toolbar>
+            app:popupTheme="@style/Theme.AppCompat.Light">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/text_toolbar_chat_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.8"
+                    android:ellipsize="end"
+                    android:gravity="start|center_vertical"
+                    android:maxLines="1"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textSize="18sp" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.1" />
+
+                <ImageButton
+                    android:id="@+id/button_toolbar_add_people_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/agregarPersona"
+                    android:padding="8dp"
+                    android:src="@drawable/add_people_group" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.1" />
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_group_chat"
-        android:layout_width="409dp"
-        android:layout_height="567dp"
-        app:layout_constraintBottom_toTopOf="@+id/text_group_chat_indicator"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/app_bar_group_chat"
+        app:layout_constraintBottom_toTopOf="@id/text_group_chat_indicator"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/app_bar_group_chat"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <TextView
         android:id="@+id/text_group_chat_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/view_group_chat"
         app:layout_constraintStart_toStartOf="parent" />
 
     <View
         android:id="@+id/view_group_chat"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:background="@color/colorDivider"
-        app:layout_constraintBottom_toTopOf="@+id/layout_group_chat_chatbox" />
+        app:layout_constraintBottom_toTopOf="@id/layout_group_chat_chatbox"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <RelativeLayout
         android:id="@+id/layout_group_chat_chatbox"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <EditText
             android:id="@+id/editGroupChatMessage"
@@ -67,18 +110,18 @@
             android:layout_marginStart="16dp"
             android:layout_toStartOf="@+id/button_group_chat_send"
             android:background="@android:color/transparent"
-            android:hint="Enter Message"
+                android:hint="@string/enterMessage"
             android:inputType="text"
             android:maxLines="6"
             tools:ignore="Autofill" />
 
         <Button
             android:id="@+id/button_group_chat_send"
-            android:layout_width="76dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:background="?attr/selectableItemBackground"
-            android:text="Send"
+            android:text="@string/send"
             android:textColor="@color/colorPrimary" />
 
     </RelativeLayout>

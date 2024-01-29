@@ -209,4 +209,7 @@
     <string name="btn_connect">Conectarse</string>
     <string name="noMesages">No hay mensajes</string>
     <string name="emptyLogin">Rellene todos los campos</string>
+    <string name="agregarPersona">agregar persona</string>
+    <string name="enterMessage">Inserta message</string>
+    <string name="send">Enviar</string>
 </resources>

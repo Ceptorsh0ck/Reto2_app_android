@@ -32,5 +32,6 @@ data class RoomMessages(
     @ColumnInfo(name ="created_at") val createdAt: Date?,
     @ColumnInfo(name ="updated_at") val updatedAt: Date?,
     @ColumnInfo(name ="chat_id") val chatId: Int,
-    @ColumnInfo(name ="user_id") val userId: Int
+    @ColumnInfo(name ="user_id") val userId: Int,
+    @ColumnInfo(name ="recived") val recived: Boolean?,
 )

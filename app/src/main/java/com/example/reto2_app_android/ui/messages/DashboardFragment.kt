@@ -1,10 +1,12 @@
 package com.example.reto2_app_android.ui.dashboard
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -19,7 +21,9 @@ import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
+import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
+import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.utils.Resource
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -32,6 +36,8 @@ class DashboardFragment : Fragment() {
 
     // This property is only valid between onCreateView and
     // onDestroyView.
+    private lateinit var myService: SocketIoService
+
     private val roomMessageRepository = RoomMessageDataSource();
     private val TAG = "SocketActivity"
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt();
@@ -42,7 +48,7 @@ class DashboardFragment : Fragment() {
     private var lastMessage: String = ""
     private var chat: ChatResponse_Chat? = null
     private val binding get() = _binding!!
-
+    private var isUserScrolling = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -57,7 +63,6 @@ class DashboardFragment : Fragment() {
             savedInstanceState: Bundle?
     ): View {
 
-
         _binding = FragmentDashboardBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
@@ -68,12 +73,16 @@ class DashboardFragment : Fragment() {
         val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
         if (recyclerView != null) {
             recyclerView.layoutManager = LinearLayoutManager(context)
-
+            recyclerView.addOnScrollListener(scrollListener)
         }
+        binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
-        viewModel.startSocket()
 
 
+        llamadaAMetodoDelServicio()
+        onClickTeclado(binding)
+        onMyNewMessageFromServer(binding)
+        onOtherMessageFromServer(binding)
         showRoomMessage(binding)
         onConnectedChange(binding)
         onMessagesChange()
@@ -82,10 +91,38 @@ class DashboardFragment : Fragment() {
         return root
     }
 
+
+    fun llamadaAMetodoDelServicio() {
+        //val intent = Intent(requireContext(), SocketIoService::class.java)
+        //requireContext().startService(intent)
+
+        val mainActivity = activity as MainActivity
+        myService = mainActivity.myService
+    }
+
+
+
+    private val scrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            isUserScrolling = newState != RecyclerView.SCROLL_STATE_IDLE
+        }
+    }
+    private fun onClickTeclado(binding: FragmentDashboardBinding) {
+        binding.root.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                val recyclerView: RecyclerView = binding.recyclerGroupChat
+                if (!isUserScrolling) {
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+                }
+            }
+        })
+    }
+
     private fun showRoomMessage(binding: FragmentDashboardBinding) {
         viewModel.messagesRoom.observe(viewLifecycleOwner) { it ->
             when (it.status) {
-                Resource.Status.SUCCESS -> {
+                Resource.Status.SUCCESS -> {/*
                     var messages: List<MessageAdapter> = emptyList()
                     it.data?.forEach { dataItem ->
                         var message = dataItem.dataType?.let { dataType ->
@@ -108,8 +145,11 @@ class DashboardFragment : Fragment() {
                         message?.let {
                             messages = messages.plus(it)
                         }
-                    }
-                    messageAdapter.addMessages(messages) // Cambio aquí
+                    }*/
+
+                    messageAdapter.addMessages(it.data!!)
+                    val recyclerView: RecyclerView = binding.recyclerGroupChat
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
                 }
                 Resource.Status.ERROR -> {
                     Log.d(TAG, "error al conectar...")
@@ -121,12 +161,46 @@ class DashboardFragment : Fragment() {
         }
     }
 
+    private fun onOtherMessageFromServer(binding: FragmentDashboardBinding){
+        myService.messagesFromOtherServer.observe(viewLifecycleOwner){
+            when (it.status){
+                Resource.Status.SUCCESS-> {
+                    viewModel.onNewMessageJsonObject(it.data!!)
+                }
+                Resource.Status.ERROR -> {
+                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
+                    Log.d(TAG, "error al conectar...")
+                }
+
+                Resource.Status.LOADING -> {
+                }
+            }
+        }
+    }
+
+    private fun onMyNewMessageFromServer(binding: FragmentDashboardBinding){
+        myService.messagesFromMeServer.observe(viewLifecycleOwner){
+            when (it.status){
+                Resource.Status.SUCCESS-> {
+                    viewModel.onUpdateMessageJsonObject(it.data!!)
+                }
+                Resource.Status.ERROR -> {
+                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
+                    Log.d(TAG, "error al conectar...")
+                }
+
+                Resource.Status.LOADING -> {
+                }
+            }
+        }
+    }
+
     private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
                     Log.i("gaardado en room", it.data.toString())
-                    viewModel.onSaveMessage(lastMessage, "Group- " +  chat?.id)
+                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data!!)
                 }
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
@@ -145,7 +219,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun onConnectedChange(binding: FragmentDashboardBinding) {
-        viewModel.connected.observe(viewLifecycleOwner) {
+        myService.connected.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     binding.buttonGroupChatSend.isEnabled = it.data!!
@@ -168,8 +242,14 @@ class DashboardFragment : Fragment() {
             Log.d(TAG, "messages change")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.d(TAG, "messages observe success")
-                    messageAdapter.addMessages(it.data!!)
+                    Log.i("hoaaaaa", "Group- " + chat?.id)
+                    Log.i("hoaaaaa", it.data!![0].room)
+                    Log.i("hoaaaaa", it.data!!.toString())
+                    if(chat?.id == it.data!!.last().room.last().toString().toInt()){
+                        messageAdapter.addMessages(it.data!!)
+                        val recyclerView: RecyclerView = binding.recyclerGroupChat
+                        recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+                    }
 
                 }
 
@@ -191,7 +271,6 @@ class DashboardFragment : Fragment() {
 
     private fun buttonsListeners(binding: FragmentDashboardBinding) {
         binding.buttonGroupChatSend.setOnClickListener() {
-            Log.i("Aimar", "Buton send")
             lastMessage = binding.editGroupChatMessage.text.toString();
             chat?.id?.let { it1 ->
                 if (userId != null) {

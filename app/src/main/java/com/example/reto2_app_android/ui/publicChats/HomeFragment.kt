@@ -1,6 +1,7 @@
 package com.example.reto2_app_android.ui.publicChats
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,16 +18,27 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
+import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
+import com.example.reto2_app_android.data.services.SocketIoService
+import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
-import com.example.reto2_app_android.ui.auth.AuthScrollingRegisterFragment
+import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
+import kotlinx.coroutines.launch
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -43,8 +55,13 @@ class HomeFragment : Fragment(), LocationListener {
     private val chatRepository = RemoteChatsDataSource();
     private val roomChatRepository = RoomChatDataSource();
     private lateinit var homeAdapter: HomeAdapter
+    private val roomMessageRepository = RoomMessageDataSource();
+    private val messagesViewModel: DashboardViewModel by viewModels {
+        DashboardViewModelFactory(roomMessageRepository)
+    }
+    //private lateinit var myService: SocketIoService
 
-    private val viewModel: HomeViewModel by viewModels {
+    private val chatViewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(chatRepository, roomChatRepository)
     }
 
@@ -55,7 +72,6 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var localizacion: Location
 
     private fun onChatListClickItem(chat: ChatResponse_Chat) {
-        Log.i("examen", "onCarListClickItem: ${chat.id}")
 
         val newFragment = DashboardFragment()
         val args = Bundle()
@@ -73,29 +89,21 @@ class HomeFragment : Fragment(), LocationListener {
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        // val homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
 
-        Log.i("Aimar", "HomeViewModeldsasd")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        //MainActivity = activity as MainActivity
-
         homeAdapter = HomeAdapter(::onChatListClickItem)
-
-
         binding.chatList.adapter = homeAdapter
-
-        viewModel.items.observe(viewLifecycleOwner) {
+        onMessagesChange()
+        chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("Lista", it.data.toString())
 
                     homeAdapter.submitList(it.data)
                 }
 
                 Resource.Status.ERROR -> {
-                    Log.i("Aimar", it.message.toString())
 
                 }
 
@@ -106,15 +114,87 @@ class HomeFragment : Fragment(), LocationListener {
         }
 
         binding.buttonLocation.setOnClickListener {
-            viewModel.updateChatsList()
+            chatViewModel.updateChatsList()
             /*if(checkLocationPermissions()) {
                 ubicacionObtenida = false
                 getLocation()
             }*/
         }
-
+        comprobarSiSeMySocketSeHaInicializado()
         return root
     }
+    fun onServiceInitialized() {
+        val mainActivity = activity as MainActivity
+        onOtherMessageFromServer(mainActivity.myService)
+    }
+    private fun comprobarSiSeMySocketSeHaInicializado() {
+        val mainActivity = activity as MainActivity
+        val timer = Timer()
+        val delay: Long = 500 // Retraso inicial
+        val period: Long = 500 // Intervalo de verificación en milisegundos (0.5 segundos)
+
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                if (mainActivity.isConnected) {
+                    onOtherMessageFromServer(mainActivity.myService)
+                    timer.cancel() // Detiene el temporizador una vez que se inicializa myService
+                } else {
+                }
+            }
+        }, delay, period)
+    }
+    private fun onMessagesChange() {
+        messagesViewModel.messages.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+
+                    val primerMensaje =  it.data?.first()!!
+
+                    val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
+                    id?.let {
+                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName)
+                        val recyclerView: RecyclerView = binding.chatList
+                        recyclerView.scrollToPosition(0)
+                    }
+
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "messages observe error")
+                    //Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+
+                Resource.Status.LOADING -> {
+                    // de momento
+                    Log.d(TAG, "messages observe loading")
+                    //val toast = Toast.makeText(this, "Cargando..", Toast.LENGTH_LONG)
+                    //toast.setGravity(Gravity.TOP, 0, 0)
+                    //toast.show()
+                }
+            }
+        }
+    }
+
+    private fun onOtherMessageFromServer(myService: SocketIoService) {
+        Log.i("nuevo mensaje", "d")
+        viewLifecycleOwner.lifecycleScope.launch {
+            myService.messagesFromOtherServer.observe(viewLifecycleOwner) { it ->
+                when (it.status) {
+                    Resource.Status.SUCCESS -> {
+                        messagesViewModel.onNewMessageJsonObject(it.data!!)
+                    }
+                    Resource.Status.ERROR -> {
+                        //Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
+                    }
+                    Resource.Status.LOADING -> {
+                        // Handle loading state if needed
+                    }
+                }
+            }
+        }
+    }
+
+
 
     private fun openGoogleMaps(latitude: Double, longitude: Double) {
         val uri = "geo:$latitude,$longitude?q=$latitude,$longitude"

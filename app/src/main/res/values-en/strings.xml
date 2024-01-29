@@ -197,5 +197,6 @@
     <string name="last_messaga">Ultimo mensanje</string>
     <string name="last_message_time">00:00</string>
     <string name="messages_not_read">11</string>
+    <string name="agregarPersona">agregar persona</string>
 
 </resources>
