@@ -24,7 +24,6 @@ class DashboardAdapter() :
 
     private val messageList = mutableListOf<MessageAdapter>()
 
-
     fun addMessages(newMessages: List<MessageAdapter>) {
         messageList.addAll(newMessages)
         submitList(messageList.toList())
@@ -46,10 +45,9 @@ class DashboardAdapter() :
     }
     override fun getItemViewType(position: Int): Int {
         val message = getItem(position)
-        val currentUser = userPreferences.getLoggedUser()?.email
+        val currentUser = userPreferences.getLoggedUser()?.id!!
 
-
-        return if (message.authorName == currentUser) {
+        return if (message.authorId == currentUser) {
             MY_MESSAGE_TYPE
         } else {
             OTHER_MESSAGE_TYPE
@@ -65,10 +63,10 @@ class DashboardAdapter() :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(message: MessageAdapter) {
             val currentDate = Date()
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy") // Formato para la fecha (por ejemplo: 26/01/2024)
-            val timeFormat = SimpleDateFormat("HH:mm") // Formato para la hora (por ejemplo: 16:30:00)
-            val formattedDate = dateFormat.format(currentDate) // Fecha formateada
-            val formattedTime = timeFormat.format(currentDate) // Hora formateada
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy")
+            val timeFormat = SimpleDateFormat("HH:mm")
+            val formattedDate = dateFormat.format(currentDate)
+            val formattedTime = timeFormat.format(currentDate)
 
             if (binding is ItemMessageMeBinding) {
                 binding.textViewChatMeMessage.text = message.text

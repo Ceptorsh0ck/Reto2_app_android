@@ -20,45 +20,44 @@ class RoomChatDataSource: CommonChatRepository {
 
     override suspend fun getChats(): Resource<List<ChatResponse_Chat>> {
         if (userId != null) {
-            val response = chatDao.getChatsByUserId(1)
+            val response = chatDao.getChatsByUserId(userId)
             val user = ChatResponse_User()
             Log.i("RoomChatDataSource", response.toString());
             user.listChats = emptyList()
             if (response != null) {
                 response.forEach {
-                    val mesage = messageDao.getLastMessageByRoomId(it.id)
-                    // Crear una lista que contendrá chatMessage
+                    val mesage = messageDao.getLastMessageByRoomId(it.idServer!!)
                     val chatMessageList = mutableListOf<ChatResponse_Message>()
-                    val chatMessage = mesage?.let { it1 ->
+                    val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
                         mesage.content?.let { it2 ->
                             ChatResponse_Message(
-                                it1.id,
+                                it1.idServer,
                                 mesage.dataType,
                                 it2,
                                 mesage.createdAt,
+                                mesage.updatedAt,
                                 null
                             )
                         }
                     }
 
                     if (chatMessage != null) {
-                        val userMessage = userDao.selectUserOfMessage(chatMessage.id)
-                        val chatMessageUser = userMessage?.let {it1 ->
-                            ChatResponse_UserOfMessage(
-                                it1.id,
-                                null,
-                                userMessage.name,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null
-                            )
 
-                        }
+                        val userFromRoom = userDao.selectUserOfMessage(mesage.userId)
+                        val chatMessageUser =ChatResponse_UserOfMessage(
+                            id = userFromRoom.idServer,
+                            email = userFromRoom.email,
+                            name = userFromRoom.name,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null
+                        )
+                        Log.i("messages change", chatMessageUser.toString())
                         chatMessage.userId = chatMessageUser
                     } else {
                         // Manejar el caso cuando chatMessage es nulo
@@ -66,8 +65,10 @@ class RoomChatDataSource: CommonChatRepository {
                     chatMessage?.let { chatMessageList.add(it) } // Agregar a la lista solo si chatMessage no es nulo
 
                     val chat = ChatResponse_Chat(
-                        it.id,
+                        it.idServer!!,
                         it.name,
+                        it.createdAt,
+                        it.updatedAt,
                         chatMessageList,
                         null,
                         it.isPublic

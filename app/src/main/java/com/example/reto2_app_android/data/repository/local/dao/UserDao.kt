@@ -12,6 +12,6 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertUser(user: RoomUser): Long
 
-    @Query("Select users.* from users join messages on users.id = messages.user_Id where messages.id = :messageId")
-    suspend fun selectUserOfMessage(messageId: Int): RoomUser
+    @Query("Select users.* from users where users.id_server = :userId")
+    suspend fun selectUserOfMessage(userId: Int): RoomUser
 }

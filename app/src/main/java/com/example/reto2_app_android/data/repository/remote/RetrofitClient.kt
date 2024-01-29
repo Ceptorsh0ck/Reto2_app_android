@@ -13,12 +13,11 @@ object RetrofitClient {
 
     // esta es la ip a la que vamos a hacer peticiones (es localhost pero desde el emulador no deja)
     // NOTE acordarse de que hace falta actualizar el manifest
-    const val API_URI = "http://10.5.7.59:8080/api/"
+    const val API_URI = "http://192.168.1.153:8080/api/"
 
 
     var client = OkHttpClient.Builder().addInterceptor {chain ->
         val authToken = MyApp.userPreferences.fetchAuthToken()
-        Log.i("RetrofitClient", authToken.toString())
         if (authToken != null) {
             val newRequest: Request = chain.request().newBuilder()
                 .addHeader("Authorization","Bearer $authToken")
