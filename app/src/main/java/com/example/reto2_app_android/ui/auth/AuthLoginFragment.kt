@@ -36,9 +36,6 @@ class AuthLoginFragment : Fragment() {
     private var param2: String? = null
 
     private lateinit var loginBinding: FragmentAuthLoginBinding
-    private lateinit var loginUsername: String
-    private lateinit var loginPassword: String
-    private var remember: String = ""
     private val userRepositoryRemote = RemoteUsersDataSource()
     private val viewModel: AuthLoginViewModel by viewModels {
         AuthLoginViewModelFactory(
@@ -110,7 +107,6 @@ class AuthLoginFragment : Fragment() {
                                 )
                             }
                             var userNew = UserNew()
-                            userNew.email = loginBinding.loginUsername.text.toString()
                             userNew.oldPassword = loginBinding.loginPassword.text.toString()
                             val newFragment = AuthChangePasswordFragment()
                             val args = Bundle()

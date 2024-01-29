@@ -62,7 +62,7 @@ class DashboardViewModel (
     val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
 
 
-    private val SOCKET_HOST = "http://192.168.1.153:8085/"
+    private val SOCKET_HOST = "http://10.5.7.80:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private lateinit var mSocket: Socket

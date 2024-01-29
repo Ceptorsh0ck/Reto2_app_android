@@ -57,6 +57,7 @@ class UserPreferences() {
     fun unLogUser() {
         val editor = sharedPreferences.edit()
         editor.remove(USER_TOKEN)
+        editor.remove(REMEMBER_ME)
         editor.remove(LOGGED_USER)
         editor.apply()
     }

@@ -10,6 +10,7 @@ import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AuthenticationResponse
 import com.example.reto2_app_android.data.User
 import com.example.reto2_app_android.data.UserLogin
+import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.repository.CommonUserRepository
 import com.example.reto2_app_android.utils.JWTUtils
 import com.example.reto2_app_android.utils.Resource
@@ -22,6 +23,21 @@ class AuthLoginViewModel (
 ) : ViewModel(){
     private val _login = MutableLiveData<Resource<AuthenticationResponse>>();
     val login : LiveData<Resource<AuthenticationResponse>> get() = _login
+
+    private val _register = MutableLiveData<Resource<UserNew>>();
+    val register : LiveData<Resource<UserNew>> get() = _register
+
+    fun registerUser(user: UserNew) {
+        viewModelScope.launch {
+            val authResponse = registerUserRepository(user)
+            _register.value = authResponse
+        }
+    }
+    private suspend fun registerUserRepository(user: UserNew) : Resource<UserNew> {
+        return withContext(Dispatchers.IO) {
+            userRepositoryRemote.registerUser(user)
+        }
+    }
 
     fun loginUser(login: String, password: String, rememberMe: Boolean) {
         val user = UserLogin(login, password)

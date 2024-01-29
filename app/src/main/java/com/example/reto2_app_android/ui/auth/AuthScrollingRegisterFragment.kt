@@ -1,11 +1,9 @@
 package com.example.reto2_app_android.ui.auth
 
-import android.R
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -13,9 +11,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -23,11 +19,12 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.example.reto2_app_android.MyApp
+import androidx.fragment.app.viewModels
+import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.UserNew
+import com.example.reto2_app_android.data.repository.remote.RemoteUsersDataSource
 import com.example.reto2_app_android.databinding.FragmentAuthScrollingRegisterBinding
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
+import com.example.reto2_app_android.ui.MainActivity
 import java.io.ByteArrayOutputStream
 
 
@@ -39,6 +36,13 @@ class AuthScrollingRegisterFragment : Fragment() {
     private val REQUEST_IMAGE_CAPTURE = 1
     private lateinit var registerBinding: FragmentAuthScrollingRegisterBinding
     private var userNew: UserNew? = null
+
+    private val userRepositoryRemote = RemoteUsersDataSource()
+    private val viewModel: AuthLoginViewModel by viewModels {
+        AuthLoginViewModelFactory(
+            userRepositoryRemote
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,14 +62,15 @@ class AuthScrollingRegisterFragment : Fragment() {
         registerBinding =  FragmentAuthScrollingRegisterBinding.inflate(layoutInflater, container, false)
 
         registerBinding.registerButton.setOnClickListener() {
-            if (checkAllInputs()) {
+            if (checkAllInputs() && validatePhone(registerBinding.registerTelephone1.text.toString().toInt())
+                && validatePhone(registerBinding.registerTelephone2.text.toString().toInt())
+                && validateDNI(registerBinding.registerDocumentation.text.toString())) {
                 userNew?.name = registerBinding.registerName.text.toString()
                 userNew?.surname1 = registerBinding.registerSurname1.text.toString()
                 userNew?.surname2 = registerBinding.registerSurname2.text.toString()
                 userNew?.DNI = registerBinding.registerDocumentation.text.toString()
                 userNew?.telephone1 = registerBinding.registerTelephone1.text.toString().toInt()
                 userNew?.telephone2 = registerBinding.registerTelephone2.text.toString().toInt()
-
                 val imageView: ImageView = registerBinding.registerUserPhoto
                 val drawable = imageView.drawable
                 val bitmap = (drawable as BitmapDrawable).bitmap
@@ -75,6 +80,42 @@ class AuthScrollingRegisterFragment : Fragment() {
                 val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
                 userNew?.photo = encodedImage
 
+                UserNew(
+                    userNew!!.newPassword,
+                    registerBinding.registerName.text.toString(),
+                    registerBinding.registerSurname1.text.toString(),
+                    registerBinding.registerSurname2.text.toString(),
+                    registerBinding.registerDocumentation.text.toString(),
+                    registerBinding.registerTelephone1.text.toString().toInt(),
+                    registerBinding.registerTelephone2.text.toString().toInt(),
+                    encodedImage
+
+                ).let {
+                    Log.i("Gorka-Prueba", "UserNew: $it")
+                    viewModel.registerUser(it)
+                }
+
+
+            }else{
+                registerBinding.registerName.error = getString(R.string.invalidRegister)
+            }
+        }
+        viewModel.register.observe(viewLifecycleOwner) {
+            when (it.status) {
+                com.example.reto2_app_android.utils.Resource.Status.SUCCESS -> {
+                    it.data?.let { data ->
+                        val intent = Intent(activity, MainActivity::class.java)
+                        startActivity(intent)
+                        activity?.finish()
+
+                    }
+                }
+                com.example.reto2_app_android.utils.Resource.Status.ERROR -> {
+                    Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
+                }
+                com.example.reto2_app_android.utils.Resource.Status.LOADING -> {
+                    //Toast.makeText(activity, "Cargando", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -140,46 +181,24 @@ class AuthScrollingRegisterFragment : Fragment() {
         }
     }
 
+    private fun validatePhone(phone: Int): Boolean {
+        return phone.toString().length == 9
+    }
+    private fun validateDNI(dni: String): Boolean {
+        val dniRegex = """^\d{8}[a-zA-Z]$""".toRegex()
+        return dni.matches(dniRegex)
+    }
 
     // Function checks all input values
-    private fun checkAllInputs():Boolean{
+    private fun checkAllInputs():Boolean {
 
-        var registerLayout: LinearLayout = registerBinding.registerForm
-        var i = 0
-        val count =registerLayout.childCount
-        while (i < count) {
-            val view = registerLayout.getChildAt(i)
-            if (view is TextInputEditText) {
-                view.setText("") //here it will be clear all the EditText field
-            }
-            ++i
+        if (registerBinding.registerName.text.toString()
+                .isNotEmpty() && registerBinding.registerSurname1.text.toString()
+                .isNotEmpty() && registerBinding.registerSurname2.text.toString().isNotEmpty()
+        ) {
+            return true
         }
-
-
-        var focusInputLayout: TextInputLayout? = null
-        if (registerBinding.registerName.text.isNullOrEmpty()) {
-            registerBinding.registerNameLayout.error = getString(com.example.reto2_app_android.R.string.inputEmpty)
-            if (focusInputLayout == null) {
-                focusInputLayout = registerBinding.registerNameLayout
-            }
-        }
-        if (registerBinding.registerSurname1.text.isNullOrEmpty()) {
-            registerBinding.registerSurname1Layout.error = getString(com.example.reto2_app_android.R.string.inputEmpty)
-            if (focusInputLayout == null) {
-                focusInputLayout = registerBinding.registerNameLayout
-            }
-        }
-        if (!registerBinding.registerTermsCheckbox.isChecked) {
-            if (focusInputLayout == null) {
-                focusInputLayout = registerBinding.registerNameLayout
-            }
-        }
-        return if (focusInputLayout == null) {
-            true
-        } else {
-            focusInputLayout.requestFocus()
-            false
-        }
+        return false
     }
     //registerBinding.registerScrollView.fullScroll(ScrollView.FOCUS_UP)
 

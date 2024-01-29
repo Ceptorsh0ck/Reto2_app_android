@@ -45,13 +45,18 @@ class DashboardAdapter() :
     }
     override fun getItemViewType(position: Int): Int {
         val message = getItem(position)
-        val currentUser = userPreferences.getLoggedUser()?.id!!
+        if(userPreferences.getLoggedUser()!=null) {
 
-        return if (message.authorId == currentUser) {
-            MY_MESSAGE_TYPE
-        } else {
-            OTHER_MESSAGE_TYPE
+            val currentUser = userPreferences.getLoggedUser()?.id!!
+
+            return if (message.authorId == currentUser) {
+                MY_MESSAGE_TYPE
+            } else {
+                OTHER_MESSAGE_TYPE
+            }
         }
+        return 0
+
     }
 
     override fun onBindViewHolder(holder: DashboardViewHolder, position: Int) {

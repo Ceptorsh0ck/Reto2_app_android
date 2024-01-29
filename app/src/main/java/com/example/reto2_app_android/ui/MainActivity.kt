@@ -23,6 +23,7 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.broadcast.NetworkCallBack
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
@@ -60,12 +61,12 @@ class MainActivity : AppCompatActivity() {
         ContextCompat.startForegroundService(this, intent)
         bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
 
-        var wifiIcon : MenuItem
+        var wifiIcon: MenuItem
 
         //Añade el onCreate del menu superior
         addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.top_action_bar,menu)
+                menuInflater.inflate(R.menu.top_action_bar, menu)
                 wifiIcon = menu.findItem(R.id.action_wifi_icon)
 
                 //Configura el Flow del detector de red
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                             wifiIcon.setIcon(R.drawable.wifi_off)
                         }
                         //Habria que cambiar el logo dependiendo de si esta online u offline
-                        Log.i("Gorka",res)
+                        Log.i("Gorka", res)
                         //tvIsNetworkConnected.setText(res)
                     }
                     .launchIn(lifecycleScope)
@@ -89,11 +90,18 @@ class MainActivity : AppCompatActivity() {
 
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                Log.i("Gorka - Menu",menuItem.title.toString())
-                when (menuItem.title.toString()) {
-//                    R.string.log -> {
-//
-//                    }
+                when (menuItem.itemId) {
+                    R.id.action_logout -> {
+                        Log.i("Gorka - Menu", "Logout")
+                        if (MyApp.userPreferences.getLoggedUser() != null) {
+                            val intent = Intent(this@MainActivity, AuthActivity::class.java)
+                            intent.putExtra("logout", true)
+                            startActivity(intent)
+                            finish()
+                            return true
+                        }
+                    }
+
                 }
                 return true
             }
@@ -163,22 +171,27 @@ class MainActivity : AppCompatActivity() {
             R.id.navigation_public -> {
                 navigateToFragment(R.id.navigation_public)
             }
+
             R.id.navigation_settings -> {
                 navigateToFragment(R.id.navigation_settings)
             }
         }
     }
+
     private fun navigateToFragment(destinationId: Int) {
         navController.navigate(destinationId)
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == locationPermissionCode) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
+            } else {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
             }
         }
@@ -203,9 +216,6 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
     }
-
-
-
 
 
 }
