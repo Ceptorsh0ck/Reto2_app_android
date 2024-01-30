@@ -7,8 +7,7 @@ import androidx.room.PrimaryKey
 import java.util.Date
 
 
-@Entity(tableName = "roles",
-    indices = [Index(value = ["id_server"], unique = true)])
+@Entity(tableName = "roles")
 data class RoomRole (
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     @ColumnInfo(name = "id_server") val idServer: Int? = null,

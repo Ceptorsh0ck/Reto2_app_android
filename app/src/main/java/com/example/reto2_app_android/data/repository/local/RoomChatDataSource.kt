@@ -26,12 +26,12 @@ class RoomChatDataSource: CommonChatRepository {
             user.listChats = emptyList()
             if (response != null) {
                 response.forEach {
-                    val mesage = messageDao.getLastMessageByRoomId(it.idServer!!)
+                    val mesage = messageDao.getLastMessageByRoomId(it.id)
                     val chatMessageList = mutableListOf<ChatResponse_Message>()
                     val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
                         mesage.content?.let { it2 ->
                             ChatResponse_Message(
-                                it1.idServer,
+                                it1.id,
                                 mesage.dataType,
                                 it2,
                                 mesage.createdAt,
@@ -45,7 +45,7 @@ class RoomChatDataSource: CommonChatRepository {
 
                         val userFromRoom = userDao.selectUserOfMessage(mesage.userId)
                         val chatMessageUser =ChatResponse_UserOfMessage(
-                            id = userFromRoom.idServer,
+                            id = userFromRoom.id,
                             email = userFromRoom.email,
                             name = userFromRoom.name,
                             null,
@@ -65,7 +65,7 @@ class RoomChatDataSource: CommonChatRepository {
                     chatMessage?.let { chatMessageList.add(it) } // Agregar a la lista solo si chatMessage no es nulo
 
                     val chat = ChatResponse_Chat(
-                        it.idServer!!,
+                        it.id,
                         it.name,
                         it.createdAt,
                         it.updatedAt,

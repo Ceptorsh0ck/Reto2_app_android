@@ -12,18 +12,17 @@ import javax.sql.rowset.serial.SerialBlob
     foreignKeys = [
         ForeignKey(
             entity = RoomChat::class,
-            parentColumns = ["id_server"],
+            parentColumns = ["id"],
             childColumns = ["chat_id"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = RoomUser::class,
-            parentColumns = ["id_server"],
+            parentColumns = ["id"],
             childColumns = ["user_id"],
             onDelete = ForeignKey.CASCADE
         )
-    ],
-    indices = [Index(value = ["id_server"], unique = true)])
+    ])
 data class RoomMessages(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,  // Autoincremental primary key
     @ColumnInfo(name = "id_server") val idServer: Int? = null,  // Unique and nullable

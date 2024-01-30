@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -27,6 +28,7 @@ import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
@@ -37,6 +39,9 @@ import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.launch
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.util.Timer
 import java.util.TimerTask
 import javax.inject.Inject
@@ -136,6 +141,7 @@ class HomeFragment : Fragment(), LocationListener {
         timer.scheduleAtFixedRate(object : TimerTask() {
             override fun run() {
                 if (mainActivity.isConnected) {
+                    Log.i("MainActivity", "Connect")
                     onOtherMessageFromServer(mainActivity.myService)
                     timer.cancel() // Detiene el temporizador una vez que se inicializa myService
                 } else {
@@ -149,7 +155,7 @@ class HomeFragment : Fragment(), LocationListener {
                 Resource.Status.SUCCESS -> {
 
                     val primerMensaje =  it.data?.first()!!
-
+                    Log.d("Socket", "messages observe")
                     val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
                     id?.let {
                         homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName)
@@ -181,6 +187,7 @@ class HomeFragment : Fragment(), LocationListener {
             myService.messagesFromOtherServer.observe(viewLifecycleOwner) { it ->
                 when (it.status) {
                     Resource.Status.SUCCESS -> {
+                        Log.d("Socket", "aaa" + it.data.toString())
                         messagesViewModel.onNewMessageJsonObject(it.data!!)
                     }
                     Resource.Status.ERROR -> {
@@ -237,6 +244,27 @@ class HomeFragment : Fragment(), LocationListener {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+
+
+    // para el EventBus
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: RoomMessages) {
+        // viewModel.updateEmployeeList()
+        Toast.makeText(context, message.toString(), Toast.LENGTH_LONG).show()
+        chatViewModel.getChatFromRoom()
+
     }
 
 }

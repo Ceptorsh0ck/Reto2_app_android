@@ -128,6 +128,10 @@ dependencies {
     implementation("org.jboss.spec.javax.sql:jboss-javax-sql-api_7.0_spec:2.0.0.Final")
     implementation ("com.squareup.moshi:moshi:1.12.0")
 
+
+    // para utilizar eventBus
+    implementation("org.greenrobot:eventbus:3.2.0")
+
 }
 
 kapt {

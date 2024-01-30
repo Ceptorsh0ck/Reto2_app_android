@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -25,6 +26,9 @@ import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.utils.Resource
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -69,7 +73,6 @@ class DashboardFragment : Fragment() {
         messageAdapter = DashboardAdapter()
         binding.recyclerGroupChat.adapter = messageAdapter
 
-        binding.buttonGroupChatSend.isEnabled = false
         val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
         if (recyclerView != null) {
             recyclerView.layoutManager = LinearLayoutManager(context)
@@ -122,30 +125,7 @@ class DashboardFragment : Fragment() {
     private fun showRoomMessage(binding: FragmentDashboardBinding) {
         viewModel.messagesRoom.observe(viewLifecycleOwner) { it ->
             when (it.status) {
-                Resource.Status.SUCCESS -> {/*
-                    var messages: List<MessageAdapter> = emptyList()
-                    it.data?.forEach { dataItem ->
-                        var message = dataItem.dataType?.let { dataType ->
-                            val fechaHora = dataItem.createdAt
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val timeFormat = SimpleDateFormat("HH:mm")
-                            dataItem.content?.let { content ->
-                                MessageAdapter(
-                                    dataItem.chatId.toString(),
-                                    content,
-                                    dataItem.userId.toString(),
-                                    dataItem.userId,
-                                    dataType,
-                                    dateFormat.format(fechaHora),
-                                    timeFormat.format(fechaHora)
-                                )
-                            }
-                        }
-                        Log.i("Fehca", message.toString())
-                        message?.let {
-                            messages = messages.plus(it)
-                        }
-                    }*/
+                Resource.Status.SUCCESS -> {
 
                     messageAdapter.addMessages(it.data!!)
                     val recyclerView: RecyclerView = binding.recyclerGroupChat
@@ -222,17 +202,14 @@ class DashboardFragment : Fragment() {
         myService.connected.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
                 }
 
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
                     Log.d(TAG, "error al conectar...")
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
                 }
 
                 Resource.Status.LOADING -> {
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
                 }
             }
         }
@@ -242,9 +219,6 @@ class DashboardFragment : Fragment() {
             Log.d(TAG, "messages change")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("hoaaaaa", "Group- " + chat?.id)
-                    Log.i("hoaaaaa", it.data!![0].room)
-                    Log.i("hoaaaaa", it.data!!.toString())
                     if(chat?.id == it.data!!.last().room.last().toString().toInt()){
                         messageAdapter.addMessages(it.data!!)
                         val recyclerView: RecyclerView = binding.recyclerGroupChat
@@ -279,5 +253,35 @@ class DashboardFragment : Fragment() {
             }
             binding.editGroupChatMessage.text.clear()
         }
+    }
+
+    // para el EventBus
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: MessageAdapter) {
+        if(chat!!.id == message.room.toInt()){
+            val list: MutableList<MessageAdapter> = mutableListOf()
+            list.add(message)
+            messageAdapter.addMessages(list)
+            val recyclerView: RecyclerView = binding.recyclerGroupChat
+            recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+
+        }
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: List<MessageAdapter>) {
+        Log.d("chats", "onNot")
+        messageAdapter.addMessages(message)
+        val recyclerView: RecyclerView = binding.recyclerGroupChat
+        recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
     }
 }

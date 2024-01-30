@@ -93,24 +93,28 @@ class HomeViewModel (
                 val userChatDao = db.userChatDao()
                 val roleDao = db.roleDao()
                 val userRoleDao = db.userRoleDao()
-
                 data.forEach {
-                    val roomChat = it?.let { it1 ->
+                    var roomId:Int? =1 ;
+                    //Log.i("chats", it!!.id.toString())
+                    val roomChat = it?.id?.let { it1 ->
                         RoomChat(
-                            idServer = it?.id,
-                            name = it?.name,
-                            isPublic = it1.public,
-                            createdAt = it.createdAt,
-                            updatedAt = it.updatedAt
+                            idServer = it1,
+                            name = it!!.name,
+                            isPublic = it!!.public,
+                            createdAt = it!!.createdAt,
+                            updatedAt = it!!.updatedAt
                         )
                     }
-
                     if (roomChat != null) {
-                        chatDao.insertChat(roomChat)
+                        roomId = chatDao.selectChatByServerId(roomChat.idServer)
+                        if(roomId == null){
+                            roomId = chatDao.insertChat(roomChat).toInt()
+                        }
                     }
 
                     if (it != null) {
                         it.listUsers?.forEach {
+                            var userId:Int? = 1;
                             val user = it.user.id?.let { it1 ->
                                 RoomUser(
                                     idServer = it1,
@@ -125,14 +129,16 @@ class HomeViewModel (
                                 )
                             }
                             if (user != null) {
-                                userDao.insertUser(user)
+                                userId = userDao.selectUserByServerId(user.idServer)
+                                if(userId == null){
+                                    userId = userDao.insertUser(user).toInt()
+                                }
                             }
-
                             val userChat = it.user.id?.let { it1 ->
-                                roomChat?.idServer?.let { it2 ->
+                                user?.let { it3 ->
                                     RoomUserChat(
-                                        userId = it1,
-                                        chatId = it2,
+                                        userId = userId!!,
+                                        chatId = roomId!!,
                                         isAdmin = it.admin,
                                         createdAt = null,
                                         updatedAt = null
@@ -162,25 +168,29 @@ class HomeViewModel (
                                     firstLogin = null
                                 )
                             }
-
+                            var userId:Int? = 1;
                             if (user != null) {
-                                userDao.insertUser(user)
+                                userId = userDao.selectUserByServerId(user.idServer)
+                                if(userId == null){
+                                    userId =userDao.insertUser(user).toInt()
+                                }
                             }
 
-                            val message = roomChat?.idServer?.let { it1 ->
-                                RoomMessages(
+                            val message = RoomMessages(
                                     idServer = it.id,
                                     content = it.content,
                                     dataType = it.dataType,
                                     createdAt = it.createdAt,
                                     updatedAt = it.updatedAt,
-                                    chatId = it1,
-                                    userId = it.userId?.id ?: 0,
+                                    chatId = roomId!!,
+                                    userId = userId!!,
                                     recived = null
                                 )
-                            }
                             if (message != null) {
-                                messagesDao.insertMessage(message)
+                                val idMessage:Int? = messagesDao.selectById(message.idServer)
+                                if(idMessage == null){
+                                    messagesDao.insertMessage(message)
+                                }
                             }
                         }
                     }

@@ -8,6 +8,7 @@ import com.example.reto2_app_android.data.repository.local.dao.MessageDao
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.utils.Resource
+import com.example.socketapp.data.socket.SocketMessageReq
 import com.example.socketapp.data.socket.SocketMessageRes
 
 class RoomMessageDataSource: CommonMessageRepository {
@@ -27,6 +28,15 @@ class RoomMessageDataSource: CommonMessageRepository {
         messageDao.updateMessage(message.idRoom, message.idServer)
         return Resource.success(messageDao.getMessageById(message.idRoom))
 
+    }
+
+    override suspend fun getMessagesNoSended(): Resource<List<SocketMessageReq>> {
+
+        Log.i("Reconezion", "funcion2")
+        val listMessages = messageDao.getMessagesNoSended();
+
+        Log.i("Reconezion", listMessages.toString())
+        return Resource.success(listMessages)
     }
 
 
