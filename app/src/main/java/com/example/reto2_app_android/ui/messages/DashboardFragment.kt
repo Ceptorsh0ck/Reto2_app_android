@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.dashboard
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -25,6 +28,8 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.ui.MainActivity
+import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
+import com.example.reto2_app_android.ui.publicChats.HomeAdapter
 import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -41,7 +46,7 @@ class DashboardFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private lateinit var myService: SocketIoService
-
+    private lateinit var addPeopleAdapter: AddPeopleAdapter
     private val roomMessageRepository = RoomMessageDataSource();
     private val TAG = "SocketActivity"
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt();
@@ -206,6 +211,37 @@ class DashboardFragment : Fragment() {
             }
             binding.editGroupChatMessage.text.clear()
         }
+        binding.buttonToolbarAddPeopleChat.setOnClickListener() {
+            val builder = AlertDialog.Builder(requireContext())
+
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.popup_layout, null)
+
+            // Encuentra el RecyclerView en el diseño del popup
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerView)
+
+            // Configura el LinearLayoutManager (o cualquier otro LayoutManager que desees)
+            val layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.layoutManager = layoutManager
+
+            // Crea y configura el adaptador para el RecyclerView
+            addPeopleAdapter = AddPeopleAdapter()
+            recyclerView.adapter = addPeopleAdapter
+
+
+            builder.setView(dialogView)
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+                // Aquí puedes realizar cualquier acción que desees al hacer clic en Aceptar en el diálogo
+
+            }
+            builder.setNegativeButton("Cancelar") { _, _ ->
+
+            }
+            val dialog = builder.create()
+            dialog.show()
+        }
+
     }
 
     // para el EventBus
