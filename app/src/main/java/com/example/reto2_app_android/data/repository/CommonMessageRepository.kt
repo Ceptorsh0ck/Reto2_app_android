@@ -1,5 +1,7 @@
 package com.example.reto2_app_android.data.repository
 
+import com.example.reto2_app_android.data.AddPeople
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
@@ -14,5 +16,8 @@ interface CommonMessageRepository {
 
     suspend fun updateMessage(message: SocketMessageResUpdate): Resource<List<MessageAdapter>>
     suspend fun getMessagesNoSended(): Resource<List<SocketMessageReq>>
+
+    suspend fun getAllUsersToInsertIntoChat(idChat: Int): Resource<List<AddPeople>>
+    suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
 
 }

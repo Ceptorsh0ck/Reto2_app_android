@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
@@ -57,7 +58,7 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.43:8085/"
+    private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val roomMessageRepository = RoomMessageDataSource();
@@ -259,5 +260,11 @@ class SocketIoService : Service() {
         val socketMessage = SocketMessageReq(socketRoom, message, idServer)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
+    }
+
+    fun addUsersToChats(userId: Int, chatId: Int, admin: Boolean) {
+        val socketMessage = AddPeopleResponse(userId, chatId, admin)
+        val jsonObject = JSONObject(Gson().toJson(socketMessage))
+        mSocket.emit(SocketEvents.ON_ADD_USER_CHAT_SEND.value, jsonObject)
     }
 }

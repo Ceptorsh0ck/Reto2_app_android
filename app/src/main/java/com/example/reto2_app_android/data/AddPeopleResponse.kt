@@ -3,9 +3,10 @@ package com.example.reto2_app_android.data
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
+
 @Parcelize
-data class AddPeople (
+data class AddPeopleResponse (
     val userId: Int,
-    val email: String,
-    val isAdmin: Boolean = false,
+    val chatId: Int,
+    val admin: Boolean,
 ): Parcelable

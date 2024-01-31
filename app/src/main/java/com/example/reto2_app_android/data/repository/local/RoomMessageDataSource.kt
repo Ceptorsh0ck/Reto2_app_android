@@ -2,6 +2,8 @@ package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.AddPeople
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.dao.MessageDao
@@ -41,6 +43,14 @@ class RoomMessageDataSource: CommonMessageRepository {
 
         Log.i("Reconezion", listMessages.toString())
         return Resource.success(listMessages)
+    }
+
+    override suspend fun getAllUsersToInsertIntoChat(idChat: Int): Resource<List<AddPeople>> {
+        return Resource.error("error")
+    }
+
+    override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
+
     }
 
 

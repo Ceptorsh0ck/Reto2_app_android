@@ -6,6 +6,12 @@
     android:orientation="horizontal"
     android:padding="8dp">
 
+    <TextView
+        android:id="@+id/idTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
     <CheckBox
         android:id="@+id/emailCheckBox"
         android:layout_width="wrap_content"

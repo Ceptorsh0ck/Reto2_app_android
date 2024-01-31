@@ -30,6 +30,7 @@ import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
+import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
@@ -61,8 +62,9 @@ class HomeFragment : Fragment(), LocationListener {
     private val roomChatRepository = RoomChatDataSource();
     private lateinit var homeAdapter: HomeAdapter
     private val roomMessageRepository = RoomMessageDataSource();
+    private val serverMessageRepository = RemoteMessagesDataSource();
     private val messagesViewModel: DashboardViewModel by viewModels {
-        DashboardViewModelFactory(roomMessageRepository)
+        DashboardViewModelFactory(roomMessageRepository, serverMessageRepository)
     }
     //private lateinit var myService: SocketIoService
 

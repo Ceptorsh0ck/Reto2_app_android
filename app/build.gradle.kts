@@ -4,6 +4,7 @@ plugins {
     //Parcelable
     id("org.jetbrains.kotlin.plugin.parcelize")
     //Room
+    
     id("kotlin-kapt")
     //NetworkConnectionManager
 
