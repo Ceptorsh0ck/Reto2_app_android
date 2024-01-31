@@ -57,6 +57,36 @@ class DashboardViewModel (
     val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
 
 
+    private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
+    val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
+
+  //TODO esto de aqui hay que borrar?
+/*
+    private val SOCKET_HOST = "http://10.5.7.80:8085/"
+    private val AUTHORIZATION_HEADER = "Authorization"
+
+    private lateinit var mSocket: Socket
+
+    // TODO esto esta hardcodeeado
+    private val SOCKET_ROOM = "default-room"
+    */
+
+
+    /*fun startSocket() {
+        val socketOptions = createSocketOptions();
+        mSocket = IO.socket(SOCKET_HOST, socketOptions);
+
+        mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
+        mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
+
+        mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
+        mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
+        viewModelScope.launch {
+            connect()
+        }
+    }*/
+
+
     fun getAllMessages(id: Int) {
         viewModelScope.launch {
             val roomResponse = getMessagesFromRoom(id)

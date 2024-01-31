@@ -209,7 +209,7 @@
                             android:layout_weight="1"
                             android:ems="10"
                             android:hint="@string/telephone1"
-                            android:inputType="text"
+                            android:inputType="number"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.203"
@@ -236,7 +236,7 @@
                             android:layout_weight="1"
                             android:ems="10"
                             android:hint="@string/telephone2"
-                            android:inputType="text"
+                            android:inputType="number"
                             app:layout_constraintBottom_toBottomOf="parent"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.203"
@@ -281,6 +281,7 @@
                             android:id="@+id/registerTermsCheckbox"
                             android:layout_width="match_parent"
                             android:layout_height="152dp"
+                            android:checked="false"
                             android:enabled="false"
                             android:text="@string/termsOfUseCheckBox" />
                     </LinearLayout>

@@ -13,6 +13,7 @@ import com.example.socketapp.data.socket.SocketMessageRes
 
 class RoomMessageDataSource: CommonMessageRepository {
     private val messageDao: MessageDao = MyApp.db.messageDao()
+
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
         Log.d("insert", message.toString())
         if(messageDao.selectById(message.idServer) == null) {
