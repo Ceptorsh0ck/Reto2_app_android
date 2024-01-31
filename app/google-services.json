@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "478709979534",
+    "project_id": "reto2-chat",
+    "storage_bucket": "reto2-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478709979534:android:1b49133d6a887e5ef92cdf",
+        "android_client_info": {
+          "package_name": "com.example.reto2_app_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbKpSyrcfBCTKYJ1Ykaff10DvJVOSQQww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

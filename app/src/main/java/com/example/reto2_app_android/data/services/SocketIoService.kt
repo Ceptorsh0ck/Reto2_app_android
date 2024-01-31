@@ -18,10 +18,14 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
@@ -36,7 +40,11 @@ import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
+import java.util.Date
 
 class SocketIoService : Service() {
     private val serviceInitializedLiveData = MutableLiveData<Boolean>()
@@ -44,6 +52,7 @@ class SocketIoService : Service() {
     private val notificationId = 1
     private lateinit var serviceScope: CoroutineScope
     private val mBinder: IBinder = LocalService()
+    private var messagesSended :Boolean = true
 
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
@@ -53,12 +62,7 @@ class SocketIoService : Service() {
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
-
-    private val _messagesFromOtherServer = MutableLiveData<Resource<SocketMessageRes>>()
-    val messagesFromOtherServer : LiveData<Resource<SocketMessageRes>> get() = _messagesFromOtherServer
-
-    private val _messagesFromMeServer = MutableLiveData<Resource<SocketMessageResUpdate>>()
-    val messagesFromMeServer : LiveData<Resource<SocketMessageResUpdate>> get() = _messagesFromMeServer
+    private val roomMessageRepository = RoomMessageDataSource();
 
     // TODO esto esta hardcodeeado
     private val SOCKET_ROOM = "default-room"
@@ -74,15 +78,9 @@ class SocketIoService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        //viewModel = ViewModelProvider.AndroidViewModelFactory.getInstance(application).create(DashboardViewModel::class.java)
-        //startSocket()
         serviceScope = CoroutineScope(Dispatchers.Main)
         createNotificationChannel()
         serviceInitializedLiveData.postValue(true)
-    }
-
-    fun getServiceInitializedLiveData(): LiveData<Boolean> {
-        return serviceInitializedLiveData
     }
 
     private fun createNotificationChannel() {
@@ -143,7 +141,7 @@ class SocketIoService : Service() {
 
 
 
-    private fun startSocket() {
+    public fun startSocket() {
         val socketOptions = createSocketOptions()
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
@@ -151,8 +149,16 @@ class SocketIoService : Service() {
         mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
+        mSocket.on(SocketEvents.ON_DISCONECT_USER.value, onUserDisconnect())
+        // usuari odesconectado
 
         mSocket.connect()
+    }
+
+    private fun onUserDisconnect(): Emitter.Listener? {
+        return Emitter.Listener {
+            Log.d("Socket", "disconect")
+        }
     }
 
     private fun createSocketOptions(): IO.Options {
@@ -167,14 +173,13 @@ class SocketIoService : Service() {
     private fun onConnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "conectado")
-            _connected.postValue(Resource.success(true))
         }
     }
 
     private fun onDisconnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "desconectado")
-            _connected.postValue(Resource.success(false))
+            messagesSended = true
         }
     }
 
@@ -186,21 +191,54 @@ class SocketIoService : Service() {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
                 // Modifica el valor del LiveData en el hilo principal utilizando postValue()
-                _messagesFromOtherServer.postValue(Resource.success(message))
+                saveNewMessageRoom(message)
+                // _messagesFromOtherServer.postValue(Resource.success(message))
             }
         }
     }
 
-    fun onNewMessageString(data: Any) {
+
+    fun saveNewMessageRoom(message: SocketMessageRes) {
+        // message: String, socketRoom: Int, userId: Int
         try {
-            // Manejar el mensaje recibido
-            val message = data as String
-            Log.d(TAG, "mensaje recibido $message")
-            // ojo aqui no estoy actualizando la lista. aunque no deberiamos recibir strings
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
+            val roomId =  message.room.replace("Group- ", "").toInt()
+
+            val roomMessage = RoomMessages(
+                content = message.message,
+                dataType = RoomDataType.TEXT,
+                createdAt = Date(),
+                updatedAt = Date(),
+                chatId = roomId,
+                userId = message.authorId.toInt(),
+                recived = null,
+                idServer = message.id
+            )
+
+            val incomingMessage = MessageAdapter(roomId.toString(), message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
+
+            serviceScope.launch {
+                if (roomMessage != null) {
+                    val roomResponse = safeMessageInRomm(roomMessage)
+                    // roomMessage.id = roomResponse.toInt()
+                    EventBus.getDefault().post(roomMessage)
+                    // _message.value = roomResponse
+                    EventBus.getDefault().post(incomingMessage)
+
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("Socket", "error en recepcion de msg $message.toString()")
+        }
+
+    }
+
+
+    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<List<MessageAdapter>> {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.insertMessage(message)
         }
     }
+
 
     private fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener { args ->
@@ -208,12 +246,16 @@ class SocketIoService : Service() {
             if (receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageResUpdate::class.java)
-                // Modifica el valor del LiveData en el hilo principal utilizando postValue()
-                _messagesFromMeServer.postValue(Resource.success(message))
+                Log.i("Socket id", message.toString())
+                serviceScope.launch {
+                    if (message != null) {
+                        val roomResponse = roomMessageRepository.updateMessage(message)
+                        //EventBus.getDefault().post(roomResponse.data)
+                    }
+                }
             }
         }
     }
-
 
     fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
         val socketMessage = SocketMessageReq(socketRoom, message, idServer)

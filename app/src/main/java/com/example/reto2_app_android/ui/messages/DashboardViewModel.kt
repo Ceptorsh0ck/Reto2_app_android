@@ -47,21 +47,21 @@ class DashboardViewModel (
     private val _messages = MutableLiveData<Resource<List<MessageAdapter>>>()
     val messages : LiveData<Resource<List<MessageAdapter>>> get() = _messages
 
-    private val _connected = MutableLiveData<Resource<Boolean>>()
-    val connected : LiveData<Resource<Boolean>> get() = _connected
 
-    private val _message = MutableLiveData<Resource<Int>>()
+    private val _message = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val message : MutableLiveData<Resource<Int>> get() = _message
+    val message : MutableLiveData<Resource<List<MessageAdapter>>> get() = _message
 
     private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
     val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
 
+
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
     val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
 
-
+  //TODO esto de aqui hay que borrar?
+/*
     private val SOCKET_HOST = "http://10.5.7.80:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
@@ -69,6 +69,7 @@ class DashboardViewModel (
 
     // TODO esto esta hardcodeeado
     private val SOCKET_ROOM = "default-room"
+    */
 
 
     /*fun startSocket() {
@@ -85,6 +86,7 @@ class DashboardViewModel (
         }
     }*/
 
+
     fun getAllMessages(id: Int) {
         viewModelScope.launch {
             val roomResponse = getMessagesFromRoom(id)
@@ -98,139 +100,6 @@ class DashboardViewModel (
         }
     }
 
-    private suspend fun connect() {
-        withContext(Dispatchers.IO) {
-            mSocket.connect();
-        }
-    }
-
-    private fun createSocketOptions(): IO.Options {
-        val options = IO.Options()
-
-        // Add custom headers
-        val headers = mutableMapOf<String, MutableList<String>>()
-        headers[AUTHORIZATION_HEADER] = mutableListOf("Bearer ${MyApp.userPreferences.fetchAuthToken()}")
-
-        options.extraHeaders = headers
-        return options
-    }
-
-    private fun onConnect(): Emitter.Listener {
-        return Emitter.Listener {
-            // Manejar el mensaje recibido
-            Log.d(TAG, "conectado")
-
-            // no vale poner value por que da error al estar en otro hilo
-            // IllegalStateException: Cannot invoke setValue on a background thread
-            // en funcion asincrona obligado post
-            _connected.postValue(Resource.success(true))
-        }
-    }
-    private fun onDisconnect(): Emitter.Listener {
-        return Emitter.Listener {
-            // Manejar el mensaje recibido
-            Log.d(TAG, "desconectado")
-            _connected.postValue(Resource.success(false))
-        }
-    }
-
-    private fun onNewMessage(): Emitter.Listener {
-        return Emitter.Listener {
-            // en teoria deberia ser siempre jsonObject, obviamente si siempre lo gestionamos asi
-            if (it[0] is JSONObject) {
-                Log.d(TAG, "mensaje recibido on new message ${it[0]}")
-                //onNewMessageJsonObject(it[0])
-            } else if (it[0] is String) {
-                onNewMessageString(it[0])
-            }
-        }
-    }
-
-    fun onReciveMessageId(): Emitter.Listener {
-        return Emitter.Listener {
-            Log.d("id recividas", "ids recividas ${it[0]}")
-            if (it[0] is JSONObject) {
-                //onUpdateMessageJsonObject(it[0])
-                //onNewMessageJsonObject(it[0])
-            } else if (it[0] is String) {
-                //onNewMessageString(it[0])
-            }
-
-        }
-    }
-
-    fun onNewMessageString(data: Any) {
-        try {
-            // Manejar el mensaje recibido
-            val message = data as String
-            Log.d(TAG, "mensaje recibido $message")
-            // ojo aqui no estoy actualizando la lista. aunque no deberiamos recibir strings
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-    fun onUpdateMessageJsonObject(message: SocketMessageResUpdate) {
-        try {
-
-            viewModelScope.launch {
-                val roomResponse = updateMessageInRomm(message)
-                _messagesRoom.value = roomResponse
-            }
-
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-
-    fun onNewMessageJsonObject(message : SocketMessageRes) {
-        try {
-            Log.i(TAG, message.authorName)
-
-            Log.i(TAG, message.messageType.toString())
-            val roomMessage = RoomMessages(
-                idServer = message.id,
-                content = message.message,
-                dataType = RoomDataType.TEXT,
-                createdAt = Date(),
-                updatedAt = Date(),
-                chatId = message.room.substring(message.room.length - 1, message.room.length).toInt(),
-                userId = message.authorId.toInt(),
-                recived = null
-            )
-            Log.i(TAG, roomMessage.toString())
-
-            viewModelScope.launch {
-                safeMessageInRomm(roomMessage)
-            }
-            updateMessageListWithNewMessage(message)
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-    private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
-        try {
-            val incomingMessage = MessageAdapter(message.room, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
-            val msgsList = _messages.value?.data?.toMutableList()
-            if (msgsList != null) {
-                msgsList.add(incomingMessage)
-                _messages.postValue(Resource.success(msgsList))
-            } else {
-                _messages.postValue(Resource.success(listOf(incomingMessage)))
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-
-    fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
-        val socketMessage = SocketMessageReq(socketRoom, message, idServer)
-        val jsonObject = JSONObject(Gson().toJson(socketMessage))
-        mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
-    }
-
     fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int) {
         val roomMessage = RoomMessages(
             content = message,
@@ -242,7 +111,6 @@ class DashboardViewModel (
             recived = false
         )
 
-
         viewModelScope.launch {
             if (roomMessage != null) {
                 val roomResponse = safeMessageInRomm(roomMessage)
@@ -252,15 +120,9 @@ class DashboardViewModel (
     }
 
 
-    suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
+    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.insertMessage(message)
-        }
-    }
-
-    suspend fun updateMessageInRomm(message: SocketMessageResUpdate): Resource<List<MessageAdapter>> {
-        return withContext(Dispatchers.IO) {
-            roomMessageRepository.updateMessage(message)
         }
     }
 

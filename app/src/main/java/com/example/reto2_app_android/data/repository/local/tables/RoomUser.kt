@@ -7,11 +7,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "users",
     indices = [
-        Index(value = ["email"], unique = true),
-        Index(value = ["id_server"], unique = true)
+        Index(value = ["email"], unique = true)
     ])
 data class RoomUser(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0,
     @ColumnInfo(name = "id_server") val idServer: Int? = null,
     @ColumnInfo(name = "email") val email: String?,
     @ColumnInfo(name = "name") val name: String?,

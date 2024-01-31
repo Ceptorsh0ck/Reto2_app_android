@@ -7,10 +7,9 @@ import androidx.room.PrimaryKey
 import java.util.Date
 
 
-@Entity(tableName = "chats",
-    indices = [Index(value = ["id_server"], unique = true)])
+@Entity(tableName = "chats")
 data class RoomChat (
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0,
     @ColumnInfo(name = "id_server") val idServer: Int? = null,
     @ColumnInfo(name ="name") val name: String?,
     @ColumnInfo(name ="is_Public") val isPublic: Boolean,

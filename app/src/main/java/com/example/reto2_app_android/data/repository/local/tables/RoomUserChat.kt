@@ -11,13 +11,13 @@ import java.util.Date
     foreignKeys = [
         ForeignKey(
             entity = RoomUser::class,
-            parentColumns = ["id_server"],
+            parentColumns = ["id"],
             childColumns = ["user_id"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
             entity = RoomChat::class,
-            parentColumns = ["id_server"],
+            parentColumns = ["id"],
             childColumns = ["chat_id"],
             onDelete = ForeignKey.CASCADE
         )

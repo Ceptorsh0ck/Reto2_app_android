@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.dashboard
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -7,6 +8,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
@@ -24,7 +28,12 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.ui.MainActivity
+import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
+import com.example.reto2_app_android.ui.publicChats.HomeAdapter
 import com.example.reto2_app_android.utils.Resource
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -37,7 +46,7 @@ class DashboardFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private lateinit var myService: SocketIoService
-
+    private lateinit var addPeopleAdapter: AddPeopleAdapter
     private val roomMessageRepository = RoomMessageDataSource();
     private val TAG = "SocketActivity"
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt();
@@ -69,7 +78,6 @@ class DashboardFragment : Fragment() {
         messageAdapter = DashboardAdapter()
         binding.recyclerGroupChat.adapter = messageAdapter
 
-        binding.buttonGroupChatSend.isEnabled = false
         val recyclerView = ViewBindings.findChildViewById<RecyclerView>(root, R.id.recycler_group_chat)
         if (recyclerView != null) {
             recyclerView.layoutManager = LinearLayoutManager(context)
@@ -81,10 +89,7 @@ class DashboardFragment : Fragment() {
 
         llamadaAMetodoDelServicio()
         onClickTeclado(binding)
-        onMyNewMessageFromServer(binding)
-        onOtherMessageFromServer(binding)
         showRoomMessage(binding)
-        onConnectedChange(binding)
         onMessagesChange()
         buttonsListeners(binding)
         onMessageSendRoom(binding)
@@ -122,30 +127,7 @@ class DashboardFragment : Fragment() {
     private fun showRoomMessage(binding: FragmentDashboardBinding) {
         viewModel.messagesRoom.observe(viewLifecycleOwner) { it ->
             when (it.status) {
-                Resource.Status.SUCCESS -> {/*
-                    var messages: List<MessageAdapter> = emptyList()
-                    it.data?.forEach { dataItem ->
-                        var message = dataItem.dataType?.let { dataType ->
-                            val fechaHora = dataItem.createdAt
-                            val dateFormat = SimpleDateFormat("dd-MM-yyyy")
-                            val timeFormat = SimpleDateFormat("HH:mm")
-                            dataItem.content?.let { content ->
-                                MessageAdapter(
-                                    dataItem.chatId.toString(),
-                                    content,
-                                    dataItem.userId.toString(),
-                                    dataItem.userId,
-                                    dataType,
-                                    dateFormat.format(fechaHora),
-                                    timeFormat.format(fechaHora)
-                                )
-                            }
-                        }
-                        Log.i("Fehca", message.toString())
-                        message?.let {
-                            messages = messages.plus(it)
-                        }
-                    }*/
+                Resource.Status.SUCCESS -> {
 
                     messageAdapter.addMessages(it.data!!)
                     val recyclerView: RecyclerView = binding.recyclerGroupChat
@@ -161,46 +143,17 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun onOtherMessageFromServer(binding: FragmentDashboardBinding){
-        myService.messagesFromOtherServer.observe(viewLifecycleOwner){
-            when (it.status){
-                Resource.Status.SUCCESS-> {
-                    viewModel.onNewMessageJsonObject(it.data!!)
-                }
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                }
-
-                Resource.Status.LOADING -> {
-                }
-            }
-        }
-    }
-
-    private fun onMyNewMessageFromServer(binding: FragmentDashboardBinding){
-        myService.messagesFromMeServer.observe(viewLifecycleOwner){
-            when (it.status){
-                Resource.Status.SUCCESS-> {
-                    viewModel.onUpdateMessageJsonObject(it.data!!)
-                }
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                }
-
-                Resource.Status.LOADING -> {
-                }
-            }
-        }
-    }
-
     private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
                     Log.i("gaardado en room", it.data.toString())
-                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data!!)
+
+                    messageAdapter.addMessages(it.data!!)
+                    val recyclerView: RecyclerView = binding.recyclerGroupChat
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+                    //if(MainActivity.)
+                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data.first().idRoom!!)
                 }
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
@@ -218,33 +171,12 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 
-    private fun onConnectedChange(binding: FragmentDashboardBinding) {
-        myService.connected.observe(viewLifecycleOwner) {
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
-                }
 
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
-                }
-
-                Resource.Status.LOADING -> {
-                    binding.buttonGroupChatSend.isEnabled = it.data!!
-                }
-            }
-        }
-    }
     private fun onMessagesChange() {
         viewModel.messages.observe(viewLifecycleOwner) {
             Log.d(TAG, "messages change")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("hoaaaaa", "Group- " + chat?.id)
-                    Log.i("hoaaaaa", it.data!![0].room)
-                    Log.i("hoaaaaa", it.data!!.toString())
                     if(chat?.id == it.data!!.last().room.last().toString().toInt()){
                         messageAdapter.addMessages(it.data!!)
                         val recyclerView: RecyclerView = binding.recyclerGroupChat
@@ -279,5 +211,66 @@ class DashboardFragment : Fragment() {
             }
             binding.editGroupChatMessage.text.clear()
         }
+        binding.buttonToolbarAddPeopleChat.setOnClickListener() {
+            val builder = AlertDialog.Builder(requireContext())
+
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.popup_layout, null)
+
+            // Encuentra el RecyclerView en el diseño del popup
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerView)
+
+            // Configura el LinearLayoutManager (o cualquier otro LayoutManager que desees)
+            val layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.layoutManager = layoutManager
+
+            // Crea y configura el adaptador para el RecyclerView
+            addPeopleAdapter = AddPeopleAdapter()
+            recyclerView.adapter = addPeopleAdapter
+
+
+            builder.setView(dialogView)
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+                // Aquí puedes realizar cualquier acción que desees al hacer clic en Aceptar en el diálogo
+
+            }
+            builder.setNegativeButton("Cancelar") { _, _ ->
+
+            }
+            val dialog = builder.create()
+            dialog.show()
+        }
+
+    }
+
+    // para el EventBus
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: MessageAdapter) {
+        if(chat!!.id == message.room.toInt()){
+            val list: MutableList<MessageAdapter> = mutableListOf()
+            list.add(message)
+            messageAdapter.addMessages(list)
+            val recyclerView: RecyclerView = binding.recyclerGroupChat
+            recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+
+        }
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: List<MessageAdapter>) {
+        Log.d("chats", "onNot")
+        messageAdapter.addMessages(message)
+        val recyclerView: RecyclerView = binding.recyclerGroupChat
+        recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
     }
 }

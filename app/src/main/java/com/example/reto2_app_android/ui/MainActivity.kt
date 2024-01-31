@@ -28,6 +28,7 @@ import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.broadcast.NetworkCallBack
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
+import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.ActivityMainBinding
 import com.example.reto2_app_android.ui.publicChats.HomeFragment
@@ -46,9 +47,11 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var networkConnectionManager: NetworkConnectionManager
 
+    private val roomMessageRepository = RoomMessageDataSource();
     lateinit var myService: SocketIoService
     private var isBind = false
     var isConnected = false
+    var wifiOn = false
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
     private lateinit var navController: NavController
@@ -76,8 +79,10 @@ class MainActivity : AppCompatActivity() {
                         if (it) {
                             res = getString(R.string.wifiIsConnected)
                             wifiIcon.setIcon(R.drawable.wifi_on)
+                            wifiOn = true
                         } else {
                             res = getString(R.string.wifiIsDisconnected)
+                            wifiOn = false
                             wifiIcon.setIcon(R.drawable.wifi_off)
                         }
                         //Habria que cambiar el logo dependiendo de si esta online u offline
@@ -136,6 +141,7 @@ class MainActivity : AppCompatActivity() {
         comprobaSiSeMySocketSeHaInicializado()
     }
 
+
     private fun comprobaSiSeMySocketSeHaInicializado() {
         val timer = Timer()
         val delay: Long = 500 // Retraso inicial
@@ -145,6 +151,7 @@ class MainActivity : AppCompatActivity() {
             override fun run() {
                 if (::myService.isInitialized) {
                     isConnected = true
+                    Log.d("MainActivity", "myService is initialized")
                     timer.cancel() // Detiene el temporizador una vez que se inicializa myService
                 } else {
                     isConnected = false

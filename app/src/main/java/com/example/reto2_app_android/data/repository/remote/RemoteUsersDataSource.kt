@@ -15,7 +15,7 @@ class RemoteUsersDataSource: BaseDataSource(), CommonUserRepository {
     override suspend fun registerUser(user: UserNew) = getResult {
         RetrofitClient.apiInterface.registerUser(user)
     }
-//
+
 //    override suspend fun registerUser(user: User) = getResult {
 //        RetrofitClient.apiInterface.registerUser(user)
 //    }
