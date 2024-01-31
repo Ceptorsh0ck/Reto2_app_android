@@ -1,50 +1,49 @@
-package com.example.reto2_app_android.ui.home
+package com.example.reto2_app_android.ui.publicChats
 
 import android.Manifest
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.media.MediaPlayer
-import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.motion.widget.Debug
-import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
+import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
-import com.example.reto2_app_android.data.appServices.AndroidServices
-import com.example.reto2_app_android.data.appServices.AudioRecord
+import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
-import com.example.reto2_app_android.data.repository.CommonChatRepository
+import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
+import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
-import com.example.reto2_app_android.data.repository.local.tables.RoomChat
-import com.example.reto2_app_android.data.repository.local.tables.RoomUser
+import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
+import com.example.reto2_app_android.data.services.SocketIoService
+import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.MainActivity
+import com.example.reto2_app_android.ui.dashboard.DashboardFragment
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
+import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.IOException
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -59,53 +58,57 @@ class HomeFragment : Fragment(), LocationListener {
     private var _binding: FragmentHomeBinding? = null
     private var ubicacionObtenida = false
     private val chatRepository = RemoteChatsDataSource();
+    private val roomChatRepository = RoomChatDataSource();
     private lateinit var homeAdapter: HomeAdapter
-
-    private val viewModel: HomeViewModel by viewModels {
-        HomeViewModelFactory(chatRepository)
+    private val roomMessageRepository = RoomMessageDataSource();
+    private val messagesViewModel: DashboardViewModel by viewModels {
+        DashboardViewModelFactory(roomMessageRepository)
     }
+    //private lateinit var myService: SocketIoService
 
-    private val viewModelFactory = HomeViewModelFactory(chatRepository)
+    private val chatViewModel: HomeViewModel by viewModels {
+        HomeViewModelFactory(chatRepository, roomChatRepository)
+    }
 
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
     private lateinit var localizacion: Location
+
+    private fun onChatListClickItem(chat: ChatResponse_Chat) {
+
+        val newFragment = DashboardFragment()
+        val args = Bundle()
+        args.putParcelable("chat", chat)
+        newFragment.arguments = args
+        val transaction = parentFragmentManager.beginTransaction()
+        transaction.replace(R.id.nav_host_fragment_activity_main, newFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
+
+    }
+
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
             savedInstanceState: Bundle?
     ): View {
-        val homeViewModel = ViewModelProvider(this, viewModelFactory).get(HomeViewModel::class.java)
 
-        Log.i("Aimar", "HomeViewModeldsasd")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        //MainActivity = activity as MainActivity
-
-        homeAdapter = HomeAdapter()
-
-        db = Room.databaseBuilder(
-            requireContext(), AppDatabase::class.java, "elor-chat-room"
-        ).build()
-        Log.i("Aimar", "BD")
-
+        homeAdapter = HomeAdapter(::onChatListClickItem)
         binding.chatList.adapter = homeAdapter
-
-        viewModel.items.observe(viewLifecycleOwner) {
+        onMessagesChange()
+        chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    lifecycleScope.launch {
-                        viewModel.safeChatsInRoom(it.data, db)
-                    }
-                    Log.i("Lista", it.data?.listChats.toString())
-                    homeAdapter.submitList(it.data?.listChats)
+
+                    homeAdapter.submitList(it.data)
                 }
 
                 Resource.Status.ERROR -> {
-                    Log.i("Aimar", "Error conexion")
 
                 }
 
@@ -116,15 +119,47 @@ class HomeFragment : Fragment(), LocationListener {
         }
 
         binding.buttonLocation.setOnClickListener {
-            viewModel.updateChatsList()
+            chatViewModel.updateChatsList()
             /*if(checkLocationPermissions()) {
                 ubicacionObtenida = false
                 getLocation()
             }*/
         }
-
         return root
     }
+
+    private fun onMessagesChange() {
+        messagesViewModel.messages.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+
+                    val primerMensaje =  it.data?.first()!!
+                    Log.d("Socket", "messages observe")
+                    val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
+                    id?.let {
+                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName)
+                        val recyclerView: RecyclerView = binding.chatList
+                        recyclerView.scrollToPosition(0)
+                    }
+
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "messages observe error")
+                    //Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+
+                Resource.Status.LOADING -> {
+                    // de momento
+                    Log.d(TAG, "messages observe loading")
+                    //val toast = Toast.makeText(this, "Cargando..", Toast.LENGTH_LONG)
+                    //toast.setGravity(Gravity.TOP, 0, 0)
+                    //toast.show()
+                }
+            }
+        }
+    }
+
 
     private fun openGoogleMaps(latitude: Double, longitude: Double) {
         val uri = "geo:$latitude,$longitude?q=$latitude,$longitude"
@@ -168,4 +203,26 @@ class HomeFragment : Fragment(), LocationListener {
         super.onDestroyView()
         _binding = null
     }
+
+
+
+    // para el EventBus
+    override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(message: RoomMessages) {
+        // viewModel.updateEmployeeList()
+        Toast.makeText(context, message.toString(), Toast.LENGTH_LONG).show()
+        chatViewModel.getChatFromRoom()
+
+    }
+
 }

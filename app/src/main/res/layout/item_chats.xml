@@ -26,17 +26,18 @@
             android:id="@+id/TextViewChatName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/chats_name"
-            android:textColor="@color/black"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:ellipsize="end"
+            android:maxLines="1"/>
 
         <TextView
             android:id="@+id/TextViewLastMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/last_messaga"
-            android:textColor="@color/black"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:ellipsize="end"
+            android:maxLines="1"/>
+
 
 
     </LinearLayout>
@@ -53,19 +54,30 @@
             android:id="@+id/TextViewLastMessageHour"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/last_message_time"
             android:textAlignment="textEnd"
-            android:textColor="@color/black"
             android:textSize="24sp" />
 
 
-        <ImageView
-            android:id="@+id/TextViewNumberOfNewMessages"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#00FFFFFF"
-            android:scaleType="centerInside"
-            android:src="@drawable/message1" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/TextViewChatId"
+                android:layout_width="45dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:enabled="true" />
+
+            <ImageView
+                android:id="@+id/TextViewNumberOfNewMessages"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#00FFFFFF"
+                android:scaleType="centerInside"
+                android:src="@drawable/message1" />
+        </LinearLayout>
 
 
     </LinearLayout>

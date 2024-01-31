@@ -31,6 +31,23 @@ interface ChatDao {
     fun getMessagesWithDetails(chatId: Int): Flow<List<RoomMessageWithUserDetails>>*/
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertChat(user: RoomChat)
+    suspend fun insertChat(user: RoomChat): Long
+
+    @Query("SELECT chats.*\n" +
+            "FROM chats\n" +
+            "LEFT JOIN user_chat ON chats.id = user_chat.chat_id\n" +
+            "LEFT JOIN users ON user_chat.user_id = users.id\n" +
+            "LEFT JOIN (\n" +
+            "    SELECT chat_id, MAX(created_at) AS max_created_at\n" +
+            "    FROM messages\n" +
+            "    GROUP BY chat_id\n" +
+            ") AS last_message ON chats.id = last_message.chat_id\n" +
+            "WHERE users.id_server = :userId\n" +
+            "ORDER BY COALESCE(last_message.max_created_at, chats.created_at) DESC;\n" )
+    suspend fun getChatsByUserId(userId: Int): List<RoomChat>
+
+    @Query("SELECT id from chats where id_server = :idServer")
+    suspend fun selectChatByServerId(idServer: Int?): Int
+
 
 }

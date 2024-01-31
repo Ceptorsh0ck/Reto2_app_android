@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.auth
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -11,10 +12,12 @@ import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.databinding.FragmentAuthInitialBinding
 import com.example.reto2_app_android.ui.AuthActivity
+import com.example.reto2_app_android.ui.MainActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.launchIn
@@ -93,6 +96,15 @@ class AuthInitialFragment : Fragment() {
             progressBar.incrementProgressBy(PROGRESS_INCREMENT)
         }
         if (authActivity.networkConnectionManager.isNetworkConnected) {
+            MyApp.userPreferences.saveRememberMeStatus(false   )
+            val rememberMe = MyApp.userPreferences.isRememberMeEnabled()
+            val loggedUser = MyApp.userPreferences.getLoggedUser()
+            if (rememberMe || loggedUser != null) {
+                val intent = Intent(activity, MainActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
+            }
+
             val newFragment = AuthLoginFragment()
             val transaction = parentFragmentManager.beginTransaction()
             transaction.replace(R.id.authFragmentContainerView, newFragment)

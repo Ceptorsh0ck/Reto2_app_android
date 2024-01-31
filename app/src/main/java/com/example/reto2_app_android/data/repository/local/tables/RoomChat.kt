@@ -9,7 +9,8 @@ import java.util.Date
 
 @Entity(tableName = "chats")
 data class RoomChat (
-    @PrimaryKey val id: Int,
+    @PrimaryKey(autoGenerate = true) var id: Int = 0,
+    @ColumnInfo(name = "id_server") val idServer: Int? = null,
     @ColumnInfo(name ="name") val name: String?,
     @ColumnInfo(name ="is_Public") val isPublic: Boolean,
     @ColumnInfo(name ="created_at") val createdAt: Date?,

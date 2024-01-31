@@ -21,7 +21,7 @@ data class ChatResponse_User(
     val username: String?,
     val dni: String?,
     val roles: List<ChatResponse_Rol>?,
-    val listChats: List<ChatResponse_Chat>?
+    var listChats: List<ChatResponse_Chat>?
 ): Parcelable{
     constructor(id: Int?,
                 email: String?,
@@ -61,6 +61,25 @@ data class ChatResponse_User(
         id,
         email,
         name,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+    )
+    constructor(): this(
+        null,
+        null,
+        null,
         null,
         null,
         null,

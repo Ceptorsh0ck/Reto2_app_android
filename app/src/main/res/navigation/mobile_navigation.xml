@@ -3,20 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_public">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.example.reto2_app_android.ui.home.HomeFragment"
+        android:id="@+id/navigation_public"
+        android:name="com.example.reto2_app_android.ui.publicChats.HomeFragment"
         android:label="@string/title_home"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:defaultNavHost="true"
         tools:layout="@layout/fragment_home" />
 
+<!--
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.example.reto2_app_android.ui.dashboard.DashboardFragment"
+        android:id="@+id/navigation_private"
+        android:name="com.example.reto2_app_android.ui.messages.DashboardFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
-
+        tools:layout="@layout/fragment_home" />
+-->
     <fragment
         android:id="@+id/navigation_settings"
         android:name="com.example.reto2_app_android.ui.settings.SettingsFragment"

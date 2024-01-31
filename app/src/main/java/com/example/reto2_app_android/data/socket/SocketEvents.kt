@@ -5,4 +5,6 @@ enum class SocketEvents(val value: String) {
     ON_SEND_MESSAGE("chat message"),
     ON_CONNECT("connect"),
     ON_DISCONNECT("disconnect"),
+    ON_SEND_ID_MESSAGE("chat message id"),
+    ON_DISCONECT_USER("user disconet"),
 }

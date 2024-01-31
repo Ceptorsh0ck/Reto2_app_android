@@ -202,10 +202,14 @@
 
     <!-- Chats miniature -->
     <string name="chats_name">Nombre del chat</string>
-    <string name="last_messaga">Ultimo mensanje</string>
+    <string name="last_messaga">Ultimo mensaje</string>
     <string name="last_message_time">00:00</string>
     <string name="messages_not_read">11</string>
 
     <string name="btn_connect">Conectarse</string>
-
+    <string name="noMesages">No hay mensajes</string>
+    <string name="emptyLogin">Rellene todos los campos</string>
+    <string name="agregarPersona">agregar persona</string>
+    <string name="enterMessage">Inserta message</string>
+    <string name="send">Enviar</string>
 </resources>

@@ -6,6 +6,7 @@ plugins {
     //Room
     id("kotlin-kapt")
     //NetworkConnectionManager
+
     id("dagger.hilt.android.plugin")
     //Firebase
     id("com.google.gms.google-services")
@@ -129,8 +130,12 @@ dependencies {
 
     implementation("org.jboss.spec.javax.sql:jboss-javax-sql-api_7.0_spec:2.0.0.Final")
     implementation ("com.squareup.moshi:moshi:1.12.0")
-    //Firesebase
+    //Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
+
+
+    // para utilizar eventBus
+    implementation("org.greenrobot:eventbus:3.2.0")
 
 }
 
