@@ -5,33 +5,37 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class UserNew(
+    var id: Int,
+    var email: String,
     var oldPassword: String,
     var newPassword: String,
     var name: String,
     var surname1: String,
     var surname2: String,
-    var DNI: String,
-    var telephone1: Int,
-    var telephone2: Int,
+    var dni: String,
+    var firstLogin: Boolean,
+    var phone1: Int,
+    var phone2: Int,
     var photo: String
 ) : Parcelable {
-    constructor() : this("", "", "", "", "", "", 0, 0, "")
-
-    // Constructor secundario solo para las contraseñas
     constructor(
         oldPassword: String,
         newPassword: String
-    ) : this(oldPassword, newPassword, "", "", "", "", 0, 0, "")
+    ) : this(0,"",oldPassword, newPassword, "", "", "", "",false, 0, 0, "")
 
-    // Constructor secundario para todo menos las contraseñas
     constructor(
+        id: Int,
+        email: String,
         newPassword: String,
         name: String,
         surname1: String,
         surname2: String,
-        DNI: String,
-        telephone1: Int,
-        telephone2: Int,
+        dni: String,
+        firstLogin: Boolean,
+        phone1: Int,
+        phone2: Int,
         photo: String
-    ) : this("", newPassword, name, surname1, surname2, DNI, telephone1, telephone2, photo)
+    ) : this(id, email, "", newPassword, name, surname1, surname2, dni,firstLogin, phone1, phone2, photo)
+    constructor() : this(0,"","", "", "", "", "", "",false, 0, 0, "")
+
 }
