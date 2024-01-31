@@ -52,23 +52,13 @@ class SocketIoService : Service() {
     private val notificationId = 1
     private lateinit var serviceScope: CoroutineScope
     private val mBinder: IBinder = LocalService()
-    private var messageQueue = mutableListOf<SocketMessageReq>()
-
+    private var messagesSended :Boolean = true
 
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.23:8085/"
+    private val SOCKET_HOST = "http://10.5.7.43:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
-
-    private val _connected = MutableLiveData<Resource<Boolean>>()
-    val connected : LiveData<Resource<Boolean>> get() = _connected
-
-    private val _messagesFromOtherServer = MutableLiveData<Resource<SocketMessageRes>>()
-    val messagesFromOtherServer : LiveData<Resource<SocketMessageRes>> get() = _messagesFromOtherServer
-
-    private val _messagesFromMeServer = MutableLiveData<Resource<SocketMessageResUpdate>>()
-    val messagesFromMeServer : LiveData<Resource<SocketMessageResUpdate>> get() = _messagesFromMeServer
 
     private val roomMessageRepository = RoomMessageDataSource();
 
@@ -149,7 +139,7 @@ class SocketIoService : Service() {
 
 
 
-    private fun startSocket() {
+    public fun startSocket() {
         val socketOptions = createSocketOptions()
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
@@ -181,14 +171,13 @@ class SocketIoService : Service() {
     private fun onConnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "conectado")
-            _connected.postValue(Resource.success(true))
         }
     }
 
     private fun onDisconnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "desconectado")
-            _connected.postValue(Resource.success(false))
+            messagesSended = true
         }
     }
 
@@ -225,7 +214,6 @@ class SocketIoService : Service() {
 
             val incomingMessage = MessageAdapter(roomId.toString(), message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
 
-
             serviceScope.launch {
                 if (roomMessage != null) {
                     val roomResponse = safeMessageInRomm(roomMessage)
@@ -243,22 +231,12 @@ class SocketIoService : Service() {
     }
 
 
-    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
+    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.insertMessage(message)
         }
     }
 
-    fun onNewMessageString(data: Any) {
-        try {
-            // Manejar el mensaje recibido
-            val message = data as String
-            Log.d(TAG, "mensaje recibido $message")
-            // ojo aqui no estoy actualizando la lista. aunque no deberiamos recibir strings
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
 
     private fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener { args ->
@@ -266,43 +244,20 @@ class SocketIoService : Service() {
             if (receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageResUpdate::class.java)
+                Log.i("Socket id", message.toString())
                 serviceScope.launch {
                     if (message != null) {
                         val roomResponse = roomMessageRepository.updateMessage(message)
-                        EventBus.getDefault().post(roomResponse.data)
+                        //EventBus.getDefault().post(roomResponse.data)
                     }
                 }
             }
         }
     }
-/*
-    fun addToMessageQueue(message: RoomMessages) {
-        messageQueue.add(message)
-    }
 
-    private fun sendPendingMessages() {
-        for (message in messageQueue) {
-            onSaveMessage(message.content,  "Group- " + message.chatId, message.id)
-        }
-        messageQueue.clear() // Limpiar la cola después de enviar los mensajes
-    }
-*/
     fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
         val socketMessage = SocketMessageReq(socketRoom, message, idServer)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
-/*
-    fun sendMessagesWhenConnectIsBack() {
-        Log.i("Reconezion", "funcion1")
-        serviceScope.launch {
-            val roomResponse = roomMessageRepository.getMessagesNoSended()
-            Log.i("Reconezion2", roomResponse.data.toString())
-            //messageQueue = roomResponse;
-
-            roomResponse.data!!.forEach {
-                onSaveMessage(it.message, it.room, it.idRoom)
-            }
-        }
-    }*/
 }

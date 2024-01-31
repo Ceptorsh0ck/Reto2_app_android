@@ -19,13 +19,13 @@ interface MessageDao {
     @Query("SELECT * FROM messages WHERE chat_id = :chatId order by id desc limit 1")
     suspend fun getLastMessageByRoomId(chatId: Int): RoomMessages?
 
-    @Query("SELECT messages.chat_Id as room, messages.content as text, users.email as authorName, messages.user_id as authorId, messages.data_type as dataType, messages.created_At as createdAt FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE chat_id = :chatId ORDER BY messages.id")
+    @Query("SELECT messages.chat_Id as room, messages.content as text, users.email as authorName, messages.user_id as authorId, messages.data_type as dataType, messages.created_At as createdAt, messages.id as idRoom FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE chat_id = :chatId ORDER BY messages.id")
     suspend fun getAllMessagesByChatId(chatId: Int): List<MessageAdapter>
 
     @Query("UPDATE messages SET id_server = :idServer, recived = true  WHERE id = :idRoom")
     suspend fun updateMessage(idRoom: Int, idServer: Int)
 
-    @Query("SELECT messages.chat_Id as room, messages.content as text, users.email as authorName, messages.user_id as authorId, messages.data_type as dataType, messages.created_At as createdAt FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE messages.id = :messageId")
+    @Query("SELECT messages.chat_Id as room, messages.content as text, users.email as authorName, messages.user_id as authorId, messages.data_type as dataType, messages.created_At as createdAt, messages.id as idRoom FROM messages LEFT JOIN users ON messages.user_id = users.id WHERE messages.id = :messageId")
     suspend fun getMessageById(messageId: Int): List<MessageAdapter>
     @Query("SELECT messages.id from messages where messages.id_server = :idServer")
     suspend fun selectById(idServer: Int?): Int

@@ -12,4 +12,5 @@ data class MessageAdapter (
     val fecha: String?,
     val hora: String?,
     val createdAt: Date? = null,
+    val idRoom: Int? = null
     )

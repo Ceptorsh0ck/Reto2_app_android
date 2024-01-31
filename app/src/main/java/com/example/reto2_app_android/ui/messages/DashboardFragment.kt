@@ -84,10 +84,7 @@ class DashboardFragment : Fragment() {
 
         llamadaAMetodoDelServicio()
         onClickTeclado(binding)
-        onMyNewMessageFromServer(binding)
-        onOtherMessageFromServer(binding)
         showRoomMessage(binding)
-        onConnectedChange(binding)
         onMessagesChange()
         buttonsListeners(binding)
         onMessageSendRoom(binding)
@@ -141,46 +138,17 @@ class DashboardFragment : Fragment() {
         }
     }
 
-    private fun onOtherMessageFromServer(binding: FragmentDashboardBinding){
-        myService.messagesFromOtherServer.observe(viewLifecycleOwner){
-            when (it.status){
-                Resource.Status.SUCCESS-> {
-                    viewModel.onNewMessageJsonObject(it.data!!)
-                }
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                }
-
-                Resource.Status.LOADING -> {
-                }
-            }
-        }
-    }
-
-    private fun onMyNewMessageFromServer(binding: FragmentDashboardBinding){
-        myService.messagesFromMeServer.observe(viewLifecycleOwner){
-            when (it.status){
-                Resource.Status.SUCCESS-> {
-                    viewModel.onUpdateMessageJsonObject(it.data!!)
-                }
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                }
-
-                Resource.Status.LOADING -> {
-                }
-            }
-        }
-    }
-
     private fun onMessageSendRoom(binding: FragmentDashboardBinding) {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
                     Log.i("gaardado en room", it.data.toString())
-                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data!!)
+
+                    messageAdapter.addMessages(it.data!!)
+                    val recyclerView: RecyclerView = binding.recyclerGroupChat
+                    recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+                    //if(MainActivity.)
+                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data.first().idRoom!!)
                 }
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
@@ -198,22 +166,7 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 
-    private fun onConnectedChange(binding: FragmentDashboardBinding) {
-        myService.connected.observe(viewLifecycleOwner) {
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                }
 
-                Resource.Status.ERROR -> {
-                    // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
-                    Log.d(TAG, "error al conectar...")
-                }
-
-                Resource.Status.LOADING -> {
-                }
-            }
-        }
-    }
     private fun onMessagesChange() {
         viewModel.messages.observe(viewLifecycleOwner) {
             Log.d(TAG, "messages change")

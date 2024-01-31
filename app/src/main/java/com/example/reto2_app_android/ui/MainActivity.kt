@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var myService: SocketIoService
     private var isBind = false
     var isConnected = false
+    var wifiOn = false
     private lateinit var locationManager: LocationManager
     private val locationPermissionCode = 2
     private lateinit var navController: NavController
@@ -77,10 +78,10 @@ class MainActivity : AppCompatActivity() {
                         if (it) {
                             res = getString(R.string.wifiIsConnected)
                             wifiIcon.setIcon(R.drawable.wifi_on)
-
-                            //myService.sendMessagesWhenConnectIsBack()
+                            wifiOn = true
                         } else {
                             res = getString(R.string.wifiIsDisconnected)
+                            wifiOn = false
                             wifiIcon.setIcon(R.drawable.wifi_off)
                         }
                         //Habria que cambiar el logo dependiendo de si esta online u offline

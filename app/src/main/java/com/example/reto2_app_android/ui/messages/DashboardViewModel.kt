@@ -48,9 +48,9 @@ class DashboardViewModel (
     val messages : LiveData<Resource<List<MessageAdapter>>> get() = _messages
 
 
-    private val _message = MutableLiveData<Resource<Int>>()
+    private val _message = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val message : MutableLiveData<Resource<Int>> get() = _message
+    val message : MutableLiveData<Resource<List<MessageAdapter>>> get() = _message
 
     private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
@@ -67,61 +67,6 @@ class DashboardViewModel (
     suspend fun getMessagesFromRoom(id: Int): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.getAllMessagesById(id);
-        }
-    }
-
-    fun onUpdateMessageJsonObject(message: SocketMessageResUpdate) {
-        try {
-
-            viewModelScope.launch {
-                val roomResponse = updateMessageInRomm(message)
-                _messagesRoom.value = roomResponse
-            }
-
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-
-    fun onNewMessageJsonObject(message : SocketMessageRes) {
-        try {
-            Log.i(TAG, message.authorName)
-
-            Log.i(TAG, message.messageType.toString())
-            val roomMessage = RoomMessages(
-                idServer = message.id,
-                content = message.message,
-                dataType = RoomDataType.TEXT,
-                createdAt = Date(),
-                updatedAt = Date(),
-                chatId = message.room.substring(message.room.length - 1, message.room.length).toInt(),
-                userId = message.authorId.toInt(),
-                recived = null
-            )
-            Log.i(TAG, roomMessage.toString())
-
-            viewModelScope.launch {
-                safeMessageInRomm(roomMessage)
-            }
-            updateMessageListWithNewMessage(message)
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-    private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
-        try {
-            val incomingMessage = MessageAdapter(message.room, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
-            val msgsList = _messages.value?.data?.toMutableList()
-            if (msgsList != null) {
-                msgsList.add(incomingMessage)
-                _messages.postValue(Resource.success(msgsList))
-            } else {
-                _messages.postValue(Resource.success(listOf(incomingMessage)))
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
         }
     }
 
@@ -145,15 +90,9 @@ class DashboardViewModel (
     }
 
 
-    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
+    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.insertMessage(message)
-        }
-    }
-
-    private suspend fun updateMessageInRomm(message: SocketMessageResUpdate): Resource<List<MessageAdapter>> {
-        return withContext(Dispatchers.IO) {
-            roomMessageRepository.updateMessage(message)
         }
     }
 

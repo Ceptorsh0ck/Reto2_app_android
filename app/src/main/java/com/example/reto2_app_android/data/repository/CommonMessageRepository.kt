@@ -8,7 +8,7 @@ import com.example.socketapp.data.socket.SocketMessageReq
 import com.example.socketapp.data.socket.SocketMessageRes
 
 interface CommonMessageRepository {
-    suspend fun insertMessage(message: RoomMessages): Resource<Int>
+    suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>>
 
     suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>>
 

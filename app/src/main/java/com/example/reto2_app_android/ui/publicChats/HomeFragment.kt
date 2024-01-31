@@ -125,30 +125,9 @@ class HomeFragment : Fragment(), LocationListener {
                 getLocation()
             }*/
         }
-        comprobarSiSeMySocketSeHaInicializado()
         return root
     }
-    fun onServiceInitialized() {
-        val mainActivity = activity as MainActivity
-        onOtherMessageFromServer(mainActivity.myService)
-    }
-    private fun comprobarSiSeMySocketSeHaInicializado() {
-        val mainActivity = activity as MainActivity
-        val timer = Timer()
-        val delay: Long = 500 // Retraso inicial
-        val period: Long = 500 // Intervalo de verificación en milisegundos (0.5 segundos)
 
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                if (mainActivity.isConnected) {
-                    Log.i("MainActivity", "Connect")
-                    onOtherMessageFromServer(mainActivity.myService)
-                    timer.cancel() // Detiene el temporizador una vez que se inicializa myService
-                } else {
-                }
-            }
-        }, delay, period)
-    }
     private fun onMessagesChange() {
         messagesViewModel.messages.observe(viewLifecycleOwner) {
             when (it.status) {
@@ -180,27 +159,6 @@ class HomeFragment : Fragment(), LocationListener {
             }
         }
     }
-
-    private fun onOtherMessageFromServer(myService: SocketIoService) {
-        Log.i("nuevo mensaje", "d")
-        viewLifecycleOwner.lifecycleScope.launch {
-            myService.messagesFromOtherServer.observe(viewLifecycleOwner) { it ->
-                when (it.status) {
-                    Resource.Status.SUCCESS -> {
-                        Log.d("Socket", "aaa" + it.data.toString())
-                        messagesViewModel.onNewMessageJsonObject(it.data!!)
-                    }
-                    Resource.Status.ERROR -> {
-                        //Toast.makeText(requireContext(), it.message, Toast.LENGTH_LONG).show()
-                    }
-                    Resource.Status.LOADING -> {
-                        // Handle loading state if needed
-                    }
-                }
-            }
-        }
-    }
-
 
 
     private fun openGoogleMaps(latitude: Double, longitude: Double) {

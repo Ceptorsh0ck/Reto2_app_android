@@ -13,10 +13,14 @@ import com.example.socketapp.data.socket.SocketMessageRes
 
 class RoomMessageDataSource: CommonMessageRepository {
     private val messageDao: MessageDao = MyApp.db.messageDao()
-    override suspend fun insertMessage(message: RoomMessages): Resource<Int> {
+    override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
         Log.d("insert", message.toString())
-        val insertResult = messageDao.insertMessage(message)
-        return Resource.success(insertResult.toInt())  // Assuming you want to return Int
+        if(messageDao.selectById(message.idServer) == null) {
+            val insertResult = messageDao.insertMessage(message)
+            return Resource.success(messageDao.getMessageById(insertResult.toInt()))  // Assuming you want to return Int
+        }
+        return Resource.error("El message ya existe en base de datos room")
+
     }
 
     override suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>> {
