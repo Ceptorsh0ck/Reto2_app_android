@@ -230,8 +230,8 @@ class HomeFragment : Fragment(), LocationListener {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onNotificationEmployee(chat:  List<ChatResponse_Chat>) {
-        homeAdapter.submitList(chat)
+    fun onNotificationEmployee(chat:  Resource<List<ChatResponse_Chat>>) {
+        homeAdapter.submitList(chat.data)
     }
 
 }

@@ -1,5 +1,8 @@
 package com.example.reto2_app_android.data.services
-import android.Manifest
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
+import java.lang.reflect.Type
+import java.text.SimpleDateFormat
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Notification
 import android.app.NotificationChannel
@@ -40,6 +43,8 @@ import com.example.socketapp.data.socket.SocketEvents
 import com.example.socketapp.data.socket.SocketMessageReq
 import com.example.socketapp.data.socket.SocketMessageRes
 import com.google.gson.Gson
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonElement
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -209,12 +214,28 @@ class SocketIoService : Service() {
 
 
     private fun onAddUserChatRecive(): Emitter.Listener? {
-        return Emitter.Listener {args ->
+        // Definir el formato de fecha deseado
+        val dateFormat = SimpleDateFormat("ddMMyyyyHHmmss")
+
+        // Crear un deserializador personalizado para el tipo Date
+        val dateDeserializer = object : JsonDeserializer<Date> {
+            override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date {
+                val dateString = json.asString
+                return dateFormat.parse(dateString)
+            }
+        }
+
+        // Crear un GsonBuilder y configurarlo con el adaptador de fecha personalizado
+        val gsonBuilder = GsonBuilder()
+        gsonBuilder.registerTypeAdapter(Date::class.java, dateDeserializer)
+        val gson = gsonBuilder.create()
+
+        return Emitter.Listener { args ->
             val receivedMessage = args[0]
             Log.i("recive nuevo chat", "hola")
             if(receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
-                val message = Gson().fromJson(jsonObjectString, ChatResponse_Chat::class.java)
+                val message = gson.fromJson(jsonObjectString, ChatResponse_Chat::class.java)
                 serviceScope.launch {
                     safeChatInRoom(message)
                     EventBus.getDefault().post(getChatsFromRoom())
