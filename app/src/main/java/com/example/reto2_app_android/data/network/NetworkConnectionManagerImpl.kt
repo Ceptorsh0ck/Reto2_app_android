@@ -147,7 +147,9 @@ class NetworkConnectionManagerImpl @Inject constructor(
 //                        hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) -> true
         hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                 hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) &&
-                (hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) -> true
+                (hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                        hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) -> true
+
         else -> false
     }
 }
