@@ -120,6 +120,8 @@ class HomeFragment : Fragment(), LocationListener {
             }
         }
 
+
+
         binding.buttonLocation.setOnClickListener {
             chatViewModel.updateChatsList()
             /*if(checkLocationPermissions()) {
@@ -225,6 +227,11 @@ class HomeFragment : Fragment(), LocationListener {
         Toast.makeText(context, message.toString(), Toast.LENGTH_LONG).show()
         chatViewModel.getChatFromRoom()
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(chat:  List<ChatResponse_Chat>) {
+        homeAdapter.submitList(chat)
     }
 
 }

@@ -23,10 +23,15 @@ import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
+import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
+import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
+import com.example.reto2_app_android.data.repository.local.tables.RoomUser
+import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
@@ -58,13 +63,17 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://192.168.1.153:8085/"
+    private val SOCKET_HOST = "http://10.5.7.56:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val roomMessageRepository = RoomMessageDataSource();
-
+    private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado
     private val SOCKET_ROOM = "default-room"
+
+    private val _items = MutableLiveData<Resource<List<ChatResponse_Chat>>>()
+
+    val items: LiveData<Resource<List<ChatResponse_Chat>>> get() = _items
 
     inner class LocalService : Binder() {
         val service: SocketIoService
@@ -149,10 +158,12 @@ class SocketIoService : Service() {
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
         mSocket.on(SocketEvents.ON_DISCONECT_USER.value, onUserDisconnect())
-        // usuari odesconectado
+        mSocket.on(SocketEvents.ON_ADD_USER_CHAT_RECIVE.value, onAddUserChatRecive())
 
         mSocket.connect()
     }
+
+
 
     private fun onUserDisconnect(): Emitter.Listener? {
         return Emitter.Listener {
@@ -197,6 +208,27 @@ class SocketIoService : Service() {
     }
 
 
+    private fun onAddUserChatRecive(): Emitter.Listener? {
+        return Emitter.Listener {args ->
+            val receivedMessage = args[0]
+            Log.i("recive nuevo chat", "hola")
+            if(receivedMessage is JSONObject) {
+                val jsonObjectString = receivedMessage.toString()
+                val message = Gson().fromJson(jsonObjectString, ChatResponse_Chat::class.java)
+                serviceScope.launch {
+                    safeChatInRoom(message)
+                    EventBus.getDefault().post(getChatsFromRoom())
+                }
+            }
+        }
+    }
+
+    suspend fun getChatsFromRoom(): Resource<List<ChatResponse_Chat>>{
+        return  withContext(Dispatchers.IO){
+            chatMessageDataSource.getChats()
+        }
+    }
+
     fun saveNewMessageRoom(message: SocketMessageRes) {
         // message: String, socketRoom: Int, userId: Int
         try {
@@ -237,7 +269,11 @@ class SocketIoService : Service() {
             roomMessageRepository.insertMessage(message)
         }
     }
-
+    private suspend fun safeChatInRoom(message: ChatResponse_Chat) {
+        return withContext(Dispatchers.IO) {
+            chatMessageDataSource.addchat(message)
+        }
+    }
 
     private fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener { args ->
