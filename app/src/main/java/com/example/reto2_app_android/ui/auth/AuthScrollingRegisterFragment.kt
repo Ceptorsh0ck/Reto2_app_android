@@ -60,8 +60,19 @@ class AuthScrollingRegisterFragment : Fragment() {
     ): View? {
 
 
+
+
         registerBinding =
             FragmentAuthScrollingRegisterBinding.inflate(layoutInflater, container, false)
+
+        if(MyApp.userPreferences.getLoggedUser() != null){
+            registerBinding.registerName.setText(MyApp.userPreferences.getLoggedUser()?.name)
+            registerBinding.registerSurname1.setText(MyApp.userPreferences.getLoggedUser()?.surname)
+            registerBinding.registerSurname2.setText(MyApp.userPreferences.getLoggedUser()?.surname2)
+            registerBinding.registerDocumentation.setText(MyApp.userPreferences.getLoggedUser()?.dni)
+            registerBinding.registerTelephone1.setText(MyApp.userPreferences.getLoggedUser()?.phone1.toString())
+            registerBinding.registerTelephone2.setText(MyApp.userPreferences.getLoggedUser()?.phone2.toString())
+        }
 
         registerBinding.registerButton.setOnClickListener() {
             if (checkAllInputs() && validatePhone(
