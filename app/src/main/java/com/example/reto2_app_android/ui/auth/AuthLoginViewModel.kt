@@ -30,14 +30,12 @@ class AuthLoginViewModel (
     fun registerUser(user: UserNew) {
         viewModelScope.launch {
             val authResponse = registerUserRepository(user)
-            Log.d("AuthLoginViewModel", "registerUserRepository: $authResponse")
 
             _register.value = authResponse
         }
     }
     private suspend fun registerUserRepository(user: UserNew) : Resource<UserNew> {
         return withContext(Dispatchers.IO) {
-            Log.d("AuthLoginViewModel", "registerUserRepository: $user")
             userRepositoryRemote.registerUser(user)
         }
     }

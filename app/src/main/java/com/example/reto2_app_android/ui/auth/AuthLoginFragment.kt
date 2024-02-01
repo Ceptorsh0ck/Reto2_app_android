@@ -59,6 +59,20 @@ class AuthLoginFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         loginBinding = FragmentAuthLoginBinding.inflate(layoutInflater, container, false)
+        val args = arguments
+        Log.d(TAG, "JON: $args")
+        if (args != null) {
+            val loginUsername = args.getString("email")
+            Log.d(TAG, "JON: $loginUsername")
+            if (loginUsername != null) {
+                loginUsername?.let {
+                    loginBinding.loginUsername.setText(it)
+                    loginBinding.loginUsername.setBackgroundColor(resources.getColor(R.color.yellow))
+
+                }
+            }
+
+        }
 
         loginBinding.loginButton.setOnClickListener() {
             if (loginBinding.loginUsername.text.isNotEmpty() && loginBinding.loginPassword.text.isNotEmpty()) {
@@ -88,7 +102,7 @@ class AuthLoginFragment : Fragment() {
                         if (MyApp.userPreferences.getLoggedUser()?.firstLogin == false) {
                             val rememberMe = loginBinding.loginRememberMe.isChecked
                             MyApp.userPreferences.saveRememberMeStatus(rememberMe)
-                            
+
                             val intent = Intent(activity, MainActivity::class.java)
                             startActivity(intent)
                             activity?.finish()

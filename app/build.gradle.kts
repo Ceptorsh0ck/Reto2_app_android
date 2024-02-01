@@ -133,7 +133,6 @@ dependencies {
     //Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
 
-
     // para utilizar eventBus
     implementation("org.greenrobot:eventbus:3.2.0")
 

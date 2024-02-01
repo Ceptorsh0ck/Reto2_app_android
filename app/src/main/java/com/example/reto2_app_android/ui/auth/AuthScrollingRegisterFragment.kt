@@ -84,10 +84,7 @@ class AuthScrollingRegisterFragment : Fragment() {
                 val byteArray = outputStream.toByteArray()
                 val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
                 userNew?.photo = encodedImage
-                Log.i(
-                    "Gorka-Prueba",
-                    "UserNew: " + MyApp.userPreferences.getLoggedUser()?.id.toString()
-                )
+
 
                 UserNew(
                     MyApp.userPreferences.getLoggedUser()?.id!!,
@@ -117,7 +114,12 @@ class AuthScrollingRegisterFragment : Fragment() {
                     it.data?.let { data ->
                         //TODO hay que volver al login con los nuevos datos precargados
                         MyApp.userPreferences.unLogUser()
-                        val newFragment = AuthLoginFragment()
+
+                        val newFragment = AuthLoginFragment().apply {
+                            arguments = Bundle().apply {
+                                putString("email", data.email)
+                            }
+                        }
                         val transaction = parentFragmentManager.beginTransaction()
                         transaction.replace(R.id.authFragmentContainerView, newFragment)
                         transaction.addToBackStack(null)
