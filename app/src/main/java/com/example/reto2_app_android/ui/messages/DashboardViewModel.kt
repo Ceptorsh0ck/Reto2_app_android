@@ -60,16 +60,7 @@ class DashboardViewModel (
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
     val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
 
-  //TODO esto de aqui hay que borrar?
-/*
-    private val SOCKET_HOST = "http://10.5.7.80:8085/"
-    private val AUTHORIZATION_HEADER = "Authorization"
 
-    private lateinit var mSocket: Socket
-
-    // TODO esto esta hardcodeeado
-    private val SOCKET_ROOM = "default-room"
-    */
 
 
     /*fun startSocket() {

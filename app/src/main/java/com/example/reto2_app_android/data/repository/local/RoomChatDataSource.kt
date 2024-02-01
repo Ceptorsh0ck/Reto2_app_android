@@ -41,6 +41,7 @@ class RoomChatDataSource: CommonChatRepository {
                         }
                     }
 
+
                     if (chatMessage != null) {
 
                         val userFromRoom = userDao.selectUserOfMessage(mesage.userId)
