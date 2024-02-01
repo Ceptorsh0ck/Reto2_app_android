@@ -30,7 +30,9 @@
         <service
             android:name=".data.services.SocketIoService"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"
+           />
+
         <activity
             android:name=".ui.AuthActivity"
             android:exported="true">

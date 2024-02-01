@@ -49,6 +49,10 @@
     <string name="registerErrorPhoto">Error al almacenar la foto</string>
 
 
+    <!-- Register Chat -->
+    <string name="nameChat">nombre del chat</string>
+    <string name="newChat">crear chat</string>
+
     <!-- Navigation -->
     <string name="chats">Chats</string>
     <string name="settings">Ajustes</string>
