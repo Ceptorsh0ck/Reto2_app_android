@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.data.repository.remote
 
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonChatRepository
@@ -18,3 +19,8 @@ class RemoteChatsDataSource: BaseDataSource(), CommonChatRepository {
             TODO("Not yet implemented")
         }
     }
+
+    override suspend fun deleteUserChat(message: AddPeopleResponse) {
+        TODO("Not yet implemented")
+    }
+}
