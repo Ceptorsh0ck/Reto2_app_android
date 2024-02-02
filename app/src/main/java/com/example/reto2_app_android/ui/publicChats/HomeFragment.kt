@@ -22,7 +22,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
@@ -33,14 +32,12 @@ import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
-import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -93,9 +90,9 @@ class HomeFragment : Fragment(), LocationListener {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -130,11 +127,11 @@ class HomeFragment : Fragment(), LocationListener {
                 getLocation()
             }*/
         }
+
         binding.addNewChat.setOnClickListener {
             Log.d("fff","bton")
             openNewChat()
         }
-        comprobarSiSeMySocketSeHaInicializado()
         return root
     }
 
@@ -143,7 +140,6 @@ class HomeFragment : Fragment(), LocationListener {
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
         builder.setView(dialogView)
-        Log.d("hhds,","openchar")
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName).text.toString()
@@ -167,29 +163,7 @@ class HomeFragment : Fragment(), LocationListener {
 
     }
 
-    fun onServiceInitialized() {
-        val mainActivity = activity as MainActivity
-        onOtherMessageFromServer(mainActivity.myService)
-    }
-    private fun comprobarSiSeMySocketSeHaInicializado() {
-        val mainActivity = activity as MainActivity
-        val timer = Timer()
-        val delay: Long = 500 // Retraso inicial
-        val period: Long = 500 // Intervalo de verificación en milisegundos (0.5 segundos)
 
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                if (mainActivity.isConnected) {
-                    Log.i("MainActivity", "Connect")
-                    onOtherMessageFromServer(mainActivity.myService)
-                    timer.cancel() // Detiene el temporizador una vez que se inicializa myService
-                } else {
-                }
-            }
-        }, delay, period)
-    }
-        return root
-    }
 
     private fun onMessagesChange() {
         messagesViewModel.messages.observe(viewLifecycleOwner) {
