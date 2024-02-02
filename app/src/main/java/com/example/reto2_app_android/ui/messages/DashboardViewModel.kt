@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.AddPeople
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
@@ -30,16 +32,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 class DashboardViewModelFactory(
-    private val roomMessageRepository: CommonMessageRepository
+    private val roomMessageRepository: CommonMessageRepository,
+    private val serverMessageRepository: CommonMessageRepository
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        return DashboardViewModel(roomMessageRepository) as T
+        return DashboardViewModel(roomMessageRepository, serverMessageRepository) as T
     }
 }
 
 
 class DashboardViewModel (
-    private val roomMessageRepository: CommonMessageRepository
+    private val roomMessageRepository: CommonMessageRepository,
+    private val serverMessageRepository: CommonMessageRepository
 ) : ViewModel() {
 
     private val TAG = "SocketViewModel"
@@ -48,13 +52,42 @@ class DashboardViewModel (
     val messages : LiveData<Resource<List<MessageAdapter>>> get() = _messages
 
 
-    private val _message = MutableLiveData<Resource<Int>>()
+    private val _message = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val message : MutableLiveData<Resource<Int>> get() = _message
+    val message : MutableLiveData<Resource<List<MessageAdapter>>> get() = _message
 
     private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
     val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
+
+    private val _users = MutableLiveData<Resource<List<AddPeople>>>()
+
+    val users : MutableLiveData<Resource<List<AddPeople>>>get() = _users
+
+    private val _addPeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
+
+    val addPeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _addPeople
+
+
+    private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
+    val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
+
+
+
+
+    /*fun startSocket() {
+        val socketOptions = createSocketOptions();
+        mSocket = IO.socket(SOCKET_HOST, socketOptions);
+
+        mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
+        mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
+
+        mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
+        mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
+        viewModelScope.launch {
+            connect()
+        }
+    }*/
 
 
     fun getAllMessages(id: Int) {
@@ -64,64 +97,65 @@ class DashboardViewModel (
         }
     }
 
+    fun getUsersToInsertIntoChats(idChat: Int){
+        viewModelScope.launch {
+            val serverResponse = getUsersFromServer(idChat)
+            _users.value = serverResponse;
+        }
+    }
+
+    fun getUsersToDeleteIntoChats(idChat: Int) {
+        viewModelScope.launch {
+            val serverResponse = getUsersFromServerToDelete(idChat)
+            _users.value = serverResponse;
+        }
+    }
+
+    fun updateChatUsers( idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
+        viewModelScope.launch {
+            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
+            Log.d(TAG, list.toString())
+            val serverResponse = serverAddUserToRoom(idChat, list)
+            _addPeople.value = Resource.success(list)
+        }
+    }
+
+    fun updateChatUsersDelete(idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
+        viewModelScope.launch {
+            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
+            Log.d(TAG, list.toString())
+            val serverResponse = serverDeleteUserToRoom(idChat, list)
+            _addPeople.value = Resource.success(list)
+        }
+    }
+
+    private suspend fun serverAddUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.addUsersToChats(idChat, list)
+        }
+    }
+
+    private suspend fun serverDeleteUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.deleteUsersToChats(idChat, list)
+        }
+    }
+
+    private suspend fun getUsersFromServer(idChat: Int): Resource<List<AddPeople>> {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.getAllUsersToInsertIntoChat(idChat)
+        }
+    }
+    private suspend fun getUsersFromServerToDelete(idChat: Int): Resource<List<AddPeople>>? {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.getAllUsersToDeleteIntoChat(idChat)
+        }
+    }
+
+
     suspend fun getMessagesFromRoom(id: Int): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.getAllMessagesById(id);
-        }
-    }
-
-    fun onUpdateMessageJsonObject(message: SocketMessageResUpdate) {
-        try {
-
-            viewModelScope.launch {
-                val roomResponse = updateMessageInRomm(message)
-                _messagesRoom.value = roomResponse
-            }
-
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-
-    fun onNewMessageJsonObject(message : SocketMessageRes) {
-        try {
-            Log.i(TAG, message.authorName)
-
-            Log.i(TAG, message.messageType.toString())
-            val roomMessage = RoomMessages(
-                idServer = message.id,
-                content = message.message,
-                dataType = RoomDataType.TEXT,
-                createdAt = Date(),
-                updatedAt = Date(),
-                chatId = message.room.substring(message.room.length - 1, message.room.length).toInt(),
-                userId = message.authorId.toInt(),
-                recived = null
-            )
-            Log.i(TAG, roomMessage.toString())
-
-            viewModelScope.launch {
-                safeMessageInRomm(roomMessage)
-            }
-            updateMessageListWithNewMessage(message)
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
-        }
-    }
-
-    private fun updateMessageListWithNewMessage(message: SocketMessageRes) {
-        try {
-            val incomingMessage = MessageAdapter(message.room, message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
-            val msgsList = _messages.value?.data?.toMutableList()
-            if (msgsList != null) {
-                msgsList.add(incomingMessage)
-                _messages.postValue(Resource.success(msgsList))
-            } else {
-                _messages.postValue(Resource.success(listOf(incomingMessage)))
-            }
-        } catch (ex: Exception) {
-            Log.e(TAG, ex.message!!)
         }
     }
 
@@ -135,7 +169,7 @@ class DashboardViewModel (
             userId = userId,
             recived = false
         )
-
+        Log.i("hola", roomMessage.toString())
         viewModelScope.launch {
             if (roomMessage != null) {
                 val roomResponse = safeMessageInRomm(roomMessage)
@@ -145,17 +179,13 @@ class DashboardViewModel (
     }
 
 
-    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<Int> {
+    private suspend fun safeMessageInRomm(message: RoomMessages): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.insertMessage(message)
         }
     }
 
-    private suspend fun updateMessageInRomm(message: SocketMessageResUpdate): Resource<List<MessageAdapter>> {
-        return withContext(Dispatchers.IO) {
-            roomMessageRepository.updateMessage(message)
-        }
-    }
+
 
 
 }

@@ -214,6 +214,8 @@
     <string name="noMesages">No hay mensajes</string>
     <string name="emptyLogin">Rellene todos los campos</string>
     <string name="agregarPersona">agregar persona</string>
+    <string name="eliminarPersona">agregar persona</string>
     <string name="enterMessage">Inserta message</string>
     <string name="send">Enviar</string>
+    <string name="invalidRegister">Campos no validos en el registro</string>
 </resources>

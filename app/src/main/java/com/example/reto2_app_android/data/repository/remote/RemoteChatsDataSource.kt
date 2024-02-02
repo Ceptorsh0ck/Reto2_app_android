@@ -13,5 +13,7 @@ class RemoteChatsDataSource: BaseDataSource(), CommonChatRepository {
 
     override suspend fun createChat(chat: ChatResponse_Chat, userId: Int) = getResult {
         RetrofitClient.apiInterface.createChat(chat, userId)
+    override suspend fun addchat(chat: ChatResponse_Chat) {
+        TODO("Not yet implemented")
     }
 }

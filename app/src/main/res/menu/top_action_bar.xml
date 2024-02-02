@@ -8,11 +8,12 @@
          app:showAsAction="never" />-->
     <item
         android:id="@+id/action_wifi_icon"
+        android:enabled="false"
         android:icon="@drawable/wifi_off"
+        android:iconTint="@style/Theme.Reto2_app_android"
         android:orderInCategory="100"
         android:title="Wifi"
-        app:showAsAction="always"
-        android:iconTint="@style/Theme.Reto2_app_android"/>
+        app:showAsAction="always" />
     <group
         android:id="@+id/action_dropdown_group"
         android:layout_width="match_parent"

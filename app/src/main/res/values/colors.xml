@@ -8,17 +8,20 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#6200EE</color>
+    <color name="yellow">#D5CD87</color>
 
     <!-- Colores para el chat "me" -->
     <color name="colorChatMeBackground">#774df2</color>
     <color name="colorChatMeText">#ffffff</color>
-    <color name="colorChatMeDate">#C0C0C0</color>
+    <color name="colorChatMeDate">#DFDCDC</color>
 
     <!-- Colores para el chat "other" -->
     <color name="colorChatOtherBackground">#eef1f6</color>
     <color name="colorChatOtherText">#000000</color>
-    <color name="colorChatOtherDate">#C0C0C0</color>
+    <color name="colorChatOtherDate">#E3E0E0</color>
     <color name="colorDivider">#e0e0e0</color>
+    <color name="chatTimestampTextColor">#000000</color>
+    <color name="chatTimestampTextColorDark">#FFFFFF</color>
 
 
     <color name="colorTextoClaro">#000000</color> <!-- Color del texto en modo claro -->

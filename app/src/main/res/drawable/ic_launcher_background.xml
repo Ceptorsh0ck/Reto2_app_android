@@ -1,0 +1,19 @@
+<!-- res/drawable/ic_launcher_background.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo del círculo -->
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#061C36" />
+        </shape>
+    </item>
+
+    <!-- Icono dentro del círculo (ajusta la posición según sea necesario) -->
+    <item
+        android:drawable="@drawable/elorrieta_logo"
+        android:width="24dp"
+        android:height="24dp"
+        android:gravity="center">
+    </item>
+
+</layer-list>

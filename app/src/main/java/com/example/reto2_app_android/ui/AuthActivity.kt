@@ -13,6 +13,7 @@ import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.databinding.AuthLayoutBinding
 import com.example.reto2_app_android.ui.auth.AuthInitialFragment
+import com.example.reto2_app_android.ui.auth.AuthLoginFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -27,6 +28,22 @@ class AuthActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val logoutExtra = intent.getBooleanExtra("logout", false)
+        if (logoutExtra) {
+            authLayoutBinding = AuthLayoutBinding.inflate(layoutInflater)
+            setContentView(authLayoutBinding.root)
+            MyApp.userPreferences.unLogUser()
+            val fragmentManager = supportFragmentManager
+            val fragmentTransaction = fragmentManager.beginTransaction()
+            val fragment = AuthLoginFragment()
+            fragmentTransaction.replace(R.id.authFragmentContainerView, fragment)
+            fragmentTransaction.commit()
+
+            return
+        }
+
+
 
 
         var wifiIcon : MenuItem
@@ -53,7 +70,7 @@ class AuthActivity: AppCompatActivity() {
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                TODO("Not yet implemented")
+                return false
             }
         })
 
