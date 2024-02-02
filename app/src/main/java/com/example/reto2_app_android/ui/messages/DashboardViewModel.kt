@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.AddPeople
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
@@ -30,16 +32,18 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 class DashboardViewModelFactory(
-    private val roomMessageRepository: CommonMessageRepository
+    private val roomMessageRepository: CommonMessageRepository,
+    private val serverMessageRepository: CommonMessageRepository
 ): ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        return DashboardViewModel(roomMessageRepository) as T
+        return DashboardViewModel(roomMessageRepository, serverMessageRepository) as T
     }
 }
 
 
 class DashboardViewModel (
-    private val roomMessageRepository: CommonMessageRepository
+    private val roomMessageRepository: CommonMessageRepository,
+    private val serverMessageRepository: CommonMessageRepository
 ) : ViewModel() {
 
     private val TAG = "SocketViewModel"
@@ -55,6 +59,14 @@ class DashboardViewModel (
     private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
     val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
+
+    private val _users = MutableLiveData<Resource<List<AddPeople>>>()
+
+    val users : MutableLiveData<Resource<List<AddPeople>>>get() = _users
+
+    private val _addPeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
+
+    val addPeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _addPeople
 
 
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
@@ -85,6 +97,34 @@ class DashboardViewModel (
         }
     }
 
+    fun getUsersToInsertIntoChats(idChat: Int){
+        viewModelScope.launch {
+            val serverResponse = getUsersFromServer(idChat)
+            _users.value = serverResponse;
+        }
+    }
+
+    fun updateChatUsers( idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
+        viewModelScope.launch {
+            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
+            Log.d(TAG, list.toString())
+            val serverResponse = serverAddUserToRoom(idChat, list)
+            _addPeople.value = Resource.success(list)
+        }
+    }
+
+    private suspend fun serverAddUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.addUsersToChats(idChat, list)
+        }
+    }
+
+    private suspend fun getUsersFromServer(idChat: Int): Resource<List<AddPeople>> {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.getAllUsersToInsertIntoChat(idChat)
+        }
+    }
+
     suspend fun getMessagesFromRoom(id: Int): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.getAllMessagesById(id);
@@ -101,7 +141,7 @@ class DashboardViewModel (
             userId = userId,
             recived = false
         )
-
+        Log.i("hola", roomMessage.toString())
         viewModelScope.launch {
             if (roomMessage != null) {
                 val roomResponse = safeMessageInRomm(roomMessage)

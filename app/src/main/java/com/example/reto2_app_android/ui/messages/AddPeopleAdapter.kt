@@ -1,13 +1,10 @@
 package com.example.reto2_app_android.ui.messages
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.viewbinding.ViewBinding
-import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.databinding.PopupListItemBinding
 
@@ -33,7 +30,12 @@ class AddPeopleAdapter() :
     inner class AddPeopleViewHolder(private val binding: PopupListItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(people: AddPeople) {
-            binding.emailCheckBox.text = people.mail
+            val email = people.email
+            val atIndex = email.indexOf('@')
+            val textToShow = if (atIndex != -1) email.substring(0, atIndex) else email
+
+            binding.emailCheckBox.text = textToShow
+            binding.idTextView.text = people.userId.toString()
             binding.adminCheckBox.text = "Admin"
         }
     }

@@ -8,4 +8,6 @@ import com.example.reto2_app_android.utils.Resource
 
 interface CommonChatRepository {
     suspend fun getChats(): Resource<List<ChatResponse_Chat>>
+
+    suspend fun addchat(chat: ChatResponse_Chat)
 }

@@ -1,5 +1,8 @@
 package com.example.reto2_app_android.data.services
-import android.Manifest
+import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializer
+import java.lang.reflect.Type
+import java.text.SimpleDateFormat
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Notification
 import android.app.NotificationChannel
@@ -21,11 +24,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
+import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
+import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
+import com.example.reto2_app_android.data.repository.local.tables.RoomUser
+import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
@@ -34,6 +43,8 @@ import com.example.socketapp.data.socket.SocketEvents
 import com.example.socketapp.data.socket.SocketMessageReq
 import com.example.socketapp.data.socket.SocketMessageRes
 import com.google.gson.Gson
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonElement
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -56,16 +67,21 @@ class SocketIoService : Service() {
 
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
+
+    private val SOCKET_HOST = "http://10.5.7.16:8085/"
     //private lateinit var viewModel: DashboardViewModel
-    private val SOCKET_HOST = "http://10.5.7.80:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
     private val roomMessageRepository = RoomMessageDataSource();
-
+    private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado
     private val SOCKET_ROOM = "default-room"
+
+    private val _items = MutableLiveData<Resource<List<ChatResponse_Chat>>>()
+
+    val items: LiveData<Resource<List<ChatResponse_Chat>>> get() = _items
 
     inner class LocalService : Binder() {
         val service: SocketIoService
@@ -150,10 +166,12 @@ class SocketIoService : Service() {
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
         mSocket.on(SocketEvents.ON_DISCONECT_USER.value, onUserDisconnect())
-        // usuari odesconectado
+        mSocket.on(SocketEvents.ON_ADD_USER_CHAT_RECIVE.value, onAddUserChatRecive())
 
         mSocket.connect()
     }
+
+
 
     private fun onUserDisconnect(): Emitter.Listener? {
         return Emitter.Listener {
@@ -198,6 +216,43 @@ class SocketIoService : Service() {
     }
 
 
+    private fun onAddUserChatRecive(): Emitter.Listener? {
+        // Definir el formato de fecha deseado
+        val dateFormat = SimpleDateFormat("ddMMyyyyHHmmss")
+
+        // Crear un deserializador personalizado para el tipo Date
+        val dateDeserializer = object : JsonDeserializer<Date> {
+            override fun deserialize(json: JsonElement, typeOfT: Type, context: JsonDeserializationContext): Date {
+                val dateString = json.asString
+                return dateFormat.parse(dateString)
+            }
+        }
+
+        // Crear un GsonBuilder y configurarlo con el adaptador de fecha personalizado
+        val gsonBuilder = GsonBuilder()
+        gsonBuilder.registerTypeAdapter(Date::class.java, dateDeserializer)
+        val gson = gsonBuilder.create()
+
+        return Emitter.Listener { args ->
+            val receivedMessage = args[0]
+            Log.i("recive nuevo chat", "hola")
+            if(receivedMessage is JSONObject) {
+                val jsonObjectString = receivedMessage.toString()
+                val message = gson.fromJson(jsonObjectString, ChatResponse_Chat::class.java)
+                serviceScope.launch {
+                    safeChatInRoom(message)
+                    EventBus.getDefault().post(getChatsFromRoom())
+                }
+            }
+        }
+    }
+
+    suspend fun getChatsFromRoom(): Resource<List<ChatResponse_Chat>>{
+        return  withContext(Dispatchers.IO){
+            chatMessageDataSource.getChats()
+        }
+    }
+
     fun saveNewMessageRoom(message: SocketMessageRes) {
         // message: String, socketRoom: Int, userId: Int
         try {
@@ -238,7 +293,11 @@ class SocketIoService : Service() {
             roomMessageRepository.insertMessage(message)
         }
     }
-
+    private suspend fun safeChatInRoom(message: ChatResponse_Chat) {
+        return withContext(Dispatchers.IO) {
+            chatMessageDataSource.addchat(message)
+        }
+    }
 
     private fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener { args ->
@@ -261,5 +320,11 @@ class SocketIoService : Service() {
         val socketMessage = SocketMessageReq(socketRoom, message, idServer)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
+    }
+
+    fun addUsersToChats(userId: Int, chatId: Int, admin: Boolean) {
+        val socketMessage = AddPeopleResponse(userId, chatId, admin)
+        val jsonObject = JSONObject(Gson().toJson(socketMessage))
+        mSocket.emit(SocketEvents.ON_ADD_USER_CHAT_SEND.value, jsonObject)
     }
 }
