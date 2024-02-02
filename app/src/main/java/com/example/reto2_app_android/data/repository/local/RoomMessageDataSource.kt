@@ -19,6 +19,7 @@ class RoomMessageDataSource: CommonMessageRepository {
     private val messageDao: MessageDao = MyApp.db.messageDao()
     private val chatDao: ChatDao = MyApp.db.chatDao()
     private val userDao: UserDao = MyApp.db.userDao()
+
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
         Log.d("insert", message.toString())
         if(messageDao.selectById(message.idServer) == null) {

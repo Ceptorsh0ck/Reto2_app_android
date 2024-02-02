@@ -68,9 +68,12 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.56:8085/"
+    private val SOCKET_HOST = "http://10.5.7.16:8085/"
+    //private lateinit var viewModel: DashboardViewModel
     private val AUTHORIZATION_HEADER = "Authorization"
 
+    private val _connected = MutableLiveData<Resource<Boolean>>()
+    val connected : LiveData<Resource<Boolean>> get() = _connected
     private val roomMessageRepository = RoomMessageDataSource();
     private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado

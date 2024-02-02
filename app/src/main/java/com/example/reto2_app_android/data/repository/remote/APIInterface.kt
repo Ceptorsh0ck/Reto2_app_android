@@ -6,6 +6,7 @@ import com.example.reto2_app_android.data.AuthenticationResponse
 import com.example.reto2_app_android.data.Chat
 import com.example.reto2_app_android.data.User
 import com.example.reto2_app_android.data.UserLogin
+import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.model.ChatResponse_UserMessage
@@ -21,15 +22,14 @@ interface APIInterface {
 
     @GET("chats")
     suspend fun getChats(): Response<List<ChatResponse_Chat>>
-
     @POST("auth/login")
     suspend fun loginUser(@Body user: UserLogin): Response<AuthenticationResponse>
-
     @GET("{chatId}/getUser")
     suspend fun getAllUsersToInsertIntoChat(@Path("chatId") chatId: Int): Response<List<AddPeople>>
-
     @POST("chats/{chatId}/add-users")
     suspend fun addUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
+    @PUT("auth/register")
+    suspend fun registerUser(@Body user: UserNew): Response<UserNew>
 
 
 }
