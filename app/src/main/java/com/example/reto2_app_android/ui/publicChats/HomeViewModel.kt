@@ -78,10 +78,7 @@ class HomeViewModel (
     fun updateChatsList(){
         viewModelScope.launch {
             val repoResponse = getChatsFromRepository()
-            //_items.value = repoResponse
-            // tODO meter en room los que no estan y meter en items.value los mismos
-            //
-          safeChatsInRoom(repoResponse.data!!, MyApp.db)
+            repoResponse.data?.let { safeChatsInRoom(it, MyApp.db) }
         }
     }
 
