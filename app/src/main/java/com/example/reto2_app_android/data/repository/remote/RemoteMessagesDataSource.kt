@@ -30,7 +30,15 @@ class RemoteMessagesDataSource: BaseDataSource(), CommonMessageRepository {
         RetrofitClient.apiInterface.getAllUsersToInsertIntoChat(idChat)
     }
 
+    override suspend fun getAllUsersToDeleteIntoChat(idChat: Int)= getResult {
+        RetrofitClient.apiInterface.getAllUsersToDeleteIntoChat(idChat)
+    }
+
     override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
         RetrofitClient.apiInterface.addUsersToChats(idChat, list)
+    }
+
+    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
+        RetrofitClient.apiInterface.deleteUsersToChats(idChat, list)
     }
 }

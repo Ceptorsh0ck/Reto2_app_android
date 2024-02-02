@@ -83,11 +83,27 @@ class DashboardViewModel (
         }
     }
 
+    fun getUsersToDeleteIntoChats(idChat: Int) {
+        viewModelScope.launch {
+            val serverResponse = getUsersFromServerToDelete(idChat)
+            _users.value = serverResponse;
+        }
+    }
+
     fun updateChatUsers( idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
         viewModelScope.launch {
             val list: List<AddPeopleResponse> = selectedPeopleList.toList()
             Log.d(TAG, list.toString())
             val serverResponse = serverAddUserToRoom(idChat, list)
+            _addPeople.value = Resource.success(list)
+        }
+    }
+
+    fun updateChatUsersDelete(idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
+        viewModelScope.launch {
+            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
+            Log.d(TAG, list.toString())
+            val serverResponse = serverDeleteUserToRoom(idChat, list)
             _addPeople.value = Resource.success(list)
         }
     }
@@ -98,11 +114,23 @@ class DashboardViewModel (
         }
     }
 
+    private suspend fun serverDeleteUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.deleteUsersToChats(idChat, list)
+        }
+    }
+
     private suspend fun getUsersFromServer(idChat: Int): Resource<List<AddPeople>> {
         return withContext(Dispatchers.IO) {
             serverMessageRepository.getAllUsersToInsertIntoChat(idChat)
         }
     }
+    private suspend fun getUsersFromServerToDelete(idChat: Int): Resource<List<AddPeople>>? {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.getAllUsersToDeleteIntoChat(idChat)
+        }
+    }
+
 
     suspend fun getMessagesFromRoom(id: Int): Resource<List<MessageAdapter>> {
         return withContext(Dispatchers.IO) {
@@ -135,6 +163,8 @@ class DashboardViewModel (
             roomMessageRepository.insertMessage(message)
         }
     }
+
+
 
 
 }

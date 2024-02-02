@@ -298,7 +298,52 @@ class DashboardFragment : Fragment() {
             val dialog = builder.create()
             dialog.show()
         }
+        binding.buttonToolbarDeletePeopleChat.setOnClickListener {
+            val builder = AlertDialog.Builder(requireContext())
 
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.popup_layout, null)
+
+            // Encuentra el RecyclerView en el diseño del popup
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerView)
+
+            // Configura el LinearLayoutManager (o cualquier otro LayoutManager que desees)
+            val layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.layoutManager = layoutManager
+
+            // Crea y configura el adaptador para el RecyclerView
+            addPeopleAdapter = AddPeopleAdapter()
+            recyclerView.adapter = addPeopleAdapter
+            viewModel.getUsersToDeleteIntoChats(chat!!.id)
+
+            builder.setView(dialogView)
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+                val selectedPeopleList = mutableListOf<AddPeopleResponse>()
+
+                // Iterar sobre los elementos del RecyclerView
+                for (i in 0 until recyclerView.childCount) {
+                    val view = recyclerView.getChildAt(i)
+                    val emailCheckBox = view.findViewById<CheckBox>(R.id.emailCheckBox)
+                    val adminCheckBox = view.findViewById<CheckBox>(R.id.adminCheckBox)
+                    val id = view.findViewById<TextView>(R.id.idTextView).text.toString().toInt()
+                    val email = emailCheckBox.text.toString()
+
+                    // Comprobar si el CheckBox de correo electrónico está marcado
+                    if (emailCheckBox.isChecked) {
+                        // Agregar un objeto AddPeople con isAdmin según el estado del CheckBox de administrador
+                        selectedPeopleList.add(AddPeopleResponse(id, chat!!.id, adminCheckBox.isChecked))
+                    }
+                }
+                Log.i("lista de", selectedPeopleList.toString())
+                viewModel.updateChatUsersDelete( chat!!.id, selectedPeopleList)
+            }
+            builder.setNegativeButton("Cancelar") { _, _ ->
+
+            }
+            val dialog = builder.create()
+            dialog.show()
+        }
     }
 
     // para el EventBus
