@@ -18,6 +18,10 @@ interface CommonMessageRepository {
     suspend fun getMessagesNoSended(): Resource<List<SocketMessageReq>>
 
     suspend fun getAllUsersToInsertIntoChat(idChat: Int): Resource<List<AddPeople>>
+
+    suspend fun getAllUsersToDeleteIntoChat(idChat: Int): Resource<List<AddPeople>>
+
     suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
+    suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
 
 }

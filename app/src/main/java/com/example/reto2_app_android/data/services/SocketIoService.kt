@@ -68,8 +68,7 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.16:8085/"
-    //private lateinit var viewModel: DashboardViewModel
+    private val SOCKET_HOST = "http://10.5.7.79:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()

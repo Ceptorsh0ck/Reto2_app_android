@@ -80,8 +80,16 @@ class RoomMessageDataSource: CommonMessageRepository {
         return Resource.error("error")
     }
 
+    override suspend fun getAllUsersToDeleteIntoChat(idChat: Int): Resource<List<AddPeople>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
 
+    }
+
+    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
+        TODO("Not yet implemented")
     }
 
 
