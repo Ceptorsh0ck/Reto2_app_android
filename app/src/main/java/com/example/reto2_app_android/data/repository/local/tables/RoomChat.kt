@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverters
+import com.example.reto2_app_android.data.repository.local.converters.Converters
 import java.util.Date
 
 
@@ -15,4 +17,11 @@ data class RoomChat (
     @ColumnInfo(name ="is_Public") val isPublic: Boolean,
     @ColumnInfo(name ="created_at") val createdAt: Date?,
     @ColumnInfo(name ="updated_at") val updatedAt: Date?
+
+   /* @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+    @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
+    val createdAt: Date? = null,
+    @ColumnInfo(name = "updated_at", defaultValue = "CURRENT_TIMESTAMP")
+    @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
+    val updatedAt: Date? = null*/
 )

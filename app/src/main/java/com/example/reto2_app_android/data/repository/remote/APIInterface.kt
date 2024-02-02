@@ -6,6 +6,7 @@ import com.example.reto2_app_android.data.AuthenticationResponse
 import com.example.reto2_app_android.data.Chat
 import com.example.reto2_app_android.data.User
 import com.example.reto2_app_android.data.UserLogin
+import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_User
@@ -38,6 +39,12 @@ interface APIInterface {
 
     @DELETE("chats/{chatId}/remove-users")
     suspend fun deleteUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
+
+
+
+    @POST("chats/{userId}")
+    suspend fun createChat(@Body chat: ChatResponse_Chat, @Path("userId") userId: Int): Response<Int>
+
 
 
 }

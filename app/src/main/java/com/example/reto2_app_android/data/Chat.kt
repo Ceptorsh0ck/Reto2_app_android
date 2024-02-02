@@ -4,10 +4,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName ="chats")
-data class Chat (
+data class Chat(
     @PrimaryKey(autoGenerate = true) val id: Int?,
     val isPublic: Boolean,
     val name: String,
-    val messages: List<Message>,
+    val messages: Boolean,
     val users: List<UserChat>,
 )

@@ -138,6 +138,12 @@ dependencies {
     // para utilizar eventBus
     implementation("org.greenrobot:eventbus:3.2.0")
 
+
+
+        implementation("androidx.annotation:annotation:1.6.0")
+        // To use the Java-compatible @Experimental API annotation
+        implementation("androidx.annotation:annotation-experimental:1.4.0-dev01")
+
 }
 
 kapt {

@@ -47,6 +47,9 @@
     <string name="inputEmpty">Derrigorrezkoa da betetzea</string>
     <string name="registerErrorPhoto">Ezin da argazkia gorde</string>
 
+    <!-- Register Chat -->
+    <string name="nameChat">txataren izena</string>
+    <string name="newChat">Txat berria</string>
 
     <!-- Navigation -->
     <string name="chats">Txatak</string>
