@@ -96,30 +96,48 @@ class AuthInitialFragment : Fragment() {
             progressBar.incrementProgressBy(PROGRESS_INCREMENT)
         }
         if (authActivity.networkConnectionManager.isNetworkConnected) {
-            MyApp.userPreferences.saveRememberMeStatus(false   )
-            val rememberMe = MyApp.userPreferences.isRememberMeEnabled()
-            val loggedUser = MyApp.userPreferences.getLoggedUser()
-            if (rememberMe || loggedUser != null) {
+
+            if(isUserLogged()){
                 val intent = Intent(activity, MainActivity::class.java)
                 startActivity(intent)
                 activity?.finish()
+            }else {
+
+                val newFragment = AuthLoginFragment()
+                val transaction = parentFragmentManager.beginTransaction()
+                transaction.replace(R.id.authFragmentContainerView, newFragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+            }
+        } else {
+            if(isUserLogged()){
+                val intent = Intent(activity, MainActivity::class.java)
+                startActivity(intent)
+                activity?.finish()
+            }else {
+                progressBar.progress = 0
+                progressBar.secondaryProgress = 0
+                progressBar.isIndeterminate = true
+                Toast.makeText(context,getString(R.string.noWifi), Toast.LENGTH_SHORT).show()
+                delay(2000)
+                Toast.makeText(context,getString(R.string.reconnecting), Toast.LENGTH_SHORT).show()
+
             }
 
-            val newFragment = AuthLoginFragment()
-            val transaction = parentFragmentManager.beginTransaction()
-            transaction.replace(R.id.authFragmentContainerView, newFragment)
-            transaction.addToBackStack(null)
-            transaction.commit()
-        } else {
-            progressBar.progress = 0
-            progressBar.secondaryProgress = 0
-            progressBar.isIndeterminate = true
-            Toast.makeText(context,getString(R.string.noWifi), Toast.LENGTH_SHORT).show()
-            delay(2000)
-            Toast.makeText(context,getString(R.string.reconnecting), Toast.LENGTH_SHORT).show()
         }
 
     }
+    private fun isUserLogged() : Boolean {
+        val rememberMe = MyApp.userPreferences.isRememberMeEnabled()
+        val loggedUser = MyApp.userPreferences.getLoggedUser()
+        if (rememberMe || loggedUser != null) {
+            return true
+        }
+        return false
+    }
+
+
+
 
 //    fun isNetworkAvailable(context: Context): Boolean {
 //        val connectivityManager =
