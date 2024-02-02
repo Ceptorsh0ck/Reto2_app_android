@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import androidx.room.Delete
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.data.AddPeopleResponse
@@ -64,9 +65,17 @@ class DashboardViewModel (
 
     val users : MutableLiveData<Resource<List<AddPeople>>>get() = _users
 
+    private val _usersDelete = MutableLiveData<Resource<List<AddPeople>>>()
+
+    val usersDelete : MutableLiveData<Resource<List<AddPeople>>>get() = _usersDelete
+
     private val _addPeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
 
     val addPeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _addPeople
+
+    private val _deletePeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
+
+    val deletePeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _deletePeople
 
 
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
@@ -107,7 +116,7 @@ class DashboardViewModel (
     fun getUsersToDeleteIntoChats(idChat: Int) {
         viewModelScope.launch {
             val serverResponse = getUsersFromServerToDelete(idChat)
-            _users.value = serverResponse;
+            _usersDelete.value = serverResponse
         }
     }
 
@@ -125,7 +134,8 @@ class DashboardViewModel (
             val list: List<AddPeopleResponse> = selectedPeopleList.toList()
             Log.d(TAG, list.toString())
             val serverResponse = serverDeleteUserToRoom(idChat, list)
-            _addPeople.value = Resource.success(list)
+            Log.i("delete", "delete from room")
+            _deletePeople.value = Resource.success(list)
         }
     }
 
@@ -146,7 +156,7 @@ class DashboardViewModel (
             serverMessageRepository.getAllUsersToInsertIntoChat(idChat)
         }
     }
-    private suspend fun getUsersFromServerToDelete(idChat: Int): Resource<List<AddPeople>>? {
+    private suspend fun getUsersFromServerToDelete(idChat: Int): Resource<List<AddPeople>> {
         return withContext(Dispatchers.IO) {
             serverMessageRepository.getAllUsersToDeleteIntoChat(idChat)
         }

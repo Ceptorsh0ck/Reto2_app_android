@@ -1,7 +1,6 @@
 package com.example.reto2_app_android.ui.dashboard
 
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,37 +8,28 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBindings
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
-import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
-import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
-import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
-import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
-import com.example.reto2_app_android.ui.publicChats.HomeAdapter
+import com.example.reto2_app_android.ui.messages.DeletePeopleAdapter
 import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.text.SimpleDateFormat
-import java.util.Date
 
 private const val ARG_CHAT = "chat"
 
@@ -51,6 +41,7 @@ class DashboardFragment : Fragment() {
     // onDestroyView.
     private lateinit var myService: SocketIoService
     private lateinit var addPeopleAdapter: AddPeopleAdapter
+    private lateinit var deletePeopleAdapter: DeletePeopleAdapter
     private val roomMessageRepository = RoomMessageDataSource();
     private val serverMessageRepository = RemoteMessagesDataSource();
     private val TAG = "SocketActivity"
@@ -116,6 +107,20 @@ class DashboardFragment : Fragment() {
                 }
             }
         }
+        viewModel.usersDelete.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    Log.i("lista de ", it.data.toString())
+                    deletePeopleAdapter.submitList(it.data)
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+
+                }
+            }
+        }
     }
 
     private fun returnServerUsersAdd() {
@@ -125,6 +130,22 @@ class DashboardFragment : Fragment() {
                     it.data!!.forEach {
 
                         myService.addUsersToChats(it.userId, it.chatId, it.admin)
+                    }
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+
+                }
+            }
+        }
+        viewModel.deletePeople.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    it.data!!.forEach {
+
+                        myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
                     }
                 }
                 Resource.Status.ERROR -> {
@@ -312,8 +333,8 @@ class DashboardFragment : Fragment() {
             recyclerView.layoutManager = layoutManager
 
             // Crea y configura el adaptador para el RecyclerView
-            addPeopleAdapter = AddPeopleAdapter()
-            recyclerView.adapter = addPeopleAdapter
+            deletePeopleAdapter = DeletePeopleAdapter()
+            recyclerView.adapter = deletePeopleAdapter
             viewModel.getUsersToDeleteIntoChats(chat!!.id)
 
             builder.setView(dialogView)
@@ -325,14 +346,13 @@ class DashboardFragment : Fragment() {
                 for (i in 0 until recyclerView.childCount) {
                     val view = recyclerView.getChildAt(i)
                     val emailCheckBox = view.findViewById<CheckBox>(R.id.emailCheckBox)
-                    val adminCheckBox = view.findViewById<CheckBox>(R.id.adminCheckBox)
                     val id = view.findViewById<TextView>(R.id.idTextView).text.toString().toInt()
                     val email = emailCheckBox.text.toString()
 
                     // Comprobar si el CheckBox de correo electrónico está marcado
                     if (emailCheckBox.isChecked) {
                         // Agregar un objeto AddPeople con isAdmin según el estado del CheckBox de administrador
-                        selectedPeopleList.add(AddPeopleResponse(id, chat!!.id, adminCheckBox.isChecked))
+                        selectedPeopleList.add(AddPeopleResponse(id, chat!!.id, false))
                     }
                 }
                 Log.i("lista de", selectedPeopleList.toString())

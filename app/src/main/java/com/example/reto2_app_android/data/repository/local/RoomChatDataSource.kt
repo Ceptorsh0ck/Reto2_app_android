@@ -1,7 +1,9 @@
 package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
+import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_Message
 import com.example.reto2_app_android.data.model.ChatResponse_User
@@ -185,6 +187,18 @@ class RoomChatDataSource: CommonChatRepository {
                     messageDao.insertMessage(message)
                 }
             }
+        }
+    }
+
+    override suspend fun deleteUserChat(message: AddPeopleResponse) {
+        try {
+            var userId = userDao.selectUserByServerId(message.userId)
+            var chatId = chatDao.selectChatByServerId(message.chatId)
+
+            userCharDao.deleteUserChat(chatId, userId)
+        }
+        catch (e: Exception) {
+            Log.e("error", e.message.toString())
         }
     }
 }

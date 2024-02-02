@@ -166,7 +166,7 @@ class SocketIoService : Service() {
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
         mSocket.on(SocketEvents.ON_DISCONECT_USER.value, onUserDisconnect())
         mSocket.on(SocketEvents.ON_ADD_USER_CHAT_RECIVE.value, onAddUserChatRecive())
-
+        mSocket.on(SocketEvents.ON_DELETE_USER_CHAT_RECIVE.value, onDeleteUserChatRecive())
         mSocket.connect()
     }
 
@@ -214,6 +214,22 @@ class SocketIoService : Service() {
         }
     }
 
+
+    private fun onDeleteUserChatRecive(): Emitter.Listener {
+
+        return Emitter.Listener { args ->
+            val receivedMessage = args[0]
+            Log.i("recive nuevo chat", "hola")
+            if(receivedMessage is JSONObject) {
+                    val jsonObjectString = receivedMessage.toString()
+                    val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
+                    serviceScope.launch {
+                        deleteUserChatInRoom(message)
+                        EventBus.getDefault().post(getChatsFromRoom())
+                    }
+            }
+        }
+    }
 
     private fun onAddUserChatRecive(): Emitter.Listener? {
         // Definir el formato de fecha deseado
@@ -298,6 +314,12 @@ class SocketIoService : Service() {
         }
     }
 
+    private suspend fun deleteUserChatInRoom(message: AddPeopleResponse) {
+        return withContext(Dispatchers.IO) {
+            chatMessageDataSource.deleteUserChat(message)
+        }
+    }
+
     private fun onReciveMessageId(): Emitter.Listener {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
@@ -325,5 +347,11 @@ class SocketIoService : Service() {
         val socketMessage = AddPeopleResponse(userId, chatId, admin)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_ADD_USER_CHAT_SEND.value, jsonObject)
+    }
+
+    fun deleteUsersToChats(userId: Int, chatId: Int, admin: Boolean) {
+        val socketMessage = AddPeopleResponse(userId, chatId, admin)
+        val jsonObject = JSONObject(Gson().toJson(socketMessage))
+        mSocket.emit(SocketEvents.ON_DELETE_USER_CHAT_SEND.value, jsonObject)
     }
 }

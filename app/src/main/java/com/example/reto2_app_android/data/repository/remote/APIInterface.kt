@@ -36,7 +36,7 @@ interface APIInterface {
     @PUT("auth/register")
     suspend fun registerUser(@Body user: UserNew): Response<UserNew>
 
-    @DELETE("chats/{chatId}/remove-users")
+    @POST("chats/{chatId}/remove-users")
     suspend fun deleteUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
 
 

@@ -6,18 +6,18 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.data.AddPeople
-import com.example.reto2_app_android.databinding.PopupListAddItemBinding
+import com.example.reto2_app_android.databinding.PopupListDeleteItemBinding
 
 
-class AddPeopleAdapter() :
-    ListAdapter<AddPeople, AddPeopleAdapter.AddPeopleViewHolder>(AddPeopleDiffCallback()) {
+class DeletePeopleAdapter() :
+    ListAdapter<AddPeople, DeletePeopleAdapter.DeletePeopleViewHolder>(DeletePeopleDiffCallback()) {
     private lateinit var recyclerView: RecyclerView
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AddPeopleViewHolder {
-        val binding = PopupListAddItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return AddPeopleViewHolder(binding)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeletePeopleViewHolder {
+        val binding = PopupListDeleteItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return DeletePeopleViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: AddPeopleViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: DeletePeopleViewHolder, position: Int) {
         val people = getItem(position)
         holder.bind(people)
     }
@@ -27,7 +27,7 @@ class AddPeopleAdapter() :
         this.recyclerView = recyclerView
     }
 
-    inner class AddPeopleViewHolder(private val binding: PopupListAddItemBinding) :
+    inner class DeletePeopleViewHolder(private val binding: PopupListDeleteItemBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(people: AddPeople) {
             val email = people.email
@@ -36,12 +36,11 @@ class AddPeopleAdapter() :
 
             binding.emailCheckBox.text = textToShow
             binding.idTextView.text = people.userId.toString()
-            binding.adminCheckBox.text = "Admin"
         }
     }
 
 
-    class AddPeopleDiffCallback : DiffUtil.ItemCallback<AddPeople>() {
+    class DeletePeopleDiffCallback : DiffUtil.ItemCallback<AddPeople>() {
 
         override fun areItemsTheSame(oldItem: AddPeople, newItem: AddPeople): Boolean {
             // TODO
