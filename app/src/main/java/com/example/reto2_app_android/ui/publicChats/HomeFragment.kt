@@ -120,13 +120,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
 
-        binding.buttonLocation.setOnClickListener {
-            chatViewModel.updateChatsList()
-            /*if(checkLocationPermissions()) {
-                ubicacionObtenida = false
-                getLocation()
-            }*/
-        }
+
 
         binding.addNewChat.setOnClickListener {
             Log.d("fff","bton")
