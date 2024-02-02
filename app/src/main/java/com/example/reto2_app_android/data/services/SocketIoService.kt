@@ -214,19 +214,17 @@ class SocketIoService : Service() {
         }
     }
 
-
     private fun onDeleteUserChatRecive(): Emitter.Listener {
-
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
             Log.i("recive nuevo chat", "hola")
             if(receivedMessage is JSONObject) {
-                    val jsonObjectString = receivedMessage.toString()
-                    val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
-                    serviceScope.launch {
-                        deleteUserChatInRoom(message)
-                        EventBus.getDefault().post(getChatsFromRoom())
-                    }
+                val jsonObjectString = receivedMessage.toString()
+                val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
+                serviceScope.launch {
+                    deleteUserChatInRoom(message)
+                    EventBus.getDefault().post(getChatsFromRoom())
+                }
             }
         }
     }
