@@ -1,6 +1,5 @@
 package com.example.reto2_app_android.ui.publicChats
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -8,22 +7,20 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.Chat
+import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
-import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.repository.CommonChatRepository
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
-import com.example.reto2_app_android.data.repository.local.tables.RoomRole
 import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
-import com.example.reto2_app_android.data.repository.local.tables.RoomUserRol
 import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.sql.Date
-import javax.sql.rowset.serial.SerialBlob
+import java.util.Date
 
 class HomeViewModelFactory(
     private val remoteChatRepository: CommonChatRepository,
@@ -49,26 +46,39 @@ class HomeViewModel (
 
     val items: LiveData<Resource<List<ChatResponse_Chat>>> get() = _items
 
+    private val _created = MutableLiveData<Resource<Int>>()
+    val created: LiveData<Resource<Int>> get() = _created
     init {
         getChatFromRoom()
         updateChatsList()
 
     }
-
-    fun getChatFromRoom(){
+        fun getChatFromRoom(){
         viewModelScope.launch {
             val roomResponse = getChatsFromRoom()
             _items.value = roomResponse
+        }
+    }
+    fun onAddChat(isPublic: Boolean, name: String) {
+        val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
+
+        viewModelScope.launch {
+            _created.value = createNewChat(newChat)
+        }
+    }
+
+
+    private suspend fun createNewChat(newChat: ChatResponse_Chat): Resource<Int> {
+        return withContext(Dispatchers.IO) {
+            val id= 0
+            chatRepository.createChat(newChat, id)
         }
     }
 
     fun updateChatsList(){
         viewModelScope.launch {
             val repoResponse = getChatsFromRepository()
-            //_items.value = repoResponse
-            // tODO meter en room los que no estan y meter en items.value los mismos
-            //
-          safeChatsInRoom(repoResponse.data!!, MyApp.db)
+            repoResponse.data?.let { safeChatsInRoom(it, MyApp.db) }
         }
     }
 

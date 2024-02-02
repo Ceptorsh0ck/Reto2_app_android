@@ -1,6 +1,7 @@
 package com.example.reto2_app_android.ui.publicChats
 
 import android.Manifest
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
@@ -14,13 +15,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.EditText
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
@@ -31,15 +32,12 @@ import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
-import com.example.reto2_app_android.data.services.SocketIoService
-import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
-import kotlinx.coroutines.launch
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -92,9 +90,9 @@ class HomeFragment : Fragment(), LocationListener {
     }
 
     override fun onCreateView(
-            inflater: LayoutInflater,
-            container: ViewGroup?,
-            savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
@@ -129,8 +127,43 @@ class HomeFragment : Fragment(), LocationListener {
                 getLocation()
             }*/
         }
+
+        binding.addNewChat.setOnClickListener {
+            Log.d("fff","bton")
+            openNewChat()
+        }
         return root
     }
+
+    private fun openNewChat() {
+        val builder = AlertDialog.Builder(requireContext())
+        val inflater = layoutInflater
+        val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
+        builder.setView(dialogView)
+        builder.setPositiveButton("Crear Chat") { _, _ ->
+
+            val name = dialogView.findViewById<EditText>(R.id.editTextChatName).text.toString()
+            val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
+            val isPublic = isPublicCheckBox.isChecked
+
+
+            chatViewModel.onAddChat(
+
+                isPublic,
+                name
+            )
+
+        }
+        builder.setNegativeButton("Cancelar") { _, _ ->
+
+        }
+        builder.create()
+        builder.show()
+
+
+    }
+
+
 
     private fun onMessagesChange() {
         messagesViewModel.messages.observe(viewLifecycleOwner) {

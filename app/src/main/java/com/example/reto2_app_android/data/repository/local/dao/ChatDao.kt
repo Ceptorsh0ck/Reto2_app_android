@@ -1,17 +1,11 @@
 package com.example.reto2_app_android.data.repository.local.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Transaction
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
-import com.example.reto2_app_android.data.repository.local.tables.RoomChatWithDetails
-import com.example.reto2_app_android.data.repository.local.tables.RoomMessageWithUserDetails
-import com.example.reto2_app_android.data.repository.local.tables.RoomUser
-import com.example.reto2_app_android.data.repository.local.tables.RoomUserChatWithDetails
-import kotlinx.coroutines.flow.Flow
+
 
 @Dao
 interface ChatDao {
@@ -29,6 +23,11 @@ interface ChatDao {
     @Transaction
     @Query("SELECT * FROM messages WHERE chatId = :chatId")
     fun getMessagesWithDetails(chatId: Int): Flow<List<RoomMessageWithUserDetails>>*/
+   /* @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertChat1(chat: RoomChat): Long
+*/
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertChats(chat: RoomChat): Long
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertChat(user: RoomChat): Long

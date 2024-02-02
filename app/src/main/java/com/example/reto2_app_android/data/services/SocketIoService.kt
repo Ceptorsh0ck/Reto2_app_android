@@ -68,7 +68,7 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.79:8085/"
+    private val SOCKET_HOST = "http://10.5.7.16:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
@@ -141,6 +141,7 @@ class SocketIoService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("services", "onStartCommand")
         val contentText = "ElorChat"
+        Log.i("services", startId.toString())
         startForeground(notificationId, createNotification(contentText))
         startSocket()
         return START_NOT_STICKY
