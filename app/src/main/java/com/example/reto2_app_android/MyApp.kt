@@ -50,5 +50,11 @@ class MyApp : Application() {
     override fun onLowMemory() {
         super.onLowMemory()
     }
+    override fun onTerminate() {
+        super.onTerminate()
+        if (!userPreferences.isRememberMeEnabled()) {
+            userPreferences.unLogUser()
+        }
+    }
 
 }
