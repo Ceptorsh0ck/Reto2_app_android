@@ -71,6 +71,8 @@ class SocketIoService : Service() {
     private val SOCKET_HOST = "http://10.5.7.79:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
+    private val _connected = MutableLiveData<Resource<Boolean>>()
+    val connected : LiveData<Resource<Boolean>> get() = _connected
     private val roomMessageRepository = RoomMessageDataSource();
     private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado

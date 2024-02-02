@@ -213,4 +213,5 @@
     <string name="eliminarPersona">agregar persona</string>
     <string name="enterMessage">Inserta message</string>
     <string name="send">Enviar</string>
+    <string name="invalidRegister">Campos no validos en el registro</string>
 </resources>

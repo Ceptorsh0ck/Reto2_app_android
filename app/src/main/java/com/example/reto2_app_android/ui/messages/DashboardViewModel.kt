@@ -69,6 +69,27 @@ class DashboardViewModel (
     val addPeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _addPeople
 
 
+    private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
+    val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
+
+
+
+
+    /*fun startSocket() {
+        val socketOptions = createSocketOptions();
+        mSocket = IO.socket(SOCKET_HOST, socketOptions);
+
+        mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
+        mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
+
+        mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
+        mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
+        viewModelScope.launch {
+            connect()
+        }
+    }*/
+
+
     fun getAllMessages(id: Int) {
         viewModelScope.launch {
             val roomResponse = getMessagesFromRoom(id)

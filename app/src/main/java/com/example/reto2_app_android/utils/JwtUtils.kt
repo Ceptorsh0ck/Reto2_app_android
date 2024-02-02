@@ -13,11 +13,15 @@ object JWTUtils {
         try {
             val tokenBody = token.split(".")[1]
             val decodedTokenString = getJson(tokenBody)
+            Log.d("JWTUtils", "decoded: $decodedTokenString")
             val jsonObject = JSONObject(decodedTokenString)
-            Log.d("JON", "decoded: $jsonObject")
             val id = jsonObject.getInt("id")
             val name = jsonObject.getString("name")
             val surname = jsonObject.getString("surname1")
+            val surname2 = jsonObject.getString("surname2")
+            val dni = jsonObject.getString("DNI")
+            val phone1 = jsonObject.getInt("phoneNumber1")
+            val phone2 = jsonObject.getInt("phoneNumber2")
             val email = jsonObject.getString("email")
             val firstLogin = jsonObject.getBoolean("firstLogin")
 
@@ -32,7 +36,7 @@ object JWTUtils {
                 roles.add(role)
             }
 
-            return User(id, name, surname, email, firstLogin, roles)
+            return User(id, name, surname, surname2, dni, phone1, phone2, email, firstLogin, roles)
         } catch (e: UnsupportedEncodingException) {
             e.printStackTrace()
         }

@@ -9,6 +9,8 @@ plugins {
     //NetworkConnectionManager
 
     id("dagger.hilt.android.plugin")
+    //Firebase
+    id("com.google.gms.google-services")
 
 }
 
@@ -64,6 +66,7 @@ dependencies {
 
     //NetworkConnectionManager
     implementation ("javax.inject:javax.inject:1")
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0")
     val hiltVersion = "2.50"
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     kapt ("com.google.dagger:hilt-compiler:$hiltVersion")
@@ -106,6 +109,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
@@ -128,7 +132,8 @@ dependencies {
 
     implementation("org.jboss.spec.javax.sql:jboss-javax-sql-api_7.0_spec:2.0.0.Final")
     implementation ("com.squareup.moshi:moshi:1.12.0")
-
+    //Firebase
+    implementation(platform("com.google.firebase:firebase-bom:32.7.1"))
 
     // para utilizar eventBus
     implementation("org.greenrobot:eventbus:3.2.0")
