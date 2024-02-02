@@ -16,7 +16,7 @@
         android:paddingEnd="8dp"
         android:paddingBottom="4dp"
         android:text="June 10"
-        android:textColor="#C0C0C0"
+        android:textColor="?android:textColorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -36,6 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="John Grady Cole"
+        android:textColor="?android:textColorPrimary"
         android:textSize="16sp"
         app:layout_constraintStart_toEndOf="@+id/image_view_chat_other_profile"
         app:layout_constraintTop_toBottomOf="@+id/text_view_chat_other_date" />
@@ -78,8 +79,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="8:00"
-        android:textColor="@color/colorChatOtherDate"
-        android:textSize="10sp"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="@+id/card_view_chat_other_message"
         app:layout_constraintStart_toEndOf="@+id/card_view_chat_other_message" />
 
