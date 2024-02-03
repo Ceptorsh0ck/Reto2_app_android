@@ -1,6 +1,6 @@
 # Chat App
 
-![Chat App](![res/drawable/elorchat_recortada.png))
+![Chat App](app/src/main/res/drawable/elorchat_recortada.png)
 
 ## Descripción del Proyecto
 
