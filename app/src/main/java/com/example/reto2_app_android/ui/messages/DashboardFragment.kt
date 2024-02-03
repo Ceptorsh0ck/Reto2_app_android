@@ -37,6 +37,7 @@ import androidx.viewbinding.ViewBindings
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
+import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
@@ -548,5 +549,13 @@ class DashboardFragment : Fragment(), LocationListener {
         messageAdapter.addMessages(message)
         val recyclerView: RecyclerView = binding.recyclerGroupChat
         recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(userDeleted: DeletePeople) {
+        Log.i("chatidddd", userDeleted.chatId.toString())
+        if(chat!!.id == userDeleted.chatId){
+            requireActivity().supportFragmentManager.popBackStack()
+        }
     }
 }

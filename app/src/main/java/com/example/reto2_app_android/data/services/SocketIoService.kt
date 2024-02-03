@@ -25,6 +25,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
+import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
@@ -68,7 +69,7 @@ class SocketIoService : Service() {
 
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
-
+    private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
     private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
@@ -227,13 +228,17 @@ class SocketIoService : Service() {
     private fun onDeleteUserChatRecive(): Emitter.Listener {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
-            Log.i("recive nuevo chat", "hola")
+            Log.i("recive nuevo chat asdsadsaads", "hola")
             if(receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
                 serviceScope.launch {
                     deleteUserChatInRoom(message)
                     EventBus.getDefault().post(getChatsFromRoom())
+                    if(userId == message.userId){
+                        val userDeleted = DeletePeople(message.userId, message.chatId)
+                        EventBus.getDefault().post(userDeleted)
+                    }
                 }
             }
         }
