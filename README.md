@@ -1,4 +1,4 @@
-# Chat App
+# ELORCHAT
 
 ![Chat App](app/src/main/res/drawable/elorchat_recortada.png)
 
