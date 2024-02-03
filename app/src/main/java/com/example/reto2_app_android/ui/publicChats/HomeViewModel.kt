@@ -97,9 +97,9 @@ class HomeViewModel(
             }
         } else {
             if (filterPrivacityChat) {
-                chats.filter { it.public } // Mostrar solo los chats públicos
+                chats.filter { it.public }
             } else {
-                chats.filter { !it.public } // Mostrar solo los chats privados
+                chats.filter { !it.public }
             }
         }
     }

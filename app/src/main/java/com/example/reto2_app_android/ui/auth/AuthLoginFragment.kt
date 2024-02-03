@@ -50,7 +50,7 @@ class AuthLoginFragment : Fragment() {
             param2 = it.getString(ARG_PARAM2)
         }
 
-       
+
     }
 
     override fun onCreateView(
@@ -151,24 +151,15 @@ class AuthLoginFragment : Fragment() {
 
         loginBinding.loginResetPasswordButton.setOnClickListener() {
             //TODO Realizar recordar contraseña
-            Toast.makeText(activity, "Recordar Contraseña", Toast.LENGTH_SHORT).show()
+            val newFragment = RecoverPasswordFragment()
+            val transaction = parentFragmentManager.beginTransaction()
+            transaction.replace(R.id.authFragmentContainerView, newFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
+
+
         }
 
-//        val view =  inflater.inflate(R.layout.fragment_auth_login, container, false)
-//
-//        val registerButton : TextView = view.findViewById(R.id.registerButton2)
-//        registerButton.setOnClickListener() {
-//            val newFragment = AuthUserConfirmationFragment()
-//            val transaction = parentFragmentManager.beginTransaction()
-//            transaction.replace(R.id.authFragmentContainerView, newFragment)
-//            transaction.addToBackStack(null)
-//            transaction.commit()
-//        }
-//        val changePasswordButton : TextView = view.findViewById(R.id.resetPasswordButton2)
-//        changePasswordButton.setOnClickListener() {
-//            Toast.makeText(activity,"Recordar Contraseña",Toast.LENGTH_SHORT).show()
-//        }
-//         return view
         return loginBinding.root
     }
 
