@@ -70,7 +70,6 @@ dependencies {
     val hiltVersion = "2.50"
     implementation ("com.google.dagger:hilt-android:$hiltVersion")
     kapt ("com.google.dagger:hilt-compiler:$hiltVersion")
-
     //NetworkConnectionManager - For instrumentation tests
     androidTestImplementation  ("com.google.dagger:hilt-android-testing:$hiltVersion")
     kaptAndroidTest ("com.google.dagger:hilt-compiler:$hiltVersion")
