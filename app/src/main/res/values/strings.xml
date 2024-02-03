@@ -217,5 +217,15 @@
     <string name="eliminarPersona">agregar persona</string>
     <string name="enterMessage">Inserta message</string>
     <string name="send">Enviar</string>
+    <string name="addOptions">Agregar opciones</string>
     <string name="invalidRegister">Campos no validos en el registro</string>
+    <string name="photo">Foto</string>
+    <string name="file">Archivo</string>
+    <string name="location">Ubicación</string>
+    <string-array name="options_array">
+        <item>Ubicación</item>
+        <item>Archivo</item>
+        <item>Foto</item>
+    </string-array>
+
 </resources>

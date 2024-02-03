@@ -283,7 +283,7 @@ class SocketIoService : Service() {
 
             val roomMessage = RoomMessages(
                 content = message.message,
-                dataType = RoomDataType.TEXT,
+                dataType = message.dataType,
                 createdAt = Date(),
                 updatedAt = Date(),
                 chatId = roomId,
@@ -304,7 +304,7 @@ class SocketIoService : Service() {
                     Log.d(TAG, userIdRoom.data.toString())
                     val roomMessageToSow = RoomMessages(
                         content = message.message,
-                        dataType = RoomDataType.TEXT,
+                        dataType = message.dataType,
                         createdAt = Date(),
                         updatedAt = Date(),
                         chatId = roomId,
@@ -318,7 +318,7 @@ class SocketIoService : Service() {
                         text = message.message,
                         authorName = message.authorName,
                         authorId = userIdRoom.data,
-                        dataType = RoomDataType.TEXT,
+                        dataType = message.dataType,
                         fecha = currentDate, // Agregar la fecha
                         hora = currentTime  // Agregar la hora
                     )
@@ -376,8 +376,8 @@ class SocketIoService : Service() {
         }
     }
 
-    fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
-        val socketMessage = SocketMessageReq(socketRoom, message, idServer)
+    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType){
+        val socketMessage = SocketMessageReq(socketRoom, message, idServer, type)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }

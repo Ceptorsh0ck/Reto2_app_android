@@ -1,17 +1,34 @@
 package com.example.reto2_app_android.ui.dashboard
 
+import android.Manifest
 import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
+import android.net.Uri
 import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.CheckBox
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
+import androidx.constraintlayout.motion.widget.Debug.getLocation
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,7 +39,9 @@ import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
@@ -33,10 +52,21 @@ import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import javax.inject.Inject
 
 private const val ARG_CHAT = "chat"
 
-class DashboardFragment : Fragment() {
+class DashboardFragment : Fragment(), LocationListener {
+
+    //Ubicacion
+    @Inject
+    lateinit var networkConnectionManager: NetworkConnectionManager
+    private lateinit var locationManager: LocationManager
+    private lateinit var localizacion: Location
+    private val locationPermissionCode = 2
+    private var ubicacionObtenida = false
+    private var locationUpdateRequested = false
+    //Fin ubicacion
 
     private var _binding: FragmentDashboardBinding? = null
 
@@ -84,8 +114,10 @@ class DashboardFragment : Fragment() {
         }
         viewModel.isAdmin(chat!!.id, userId)
 
-        isAdim()
 
+
+        isAdim()
+        multimedia()
         binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
         returnServerUsersAdd()
@@ -97,6 +129,97 @@ class DashboardFragment : Fragment() {
         buttonsListeners(binding)
         onMessageSendRoom(binding)
         return root
+    }
+
+    private fun multimedia() {
+        val buttonAddOptions = binding.buttonAddOptions
+
+        buttonAddOptions.setOnClickListener {
+            // Inflar el menú
+            val popupMenu = PopupMenu(requireContext(), buttonAddOptions)
+            popupMenu.inflate(R.menu.menu_mutimedia)
+
+            // Manejar los clics de los ítems del menú
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_location -> {
+                        mandarUbicacionShocket()
+                        true
+                    }
+                    R.id.action_file -> {
+                        // Acción para el elemento de menú de archivo
+                        true
+                    }
+                    R.id.action_photo -> {
+                        // Acción para el elemento de menú de foto
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            // Mostrar el menú emergente
+            popupMenu.show()
+        }
+    }
+
+    private fun openGoogleMaps(latitude: Double, longitude: Double) {
+        val uri = "geo:$latitude,$longitude?q=$latitude,$longitude"
+        val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        mapIntent.setPackage("com.google.android.apps.maps")
+        startActivity(mapIntent)
+    }
+
+
+    private fun mandarUbicacionShocket() {
+        if (checkLocationPermissions() && !locationUpdateRequested) {
+            locationUpdateRequested = true
+            ubicacionObtenida = false
+            getLocation()
+        }
+    }
+
+    override fun onLocationChanged(location: Location) {
+        if (!ubicacionObtenida) {
+            localizacion = location
+            Log.i("GPS", "Latitude: " + location.latitude + " , Longitude: " + location.longitude)
+            chat?.id?.let { chatId ->
+                userId?.let { userId ->
+                    viewModel.saveNewMessageRoom(location.latitude.toString() + "," + location.longitude.toString(), chatId, userId, RoomDataType.GPS)
+                }
+            }
+            ubicacionObtenida = true
+            stopLocationUpdates() // Detener actualizaciones después de obtener la ubicación
+        }
+    }
+
+    private fun stopLocationUpdates() {
+        if (locationUpdateRequested) {
+            locationManager.removeUpdates(this)
+            locationUpdateRequested = false
+        }
+    }
+
+    fun checkLocationPermissions(): Boolean {
+        try {
+            locationManager =
+                requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if ((ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED)
+            ) {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    locationPermissionCode
+                )
+            }
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+            return true
+        } catch(e : Exception) {
+            return false
+        }
     }
 
     private fun isAdim() {
@@ -242,7 +365,7 @@ class DashboardFragment : Fragment() {
                     val recyclerView: RecyclerView = binding.recyclerGroupChat
                     recyclerView.scrollToPosition(messageAdapter.itemCount - 1)
                     //if(MainActivity.)
-                    myService.onSaveMessage(lastMessage, "Group- " +  chat?.id, it.data.first().idRoom!!)
+                    myService.onSaveMessage(it.data.first().text, "Group- " +  chat?.id, it.data.first().idRoom!!, it.data.first().dataType)
                 }
                 Resource.Status.ERROR -> {
                     // TODO sin gestionarlo en el VM. Y si envia en una sala que ya no esta? a tratar
@@ -298,7 +421,7 @@ class DashboardFragment : Fragment() {
                 chat?.id?.let { chatId ->
                     userId?.let { userId ->
                         Log.i("chat", chatId.toString())
-                        viewModel.saveNewMessageRoom(lastMessage, chatId, userId)
+                        viewModel.saveNewMessageRoom(lastMessage, chatId, userId, RoomDataType.TEXT)
                     }
                 }
                 binding.editGroupChatMessage.text.clear()

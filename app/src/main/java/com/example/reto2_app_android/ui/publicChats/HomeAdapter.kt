@@ -40,7 +40,7 @@ class HomeAdapter(
     }
 
     //Actualizar la lista para cuando llega nuevo mensaje
-    fun scrollToItemById(id: Int, content: String, userId: Int, email: String) {
+    fun scrollToItemById(id: Int, content: String, userId: Int, email: String, type: RoomDataType) {
 
         val position = currentList.indexOfFirst { it.id == id }
         if (position != -1) {
@@ -66,7 +66,7 @@ class HomeAdapter(
 
             val newMessage = ChatResponse_Message(
                 id = newMessageId,
-                dataType = RoomDataType.TEXT,
+                dataType = type,
                 content = content,
                 createdAt = Date(),
                 updatedAt = Date(),

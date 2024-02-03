@@ -50,7 +50,8 @@ class RoomMessageDataSource: CommonMessageRepository {
                 recived = false
             )
 
-            Log.i("ad", message.toString())
+            Log.i("ad1111", message.toString())
+            Log.i("ad1111", message1.toString())
             val insertResult = messageDao.insertMessage(message1)
             return Resource.success(messageDao.getMessageById(insertResult.toInt()))  // Assuming you want to return Int
         }
