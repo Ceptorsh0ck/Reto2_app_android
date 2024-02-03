@@ -17,6 +17,7 @@ import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.ResponseBody
 
 class AuthLoginViewModel (
     private val userRepositoryRemote: CommonUserRepository
@@ -26,6 +27,9 @@ class AuthLoginViewModel (
 
     private val _register = MutableLiveData<Resource<UserNew>>();
     val register : LiveData<Resource<UserNew>> get() = _register
+
+    val recoverPassword : LiveData<Resource<ResponseBody>> get() = _recoverPassword
+    private val _recoverPassword = MutableLiveData<Resource<ResponseBody>>()
 
     fun registerUser(user: UserNew) {
         viewModelScope.launch {
@@ -63,6 +67,18 @@ class AuthLoginViewModel (
 
         }
 
+    }
+
+    private suspend fun recoverPasswordRepository(email: PasswordRecoverRequest) : Resource<ResponseBody> {
+        return withContext(Dispatchers.IO) {
+            userRepositoryRemote.recoverPassword(email)
+        }
+    }
+
+    fun onRecoverPassword(email: PasswordRecoverRequest) {
+        viewModelScope.launch {
+            _recoverPassword.value = recoverPasswordRepository(email)
+        }
     }
 
     private suspend fun logUserInRepository(user: UserLogin) : Resource<AuthenticationResponse> {

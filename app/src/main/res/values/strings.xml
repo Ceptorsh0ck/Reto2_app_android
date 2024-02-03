@@ -1,5 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools"
-    tools:locale="es">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="es">
     <string name="app_name">ElorChat</string>
     <string name="room_database_name" translatable="false">ElorChat_Db</string>
     <string name="root_preferences">RootPreferences</string>
@@ -96,8 +95,6 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-
-
 
 
     <string name="large_text">
@@ -218,4 +215,7 @@
     <string name="enterMessage">Inserta message</string>
     <string name="send">Enviar</string>
     <string name="invalidRegister">Campos no validos en el registro</string>
+    <string name="email">Email</string>
+    <string name="recover">Enviar email</string>
+    <string name="recoverPasswordEmail">Recuperar contraseña</string>
 </resources>
