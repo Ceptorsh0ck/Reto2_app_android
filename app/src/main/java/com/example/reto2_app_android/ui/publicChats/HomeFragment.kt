@@ -11,6 +11,8 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +24,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
@@ -89,6 +92,7 @@ class HomeFragment : Fragment(), LocationListener {
 
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -123,11 +127,62 @@ class HomeFragment : Fragment(), LocationListener {
 
 
         binding.addNewChat.setOnClickListener {
-            Log.d("fff","bton")
             openNewChat()
         }
+        binding.chatPrivacityFilter.setOnClickListener {
+            val searchTerm = binding.filterText.text.toString()
+            val filterPrivacityChat = binding.chatPrivacityFilter.isChecked
+            chatViewModel.onGetChatsFromUser(searchTerm, filterPrivacityChat)
+        }
+        binding.filterText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                val searchTerm = charSequence.toString()
+                chatViewModel.onGetChatsFromUser(searchTerm, binding.chatPrivacityFilter.isChecked)
+
+            }
+
+            override fun afterTextChanged(editable: Editable?) {}
+        })
+
+        chatViewModel.filteredChats.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    if (!it.data.isNullOrEmpty()) {
+                        homeAdapter.submitList(it.data)
+                        homeAdapter.notifyDataSetChanged()
+                    } else {
+                        Log.d("chats", "No hay chats con ese nombre")
+                    }
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.e("ListSongsActivity", "Error al cargar datos: ${it.message}")
+                }
+
+                Resource.Status.LOADING -> {
+                    Log.d("ListSongsActivity", "Cargando datos...")
+                }
+            }
+
+        }
+
         return root
     }
+
+
 
     private fun openNewChat() {
         val builder = AlertDialog.Builder(requireContext())
