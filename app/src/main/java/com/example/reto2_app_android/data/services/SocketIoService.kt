@@ -30,6 +30,7 @@ import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.RoomUserDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
@@ -68,11 +69,12 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
 
-    private val SOCKET_HOST = "http://10.5.7.16:8085/"
+    private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
+    private val roomUserRepository = RoomUserDataSource();
     private val roomMessageRepository = RoomMessageDataSource();
     private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado
@@ -149,7 +151,13 @@ class SocketIoService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (::mSocket.isInitialized && mSocket.connected()) {
+            mSocket.disconnect()
+            mSocket.off()
+            mSocket.disconnect()
+        }
         serviceScope.cancel()
+        Log.i("Service","Destroy")
     }
 
 
@@ -157,7 +165,7 @@ class SocketIoService : Service() {
 
 
 
-    public fun startSocket() {
+    private fun startSocket() {
         val socketOptions = createSocketOptions()
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
@@ -209,6 +217,7 @@ class SocketIoService : Service() {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
                 // Modifica el valor del LiveData en el hilo principal utilizando postValue()
+                Log.d("Socket", "mensaje recibido on new message ${message}")
                 saveNewMessageRoom(message)
                 // _messagesFromOtherServer.postValue(Resource.success(message))
             }
@@ -283,14 +292,39 @@ class SocketIoService : Service() {
                 idServer = message.id
             )
 
-            val incomingMessage = MessageAdapter(roomId.toString(), message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
+            val currentDate = SimpleDateFormat("dd/MM/yyyy").format(Date())
+            val currentTime = SimpleDateFormat("HH:mm").format(Date())
+
+
 
             serviceScope.launch {
                 if (roomMessage != null) {
                     val roomResponse = safeMessageInRomm(roomMessage)
-                    // roomMessage.id = roomResponse.toInt()
-                    EventBus.getDefault().post(roomMessage)
-                    // _message.value = roomResponse
+                    val userIdRoom = getUserIdRoom(roomMessage.userId)
+                    Log.d(TAG, userIdRoom.data.toString())
+                    val roomMessageToSow = RoomMessages(
+                        content = message.message,
+                        dataType = RoomDataType.TEXT,
+                        createdAt = Date(),
+                        updatedAt = Date(),
+                        chatId = roomId,
+                        userId = userIdRoom.data!!,
+                        recived = null,
+                        idServer = message.id
+                    )
+
+                    val incomingMessage = MessageAdapter(
+                        room = roomId.toString(),
+                        text = message.message,
+                        authorName = message.authorName,
+                        authorId = userIdRoom.data,
+                        dataType = RoomDataType.TEXT,
+                        fecha = currentDate, // Agregar la fecha
+                        hora = currentTime  // Agregar la hora
+                    )
+
+
+                    EventBus.getDefault().post(roomMessageToSow)
                     EventBus.getDefault().post(incomingMessage)
 
                 }
@@ -299,6 +333,12 @@ class SocketIoService : Service() {
             Log.e("Socket", "error en recepcion de msg $message.toString()")
         }
 
+    }
+
+    private suspend fun getUserIdRoom(userId: Int): Resource<Int> {
+        return withContext(Dispatchers.IO) {
+            roomUserRepository.getUserIdWithIdServer(userId)
+        }
     }
 
 

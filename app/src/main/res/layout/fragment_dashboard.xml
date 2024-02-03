@@ -48,7 +48,8 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/eliminarPersona"
                     android:padding="8dp"
-                    android:src="@drawable/delete_people_group" />
+                    android:src="@drawable/delete_people_group"
+                    android:visibility="invisible" />
 
                 <Space
                     android:layout_width="0dp"
@@ -62,7 +63,8 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/agregarPersona"
                     android:padding="8dp"
-                    android:src="@drawable/add_people_group" />
+                    android:src="@drawable/add_people_group"
+                    android:visibility="invisible" />
 
                 <Space
                     android:layout_width="0dp"

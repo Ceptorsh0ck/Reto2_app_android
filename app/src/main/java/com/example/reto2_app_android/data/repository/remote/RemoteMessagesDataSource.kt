@@ -13,7 +13,6 @@ class RemoteMessagesDataSource: BaseDataSource(), CommonMessageRepository {
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
         TODO("Not yet implemented")
     }
-
     override suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>> {
         TODO("Not yet implemented")
     }
@@ -40,5 +39,9 @@ class RemoteMessagesDataSource: BaseDataSource(), CommonMessageRepository {
 
     override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
         RetrofitClient.apiInterface.deleteUsersToChats(idChat, list)
+    }
+
+    override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
+        TODO("Not yet implemented")
     }
 }

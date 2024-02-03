@@ -12,6 +12,8 @@ import com.example.socketapp.data.socket.SocketMessageRes
 interface CommonMessageRepository {
     suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>>
 
+
+
     suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>>
 
     suspend fun updateMessage(message: SocketMessageResUpdate): Resource<List<MessageAdapter>>
@@ -23,5 +25,6 @@ interface CommonMessageRepository {
 
     suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
     suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
+    suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean>
 
 }

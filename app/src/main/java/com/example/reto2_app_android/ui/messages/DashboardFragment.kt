@@ -1,10 +1,13 @@
 package com.example.reto2_app_android.ui.dashboard
 
 import android.app.AlertDialog
+import android.opengl.Visibility
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.CheckBox
@@ -79,6 +82,10 @@ class DashboardFragment : Fragment() {
             recyclerView.layoutManager = LinearLayoutManager(context)
             recyclerView.addOnScrollListener(scrollListener)
         }
+        viewModel.isAdmin(chat!!.id, userId)
+
+        isAdim()
+
         binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
         returnServerUsersAdd()
@@ -90,6 +97,26 @@ class DashboardFragment : Fragment() {
         buttonsListeners(binding)
         onMessageSendRoom(binding)
         return root
+    }
+
+    private fun isAdim() {
+        viewModel.admin.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    val isAdmin = it.data ?: false
+                    if(isAdmin){
+                        binding.buttonToolbarAddPeopleChat.visibility = VISIBLE
+                        binding.buttonToolbarDeletePeopleChat.visibility = VISIBLE
+                    }
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+
+                }
+            }
+        }
     }
 
     private fun returnServerUsers() {
@@ -265,13 +292,17 @@ class DashboardFragment : Fragment() {
 
     private fun buttonsListeners(binding: FragmentDashboardBinding) {
         binding.buttonGroupChatSend.setOnClickListener() {
-            lastMessage = binding.editGroupChatMessage.text.toString();
-            chat?.id?.let { it1 ->
-                if (userId != null) {
-                    viewModel.saveNewMessageRoom(lastMessage, it1, userId)
+            val message = binding.editGroupChatMessage.text.toString().trim()
+            if (message.isNotBlank()) {
+                lastMessage = message
+                chat?.id?.let { chatId ->
+                    userId?.let { userId ->
+                        Log.i("chat", chatId.toString())
+                        viewModel.saveNewMessageRoom(lastMessage, chatId, userId)
+                    }
                 }
+                binding.editGroupChatMessage.text.clear()
             }
-            binding.editGroupChatMessage.text.clear()
         }
         binding.buttonToolbarAddPeopleChat.setOnClickListener() {
             val builder = AlertDialog.Builder(requireContext())

@@ -69,7 +69,7 @@ class RoomChatDataSource: CommonChatRepository {
                     val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
                         mesage.content?.let { it2 ->
                             ChatResponse_Message(
-                                it1.id,
+                                it1.idServer,
                                 mesage.dataType,
                                 it2,
                                 mesage.createdAt,
@@ -104,7 +104,7 @@ class RoomChatDataSource: CommonChatRepository {
                     chatMessage?.let { chatMessageList.add(it) } // Agregar a la lista solo si chatMessage no es nulo
 
                     val chat = ChatResponse_Chat(
-                        it.id,
+                        it.idServer!!,
                         it.name,
                         it.createdAt,
                         it.updatedAt,

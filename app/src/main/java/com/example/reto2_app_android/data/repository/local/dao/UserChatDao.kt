@@ -23,4 +23,7 @@ interface UserChatDao {
     @Query("DELETE FROM user_chat WHERE chat_id = :chatId AND user_id = :userId")
     suspend fun deleteUserChat(chatId: Int, userId: Int)
 
+    @Query("SELECT user_chat.is_admin FROM user_chat WHERE chat_id = :chatId AND user_id = :userId")
+    suspend fun isAdmin(chatId: Int, userId: Int?): Boolean
+
 }

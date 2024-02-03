@@ -72,19 +72,17 @@ class DashboardAdapter() :
             val timeFormat = SimpleDateFormat("HH:mm")
             val formattedDate = dateFormat.format(currentDate)
             val formattedTime = timeFormat.format(currentDate)
-            val messageHour = timeFormat.format(message.createdAt)
-            val messageDate = dateFormat.format(message.createdAt)
 
             if (binding is ItemMessageMeBinding) {
                 binding.textViewChatMeMessage.text = message.text
-                binding.textViewChatMeDate.text = if (message.createdAt !=null) messageDate else formattedDate
-                binding.textViewChatMeTimestamp.text = if (message.createdAt !=null) messageHour else formattedTime
+                binding.textViewChatMeDate.text = if (message.fecha !=null) message.fecha else formattedDate
+                binding.textViewChatMeTimestamp.text = if (message.hora !=null) message.hora else formattedTime
 
             } else if (binding is ItemMessageOtherBinding) {
 
                 binding.textViewChatOtherMessage.text = message.text
-                binding.textViewChatOtherDate.text = if (message.createdAt !=null) messageDate else formattedDate
-                binding.textViewChatOtherTimestamp.text = if (message.createdAt !=null) messageHour else formattedDate
+                binding.textViewChatOtherDate.text = if (message.fecha !=null) message.fecha else formattedDate
+                binding.textViewChatOtherTimestamp.text = if (message.hora !=null) message.hora else formattedTime
                 val index = message.authorName.indexOf('@')
                 val nombreUsuario = if (index != -1) message.authorName.substring(0, index) else message.authorName
                 binding.textViewChatOtherUser.text = nombreUsuario
