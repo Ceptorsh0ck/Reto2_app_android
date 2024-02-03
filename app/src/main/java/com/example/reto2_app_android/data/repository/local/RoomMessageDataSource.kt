@@ -61,8 +61,9 @@ class RoomMessageDataSource: CommonMessageRepository {
 
 
 
-    override suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>> {
-        val allMessages = messageDao.getAllMessagesByChatId(idUser)
+    override suspend fun getAllMessagesById(idChat: Int): Resource<List<MessageAdapter>> {
+        val chatId = chatDao.selectChatByServerId(idChat)
+        val allMessages = messageDao.getAllMessagesByChatId(chatId)
         return Resource.success(allMessages)
     }
 
