@@ -11,6 +11,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.databinding.FragmentAuthChangePasswordBinding
@@ -50,7 +51,9 @@ class AuthChangePasswordFragment : Fragment() {
         // Inflate the layout for this fragment
 
         changePasswordBinding = FragmentAuthChangePasswordBinding.inflate(layoutInflater,container,false)
-
+        if(MyApp.userPreferences.isRememberMeEnabled() && MyApp.userPreferences.getLoggedUser()?.firstLogin == true){
+            MyApp.userPreferences.saveRememberMeStatus(false)
+        }
         changePasswordBinding.changePassword1.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus) {
                 if (changePasswordBinding.changePassword1.text.length >= 8) {
@@ -92,6 +95,9 @@ class AuthChangePasswordFragment : Fragment() {
                 transaction.replace(R.id.authFragmentContainerView, newFragment)
                 transaction.addToBackStack(null)
                 transaction.commit()
+            }else{
+                changePasswordBinding.changePassword1.error = "Las contraseñas no coinciden"
+
             }
         }
 
