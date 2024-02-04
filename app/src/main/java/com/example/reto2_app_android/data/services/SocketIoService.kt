@@ -9,8 +9,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -23,6 +25,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.MyApp.Companion.context
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.DeletePeople
@@ -57,6 +60,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
+import java.io.IOException
+import java.io.InputStream
+import java.util.Base64
 import java.util.Date
 
 class SocketIoService : Service() {
@@ -381,8 +387,29 @@ class SocketIoService : Service() {
         }
     }
 
+    private fun getBase64FromFile(uri: Uri, context: Context): String? {
+        return try {
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            inputStream?.let {
+                val bytes = inputStream.readBytes()
+                Base64.getEncoder().encodeToString(bytes)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType){
-        val socketMessage = SocketMessageReq(socketRoom, message, idServer, type)
+
+        var newMessage: String? = null
+        if(type == RoomDataType.FILE){
+            newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
+        }else{
+            Log.i("asd", "sadsd")
+            newMessage = message
+        }
+        val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }

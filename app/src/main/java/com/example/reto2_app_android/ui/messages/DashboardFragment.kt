@@ -1,16 +1,22 @@
 package com.example.reto2_app_android.ui.dashboard
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.opengl.Visibility
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -26,9 +32,11 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -53,9 +61,20 @@ import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.IOException
+import java.io.InputStream
+import java.text.SimpleDateFormat
+import java.util.Base64
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 private const val ARG_CHAT = "chat"
+private const val DESIRED_WIDTH = 800
+private const val DESIRED_HEIGHT = 600
+private const val REQUEST_SELECT_FILE = 1001
 
 class DashboardFragment : Fragment(), LocationListener {
 
@@ -68,6 +87,10 @@ class DashboardFragment : Fragment(), LocationListener {
     private var ubicacionObtenida = false
     private var locationUpdateRequested = false
     //Fin ubicacion
+
+    //Camara
+    private val REQUEST_IMAGE_CAPTURE = 1
+    //Fin camara
 
     private var _binding: FragmentDashboardBinding? = null
 
@@ -95,7 +118,6 @@ class DashboardFragment : Fragment(), LocationListener {
 
         }
     }
-
     override fun onCreateView(
             inflater: LayoutInflater,
             container: ViewGroup?,
@@ -114,6 +136,7 @@ class DashboardFragment : Fragment(), LocationListener {
             recyclerView.addOnScrollListener(scrollListener)
         }
         viewModel.isAdmin(chat!!.id, userId)
+
 
 
 
@@ -148,11 +171,11 @@ class DashboardFragment : Fragment(), LocationListener {
                         true
                     }
                     R.id.action_file -> {
-                        // Acción para el elemento de menú de archivo
+                        takeFile()
                         true
                     }
                     R.id.action_photo -> {
-                        // Acción para el elemento de menú de foto
+                        takePhoto()
                         true
                     }
                     else -> false
@@ -164,13 +187,85 @@ class DashboardFragment : Fragment(), LocationListener {
         }
     }
 
-    private fun openGoogleMaps(latitude: Double, longitude: Double) {
-        val uri = "geo:$latitude,$longitude?q=$latitude,$longitude"
-        val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        mapIntent.setPackage("com.google.android.apps.maps")
-        startActivity(mapIntent)
+    private fun takeFile() {
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.type = "*/*" // Esto permite seleccionar cualquier tipo de archivo
+        startActivityForResult(intent, REQUEST_SELECT_FILE)
     }
 
+
+    private fun takePhoto() {
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        try {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+        } catch (e: ActivityNotFoundException) {
+            // display error state to the user
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            // Manejar la captura de imágenes
+            val imageBitmap = data?.extras?.get("data") as Bitmap
+            val scaledBitmap = scaleBitmap(imageBitmap, DESIRED_WIDTH, DESIRED_HEIGHT)
+            val imageBase64String = bitmapToBase64(scaledBitmap)
+
+            chat?.id?.let { chatId ->
+                userId?.let { userId ->
+                    viewModel.saveNewMessageRoom(imageBase64String, chatId, userId, RoomDataType.IMAGE)
+                }
+            }
+        } else if (requestCode == REQUEST_SELECT_FILE && resultCode == Activity.RESULT_OK) {
+            val selectedFileUri: Uri? = data?.data
+            // Pasar la URI del archivo seleccionado a un método para procesarla
+            handleSelectedFile(selectedFileUri)
+        }
+    }
+
+    private fun handleSelectedFile(selectedFileUri: Uri?) {
+        selectedFileUri?.let { uri ->
+            // Aquí puedes realizar las acciones necesarias con la URI del archivo
+            // Por ejemplo, puedes enviar la URI a otra actividad o fragmento
+            Log.i("URL", uri.toString())
+            chat?.id?.let { chatId ->
+                userId?.let { userId ->
+                    viewModel.saveNewMessageRoom(uri.toString(), chatId, userId, RoomDataType.FILE)
+                }
+            }
+        }
+    }
+
+
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 80, outputStream)
+        val byteArray = outputStream.toByteArray()
+        return Base64.getEncoder().encodeToString(byteArray)
+    }
+
+    private fun fileToBase64(inputStream: InputStream): String {
+        val outputStream = ByteArrayOutputStream()
+        val buffer = ByteArray(1024)
+        var bytesRead: Int
+        while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+            outputStream.write(buffer, 0, bytesRead)
+        }
+        val bytes = outputStream.toByteArray()
+        return Base64.getEncoder().encodeToString(bytes)
+    }
+
+    private fun getSelectedFileAsBase64(selectedFileUri: Uri?): String? {
+        return selectedFileUri?.let { uri ->
+            requireActivity().contentResolver.openInputStream(uri)?.use { inputStream ->
+                fileToBase64(inputStream)
+            }
+        }
+    }
+
+    private fun scaleBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap {
+        return Bitmap.createScaledBitmap(bitmap, width, height, true)
+    }
 
     private fun mandarUbicacionShocket() {
         if (checkLocationPermissions() && !locationUpdateRequested) {
@@ -360,7 +455,7 @@ class DashboardFragment : Fragment(), LocationListener {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
-                    Log.i("gaardado en room", it.data.toString())
+                    Log.i("gaardado en room", it.data!!.first().text.toString())
 
                     messageAdapter.addMessages(it.data!!)
                     val recyclerView: RecyclerView = binding.recyclerGroupChat

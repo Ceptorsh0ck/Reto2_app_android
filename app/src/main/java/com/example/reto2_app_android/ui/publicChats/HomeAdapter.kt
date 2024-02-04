@@ -106,8 +106,17 @@ class HomeAdapter(
                         user = email.substringBefore('@').capitalize()
                     }
                 }
+                val type= chat.listMessages?.last()?.dataType;
+                if(type ==RoomDataType.TEXT){
+                    binding.TextViewLastMessage.text = user + ": " + chat.listMessages?.last()?.content.toString()
+                }else if(type ==RoomDataType.IMAGE){
+                    binding.TextViewLastMessage.text = user + ": " + "Imagen"
+                }else if(type ==RoomDataType.GPS){
+                    binding.TextViewLastMessage.text = user + ": " + "GPS"
+                }else if(type ==RoomDataType.FILE){
+                    binding.TextViewLastMessage.text = user + ": " + "Archivo"
+                }
 
-                binding.TextViewLastMessage.text = user + ": " + chat.listMessages?.last()?.content.toString()
                 val lastMessageDate = chat.listMessages?.last()?.createdAt
 
                 if (lastMessageDate != null) {

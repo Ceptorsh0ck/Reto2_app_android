@@ -72,6 +72,20 @@
                 android:clickable="true"
                 android:textColor="@color/colorChatOtherText"
                 android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/image_view_chat_other_message"
+                android:layout_width="181dp"
+                android:layout_height="130dp"
+                android:layout_marginBottom="8dp"
+                android:maxWidth="260dp"
+                android:paddingLeft="12dp"
+                android:paddingTop="8dp"
+                android:paddingRight="12dp"
+                android:src="@drawable/camera"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
