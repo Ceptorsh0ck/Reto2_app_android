@@ -218,4 +218,6 @@
     <string name="email">Email</string>
     <string name="recover">Enviar email</string>
     <string name="recoverPasswordEmail">Recuperar contraseña</string>
+    <string name="invalidPhone">Formato no valido</string>
+    <string name="passwords_no_coinciden">Las contraseñas no coinciden</string>
 </resources>
