@@ -50,38 +50,39 @@ class DashboardViewModel (
     private val TAG = "SocketViewModel"
 
     private val _messages = MutableLiveData<Resource<List<MessageAdapter>>>()
-    val messages : LiveData<Resource<List<MessageAdapter>>> get() = _messages
+    val messages: LiveData<Resource<List<MessageAdapter>>> get() = _messages
 
 
     private val _message = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val message : MutableLiveData<Resource<List<MessageAdapter>>> get() = _message
+    val message: MutableLiveData<Resource<List<MessageAdapter>>> get() = _message
 
     private val _messagesRoom = MutableLiveData<Resource<List<MessageAdapter>>>()
 
-    val messagesRoom : MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
+    val messagesRoom: MutableLiveData<Resource<List<MessageAdapter>>> get() = _messagesRoom
 
     private val _users = MutableLiveData<Resource<List<AddPeople>>>()
 
-    val users : MutableLiveData<Resource<List<AddPeople>>>get() = _users
+    val users: MutableLiveData<Resource<List<AddPeople>>> get() = _users
 
     private val _usersDelete = MutableLiveData<Resource<List<AddPeople>>>()
 
-    val usersDelete : MutableLiveData<Resource<List<AddPeople>>>get() = _usersDelete
+    val usersDelete: MutableLiveData<Resource<List<AddPeople>>> get() = _usersDelete
 
     private val _addPeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
 
-    val addPeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _addPeople
+    val addPeople: MutableLiveData<Resource<List<AddPeopleResponse>>> get() = _addPeople
 
     private val _deletePeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
 
-    val deletePeople : MutableLiveData<Resource<List<AddPeopleResponse>>>get() = _deletePeople
+    val deletePeople: MutableLiveData<Resource<List<AddPeopleResponse>>> get() = _deletePeople
 
 
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
-    val updateMessage : MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
+    val updateMessage: MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
 
-
+    private val _admin = MutableLiveData<Resource<Boolean>>()
+    val admin: MutableLiveData<Resource<Boolean>> get() = _admin
 
 
     /*fun startSocket() {
@@ -106,7 +107,7 @@ class DashboardViewModel (
         }
     }
 
-    fun getUsersToInsertIntoChats(idChat: Int){
+    fun getUsersToInsertIntoChats(idChat: Int) {
         viewModelScope.launch {
             val serverResponse = getUsersFromServer(idChat)
             _users.value = serverResponse;
@@ -120,7 +121,7 @@ class DashboardViewModel (
         }
     }
 
-    fun updateChatUsers( idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
+    fun updateChatUsers(idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
         viewModelScope.launch {
             val list: List<AddPeopleResponse> = selectedPeopleList.toList()
             Log.d(TAG, list.toString())
@@ -156,6 +157,7 @@ class DashboardViewModel (
             serverMessageRepository.getAllUsersToInsertIntoChat(idChat)
         }
     }
+
     private suspend fun getUsersFromServerToDelete(idChat: Int): Resource<List<AddPeople>> {
         return withContext(Dispatchers.IO) {
             serverMessageRepository.getAllUsersToDeleteIntoChat(idChat)
@@ -169,10 +171,10 @@ class DashboardViewModel (
         }
     }
 
-    fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int) {
+    fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int, type: RoomDataType) {
         val roomMessage = RoomMessages(
             content = message,
-            dataType = RoomDataType.TEXT,
+            dataType = type,
             createdAt = Date(),
             updatedAt = Date(),
             chatId = socketRoom,
@@ -195,7 +197,17 @@ class DashboardViewModel (
         }
     }
 
+    fun isAdmin(chatId: Int, userId: Int?) {
+        viewModelScope.launch {
+            admin.value = isAdminRoom(chatId, userId)
+        }
+    }
 
+    private suspend fun isAdminRoom(chatId: Int, userId: Int?): Resource<Boolean> {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.isAdmin(chatId, userId)
+        }
+    }
 
 
 }

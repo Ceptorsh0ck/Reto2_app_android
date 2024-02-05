@@ -12,5 +12,6 @@ interface CommonUserRepository {
 
     suspend fun loginUser(user: UserLogin): Resource<AuthenticationResponse>
     suspend fun registerUser(user: UserNew): Resource<UserNew>
+    suspend fun getUserIdWithIdServer(userid: Int): Resource<Int>
     suspend fun recoverPassword(email: PasswordRecoverRequest): Resource<ResponseBody>
 }

@@ -99,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                     R.id.action_logout -> {
                         Log.i("Gorka - Menu", "Logout")
                         if (MyApp.userPreferences.getLoggedUser() != null) {
+                            myService.onDestroy()
                             val intent = Intent(this@MainActivity, AuthActivity::class.java)
                             intent.putExtra("logout", true)
                             startActivity(intent)

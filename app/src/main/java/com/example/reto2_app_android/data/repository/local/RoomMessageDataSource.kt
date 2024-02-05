@@ -8,6 +8,7 @@ import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.dao.ChatDao
 import com.example.reto2_app_android.data.repository.local.dao.MessageDao
+import com.example.reto2_app_android.data.repository.local.dao.UserChatDao
 import com.example.reto2_app_android.data.repository.local.dao.UserDao
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
@@ -19,7 +20,7 @@ class RoomMessageDataSource: CommonMessageRepository {
     private val messageDao: MessageDao = MyApp.db.messageDao()
     private val chatDao: ChatDao = MyApp.db.chatDao()
     private val userDao: UserDao = MyApp.db.userDao()
-
+    private val userChatDao: UserChatDao = MyApp.db.userChatDao()
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
         Log.d("insert", message.toString())
         if(messageDao.selectById(message.idServer) == null) {
@@ -28,6 +29,7 @@ class RoomMessageDataSource: CommonMessageRepository {
                 chatId = message.chatId
             }
             var userId: Int? = userDao.selectUserByServerId(message.userId)
+            Log.d("insert", message.userId.toString() + "SADA")
             if(userId == null) {
                 userId = message.userId
             }
@@ -48,7 +50,8 @@ class RoomMessageDataSource: CommonMessageRepository {
                 recived = false
             )
 
-            Log.i("ad", message.toString())
+            Log.i("ad1111", message.toString())
+            Log.i("ad1111", message1.toString())
             val insertResult = messageDao.insertMessage(message1)
             return Resource.success(messageDao.getMessageById(insertResult.toInt()))  // Assuming you want to return Int
         }
@@ -56,8 +59,11 @@ class RoomMessageDataSource: CommonMessageRepository {
 
     }
 
-    override suspend fun getAllMessagesById(idUser: Int): Resource<List<MessageAdapter>> {
-        val allMessages = messageDao.getAllMessagesByChatId(idUser)
+
+
+    override suspend fun getAllMessagesById(idChat: Int): Resource<List<MessageAdapter>> {
+        val chatId = chatDao.selectChatByServerId(idChat)
+        val allMessages = messageDao.getAllMessagesByChatId(chatId)
         return Resource.success(allMessages)
     }
 
@@ -90,6 +96,14 @@ class RoomMessageDataSource: CommonMessageRepository {
 
     override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
 
+    }
+
+    override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
+        Log.i("asddsada", chatId.toString() + "aa" + userId.toString())
+
+        val idUser = userDao.selectUserByServerId(userId)
+        val idChat = chatDao.selectChatByServerId(chatId)
+        return Resource.success(userChatDao.isAdmin(idChat, idUser))
     }
 
 

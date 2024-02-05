@@ -13,6 +13,7 @@ object RetrofitClient {
 
     // esta es la ip a la que vamos a hacer peticiones (es localhost pero desde el emulador no deja)
     // NOTE acordarse de que hace falta actualizar el manifest
+
     const val API_URI = "http://192.168.56.1:8080/api/"
 
 

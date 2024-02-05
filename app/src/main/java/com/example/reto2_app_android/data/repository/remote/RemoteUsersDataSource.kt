@@ -17,24 +17,11 @@ class RemoteUsersDataSource: BaseDataSource(), CommonUserRepository {
         RetrofitClient.apiInterface.registerUser(user)
     }
 
+    override suspend fun getUserIdWithIdServer(userid: Int): Resource<Int> {
+        TODO("Not yet implemented")
+
     override suspend fun recoverPassword(email: PasswordRecoverRequest) = getResult {
         RetrofitClientLaravel.apiInterfaceLaravel.recoverPassword(email)
     }
-
-//    override suspend fun registerUser(user: User) = getResult {
-//        RetrofitClient.apiInterface.registerUser(user)
-//    }
-//
-//    override suspend fun changePassword(user: User) = getResult {
-//        RetrofitClient.apiInterface.changePassword(user)
-//    }
-//
-//    override suspend fun checkEmail(registrationCheck: RegistrationCheck) = getResult {
-//        RetrofitClient.apiInterface.checkEmail(registrationCheck)
-//    }
-//
-//    override suspend fun checkLogin(registrationCheck: RegistrationCheck) = getResult {
-//        RetrofitClient.apiInterface.checkLogin(registrationCheck)
-//    }
 
 }

@@ -122,10 +122,6 @@ class HomeFragment : Fragment(), LocationListener {
             }
         }
 
-
-
-
-
         binding.addNewChat.setOnClickListener {
             openNewChat()
         }
@@ -223,7 +219,7 @@ class HomeFragment : Fragment(), LocationListener {
                     Log.d("Socket", "messages observe")
                     val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
                     id?.let {
-                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName)
+                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName, primerMensaje.dataType)
                         val recyclerView: RecyclerView = binding.chatList
                         recyclerView.scrollToPosition(0)
                     }
@@ -258,7 +254,7 @@ class HomeFragment : Fragment(), LocationListener {
         if (!ubicacionObtenida) {
             localizacion = location
             Log.i("GPS", "Latitude: " + location.latitude + " , Longitude: " + location.longitude)
-            openGoogleMaps(location.latitude, location.longitude)
+            //openGoogleMaps(location.latitude, location.longitude)
             ubicacionObtenida = true
         }
     }

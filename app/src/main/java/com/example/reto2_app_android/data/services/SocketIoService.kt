@@ -9,8 +9,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
@@ -23,13 +25,16 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.MyApp.Companion.context
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
+import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
+import com.example.reto2_app_android.data.repository.local.RoomUserDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
@@ -55,6 +60,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
+import java.io.IOException
+import java.io.InputStream
+import java.util.Base64
 import java.util.Date
 
 class SocketIoService : Service() {
@@ -67,12 +75,13 @@ class SocketIoService : Service() {
 
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
-
-    private val SOCKET_HOST = "http://10.5.7.16:8085/"
+    private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
+    private val SOCKET_HOST = "http://192.168.1.153:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
     val connected : LiveData<Resource<Boolean>> get() = _connected
+    private val roomUserRepository = RoomUserDataSource();
     private val roomMessageRepository = RoomMessageDataSource();
     private val chatMessageDataSource = RoomChatDataSource();
     // TODO esto esta hardcodeeado
@@ -149,7 +158,13 @@ class SocketIoService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        if (::mSocket.isInitialized && mSocket.connected()) {
+            mSocket.disconnect()
+            mSocket.off()
+            mSocket.disconnect()
+        }
         serviceScope.cancel()
+        Log.i("Service","Destroy")
     }
 
 
@@ -157,7 +172,7 @@ class SocketIoService : Service() {
 
 
 
-    public fun startSocket() {
+    private fun startSocket() {
         val socketOptions = createSocketOptions()
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
@@ -209,6 +224,7 @@ class SocketIoService : Service() {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
                 // Modifica el valor del LiveData en el hilo principal utilizando postValue()
+                Log.d("Socket", "mensaje recibido on new message ${message}")
                 saveNewMessageRoom(message)
                 // _messagesFromOtherServer.postValue(Resource.success(message))
             }
@@ -218,13 +234,17 @@ class SocketIoService : Service() {
     private fun onDeleteUserChatRecive(): Emitter.Listener {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
-            Log.i("recive nuevo chat", "hola")
+            Log.i("recive nuevo chat asdsadsaads", "hola")
             if(receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
                 serviceScope.launch {
                     deleteUserChatInRoom(message)
                     EventBus.getDefault().post(getChatsFromRoom())
+                    if(userId == message.userId){
+                        val userDeleted = DeletePeople(message.userId, message.chatId)
+                        EventBus.getDefault().post(userDeleted)
+                    }
                 }
             }
         }
@@ -274,7 +294,7 @@ class SocketIoService : Service() {
 
             val roomMessage = RoomMessages(
                 content = message.message,
-                dataType = RoomDataType.TEXT,
+                dataType = message.dataType,
                 createdAt = Date(),
                 updatedAt = Date(),
                 chatId = roomId,
@@ -283,14 +303,39 @@ class SocketIoService : Service() {
                 idServer = message.id
             )
 
-            val incomingMessage = MessageAdapter(roomId.toString(), message.message, message.authorName, message.authorId.toInt(), RoomDataType.TEXT, null, null)
+            val currentDate = SimpleDateFormat("dd/MM/yyyy").format(Date())
+            val currentTime = SimpleDateFormat("HH:mm").format(Date())
+
+
 
             serviceScope.launch {
                 if (roomMessage != null) {
                     val roomResponse = safeMessageInRomm(roomMessage)
-                    // roomMessage.id = roomResponse.toInt()
-                    EventBus.getDefault().post(roomMessage)
-                    // _message.value = roomResponse
+                    val userIdRoom = getUserIdRoom(roomMessage.userId)
+                    Log.d(TAG, userIdRoom.data.toString())
+                    val roomMessageToSow = RoomMessages(
+                        content = message.message,
+                        dataType = message.dataType,
+                        createdAt = Date(),
+                        updatedAt = Date(),
+                        chatId = roomId,
+                        userId = userIdRoom.data!!,
+                        recived = null,
+                        idServer = message.id
+                    )
+
+                    val incomingMessage = MessageAdapter(
+                        room = roomId.toString(),
+                        text = message.message,
+                        authorName = message.authorName,
+                        authorId = userIdRoom.data,
+                        dataType = message.dataType,
+                        fecha = currentDate, // Agregar la fecha
+                        hora = currentTime  // Agregar la hora
+                    )
+
+
+                    EventBus.getDefault().post(roomMessageToSow)
                     EventBus.getDefault().post(incomingMessage)
 
                 }
@@ -299,6 +344,12 @@ class SocketIoService : Service() {
             Log.e("Socket", "error en recepcion de msg $message.toString()")
         }
 
+    }
+
+    private suspend fun getUserIdRoom(userId: Int): Resource<Int> {
+        return withContext(Dispatchers.IO) {
+            roomUserRepository.getUserIdWithIdServer(userId)
+        }
     }
 
 
@@ -336,8 +387,29 @@ class SocketIoService : Service() {
         }
     }
 
-    fun onSaveMessage(message: String, socketRoom: String, idServer: Int){
-        val socketMessage = SocketMessageReq(socketRoom, message, idServer)
+    private fun getBase64FromFile(uri: Uri, context: Context): String? {
+        return try {
+            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
+            inputStream?.let {
+                val bytes = inputStream.readBytes()
+                Base64.getEncoder().encodeToString(bytes)
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType){
+
+        var newMessage: String? = null
+        if(type == RoomDataType.FILE){
+            newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
+        }else{
+            Log.i("asd", "sadsd")
+            newMessage = message
+        }
+        val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
