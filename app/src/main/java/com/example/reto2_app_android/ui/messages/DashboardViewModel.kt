@@ -160,6 +160,9 @@ class DashboardViewModel (
     }
 
     fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int) {
+
+
+
         val roomMessage = RoomMessages(
             content = message,
             dataType = RoomDataType.TEXT,

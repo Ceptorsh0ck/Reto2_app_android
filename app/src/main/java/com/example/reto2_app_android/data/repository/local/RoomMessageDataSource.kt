@@ -21,7 +21,6 @@ class RoomMessageDataSource: CommonMessageRepository {
     private val userDao: UserDao = MyApp.db.userDao()
 
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
-        Log.d("insert", message.toString())
         if(messageDao.selectById(message.idServer) == null) {
             var chatId: Int? = chatDao.selectChatByServerId(message.chatId)
             if(chatId == null) {
@@ -48,7 +47,6 @@ class RoomMessageDataSource: CommonMessageRepository {
                 recived = false
             )
 
-            Log.i("ad", message.toString())
             val insertResult = messageDao.insertMessage(message1)
             return Resource.success(messageDao.getMessageById(insertResult.toInt()))  // Assuming you want to return Int
         }
