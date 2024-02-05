@@ -11,6 +11,7 @@ import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.model.ChatResponse_UserMessage
+import com.example.reto2_app_android.ui.auth.PasswordRecoverRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -39,8 +40,6 @@ interface APIInterface {
 
     @POST("chats/{chatId}/remove-users")
     suspend fun deleteUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
-
-
 
     @POST("chats/{userId}")
     suspend fun createChat(@Body chat: ChatResponse_Chat, @Path("userId") userId: Int): Response<Int>

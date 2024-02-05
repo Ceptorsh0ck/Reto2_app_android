@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.153</domain>
+        <domain includeSubdomains="true">192.168.56.1</domain>
+        <domain includeSubdomains="true">172.26.213.245</domain> //IP Laravel
+
     </domain-config>
 </network-security-config>
 
