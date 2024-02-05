@@ -19,9 +19,11 @@ class RemoteUsersDataSource: BaseDataSource(), CommonUserRepository {
 
     override suspend fun getUserIdWithIdServer(userid: Int): Resource<Int> {
         TODO("Not yet implemented")
+    }
 
     override suspend fun recoverPassword(email: PasswordRecoverRequest) = getResult {
         RetrofitClientLaravel.apiInterfaceLaravel.recoverPassword(email)
     }
+
 
 }
