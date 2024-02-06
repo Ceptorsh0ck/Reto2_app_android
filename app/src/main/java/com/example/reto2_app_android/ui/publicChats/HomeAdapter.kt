@@ -40,7 +40,7 @@ class HomeAdapter(
     }
 
     //Actualizar la lista para cuando llega nuevo mensaje
-    fun scrollToItemById(id: Int, content: String, userId: Int, email: String) {
+    fun scrollToItemById(id: Int, content: String, userId: Int, email: String, type: RoomDataType) {
 
         val position = currentList.indexOfFirst { it.id == id }
         if (position != -1) {
@@ -66,7 +66,7 @@ class HomeAdapter(
 
             val newMessage = ChatResponse_Message(
                 id = newMessageId,
-                dataType = RoomDataType.TEXT,
+                dataType = type,
                 content = content,
                 createdAt = Date(),
                 updatedAt = Date(),
@@ -88,6 +88,7 @@ class HomeAdapter(
         fun bind(chat: ChatResponse_Chat) {
             binding.TextViewChatName.text = chat.name
             binding.TextViewChatId.text = chat.id.toString()
+            binding.TextViewUserTotal.text = "Users: " + chat.totalUsers.toString()
             //TODO Hay que descomentar esta linea esta quitada para pruebas
             //binding.TextViewChatId.visibility = View.INVISIBLE
             if (chat.public) {
@@ -106,8 +107,17 @@ class HomeAdapter(
                         user = email.substringBefore('@').capitalize()
                     }
                 }
+                val type= chat.listMessages?.last()?.dataType;
+                if(type ==RoomDataType.TEXT){
+                    binding.TextViewLastMessage.text = user + ": " + chat.listMessages?.last()?.content.toString()
+                }else if(type ==RoomDataType.IMAGE){
+                    binding.TextViewLastMessage.text = user + ": " + "Imagen"
+                }else if(type ==RoomDataType.GPS){
+                    binding.TextViewLastMessage.text = user + ": " + "GPS"
+                }else if(type ==RoomDataType.FILE){
+                    binding.TextViewLastMessage.text = user + ": " + "Archivo"
+                }
 
-                binding.TextViewLastMessage.text = user + ": " + chat.listMessages?.last()?.content.toString()
                 val lastMessageDate = chat.listMessages?.last()?.createdAt
 
                 if (lastMessageDate != null) {

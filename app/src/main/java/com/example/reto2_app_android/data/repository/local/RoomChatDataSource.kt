@@ -1,7 +1,10 @@
 package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
+import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.example.reto2_app_android.MyApp
+import com.example.reto2_app_android.data.AddPeopleResponse
+import com.example.reto2_app_android.data.ChatShow
 import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_Message
@@ -19,6 +22,7 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
  
 import com.example.reto2_app_android.utils.Resource
+import retrofit2.Response
 import java.util.Date
 
 class RoomChatDataSource: CommonChatRepository {
@@ -28,9 +32,9 @@ class RoomChatDataSource: CommonChatRepository {
     private val userCharDao: UserChatDao = MyApp.db.userChatDao()
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
 
-    override suspend fun createChat(chat: ChatResponse_Chat, userId: Int ): Resource<Int> {
+    override suspend fun createChat(chat: ChatResponse_Chat): Resource<Int> {
         try {
-            val roomChat = convertToRoomChat(chat, userId)
+            val roomChat = convertToRoomChat(chat)
             val chatIds = chatDao.insertChats(roomChat)
 
             // Si estás insertando un solo elemento, puedes acceder al primer elemento del array
@@ -43,7 +47,15 @@ class RoomChatDataSource: CommonChatRepository {
             return Resource.error("Error creating chat: ${e.message}")
         }
     }
-    private fun convertToRoomChat(chat: ChatResponse_Chat, userId: Int): RoomChat {
+
+    override suspend fun createChatServer(
+        chat: ChatResponse_Chat,
+        userId: Int
+    ): Resource<ChatResponse_Chat> {
+        TODO("Not yet implemented")
+    }
+
+    private fun convertToRoomChat(chat: ChatResponse_Chat): RoomChat {
         return RoomChat(
             id = 0,
             idServer= null,
@@ -67,7 +79,7 @@ class RoomChatDataSource: CommonChatRepository {
                     val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
                         mesage.content?.let { it2 ->
                             ChatResponse_Message(
-                                it1.id,
+                                it1.idServer,
                                 mesage.dataType,
                                 it2,
                                 mesage.createdAt,
@@ -100,15 +112,16 @@ class RoomChatDataSource: CommonChatRepository {
                         // Manejar el caso cuando chatMessage es nulo
                     }
                     chatMessage?.let { chatMessageList.add(it) } // Agregar a la lista solo si chatMessage no es nulo
-
+                    val totalUsers = userCharDao.getTotalUsers(it.id)
                     val chat = ChatResponse_Chat(
-                        it.id,
+                        it.idServer!!,
                         it.name,
                         it.createdAt,
                         it.updatedAt,
                         chatMessageList,
                         null,
-                        it.isPublic
+                        it.isPublic,
+                        totalUsers
                     )
 
                     Log.i("RoomChatDataSour1ce", chat.toString())
@@ -122,6 +135,10 @@ class RoomChatDataSource: CommonChatRepository {
         } else {
             return Resource.error("User id is null")
         }
+    }
+
+    override suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int> {
+        return Resource.success(chatDao.updateChat(idServer, idRoom))
     }
 
     override suspend fun addchat(chat: ChatResponse_Chat) {
@@ -216,5 +233,21 @@ class RoomChatDataSource: CommonChatRepository {
                 }
             }
         }
+    }
+
+    override suspend fun deleteUserChat(message: AddPeopleResponse) {
+        try {
+            var userId = userDao.selectUserByServerId(message.userId)
+            var chatId = chatDao.selectChatByServerId(message.chatId)
+
+            userCharDao.deleteUserChat(chatId, userId)
+        }
+        catch (e: Exception) {
+            Log.e("error", e.message.toString())
+        }
+    }
+
+    override suspend fun getPublicChat(userId: Int): Resource<List<ChatShow>> {
+        TODO("Not yet implemented")
     }
 }

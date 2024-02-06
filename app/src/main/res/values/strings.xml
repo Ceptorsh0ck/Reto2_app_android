@@ -1,5 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools"
-    tools:locale="es">
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="es">
     <string name="app_name">ElorChat</string>
     <string name="room_database_name" translatable="false">ElorChat_Db</string>
     <string name="root_preferences">RootPreferences</string>
@@ -96,8 +95,6 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-
-
 
 
     <string name="large_text">
@@ -214,8 +211,26 @@
     <string name="noMesages">No hay mensajes</string>
     <string name="emptyLogin">Rellene todos los campos</string>
     <string name="agregarPersona">agregar persona</string>
-    <string name="eliminarPersona">agregar persona</string>
+    <string name="eliminarPersona">eliminar persona</string>
+    <string name="deleteChat">eliminar chat</string>
     <string name="enterMessage">Inserta message</string>
     <string name="send">Enviar</string>
+    <string name="addOptions">Agregar opciones</string>
     <string name="invalidRegister">Campos no validos en el registro</string>
+    <string name="photo">Foto</string>
+    <string name="file">Archivo</string>
+    <string name="anadirUsuario">Añadir Usuario</string>
+    <string name="eliminarUsuario">Eliminar Usuario</string>
+    <string name="chatsPublicos">Chats Publicos</string>
+    <string name="location">Ubicación</string>
+    <string-array name="options_array">
+        <item>Ubicación</item>
+        <item>Archivo</item>
+        <item>Foto</item>
+    </string-array>
+    <string name="email">Email</string>
+    <string name="recover">Enviar email</string>
+    <string name="recoverPasswordEmail">Recuperar contraseña</string>
+    <string name="invalidPhone">Formato no valido</string>
+    <string name="passwords_no_coinciden">Las contraseñas no coinciden</string>
 </resources>

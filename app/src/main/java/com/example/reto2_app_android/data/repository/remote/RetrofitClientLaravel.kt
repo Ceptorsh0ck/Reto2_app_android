@@ -9,12 +9,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 
-object RetrofitClient {
+object RetrofitClientLaravel {
 
     // esta es la ip a la que vamos a hacer peticiones (es localhost pero desde el emulador no deja)
     // NOTE acordarse de que hace falta actualizar el manifest
-
-    const val API_URI = "http://10.5.7.15:8080/api/"
+    const val API_URI = "http://10.5.7.212/api/"
 
 
     var client = OkHttpClient.Builder().addInterceptor {chain ->
@@ -32,21 +31,22 @@ object RetrofitClient {
     }.build()
 
     var gson = GsonBuilder()
+        .setLenient() // Esto permite JSON mal formado
         .setDateFormat("yyyy-MM-dd")
         .create()
 
     // creamos el cliente de retrofit con la url de la api
-    val retrofitClient: Retrofit.Builder by lazy {
+    val retrofitClientLaravel: Retrofit.Builder by lazy {
         Retrofit.Builder()
             .client(client)
             .baseUrl(API_URI)
             .addConverterFactory(GsonConverterFactory.create(gson))
     }
 
-    val apiInterface: APIInterface by lazy {
-        retrofitClient
+    val apiInterfaceLaravel: APIInterfaceLaravel by lazy {
+        retrofitClientLaravel
             .build()
-            .create(APIInterface::class.java)
+            .create(APIInterfaceLaravel::class.java)
     }
 
 

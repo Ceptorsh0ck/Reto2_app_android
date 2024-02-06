@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- AppBarLayout y Toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar_group_chat"
         android:layout_width="match_parent"
@@ -17,6 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Toolbar con título y botones -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar_group_chat"
             android:layout_width="match_parent"
@@ -24,11 +26,13 @@
             android:theme="@style/Widget.AppCompat.Toolbar"
             app:popupTheme="@style/Theme.AppCompat.Light">
 
+            <!-- Contenedor horizontal para el título y los botones -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal">
 
+                <!-- Título -->
                 <TextView
                     android:id="@+id/text_toolbar_chat_name"
                     android:layout_width="0dp"
@@ -41,6 +45,35 @@
                     android:paddingEnd="8dp"
                     android:textSize="18sp" />
 
+                <!-- Botón para salir del chat -->
+                <ImageButton
+                    android:id="@+id/button_toolbar_exit_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/deleteChat"
+                    android:padding="8dp"
+                    android:src="@drawable/baseline_exit_to_app_24"
+                    android:visibility="visible" />
+
+                <!-- Botón para eliminar chat -->
+                <ImageButton
+                    android:id="@+id/button_toolbar_delete_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/deleteChat"
+                    android:padding="8dp"
+                    android:src="@drawable/baseline_exit_to_app_24"
+                    android:visibility="gone" />
+
+                <!-- Espacio entre botones -->
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.05" />
+
+                <!-- Botón para eliminar personas del chat -->
                 <ImageButton
                     android:id="@+id/button_toolbar_delete_people_chat"
                     android:layout_width="wrap_content"
@@ -48,13 +81,16 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/eliminarPersona"
                     android:padding="8dp"
-                    android:src="@drawable/delete_people_group" />
+                    android:src="@drawable/delete_people_group"
+                    android:visibility="gone" />
 
+                <!-- Espacio entre botones -->
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0.05" />
 
+                <!-- Botón para agregar personas al chat -->
                 <ImageButton
                     android:id="@+id/button_toolbar_add_people_chat"
                     android:layout_width="wrap_content"
@@ -62,18 +98,20 @@
                     android:background="?attr/selectableItemBackground"
                     android:contentDescription="@string/agregarPersona"
                     android:padding="8dp"
-                    android:src="@drawable/add_people_group" />
+                    android:src="@drawable/add_people_group"
+                    android:visibility="gone" />
 
+                <!-- Espacio entre botones -->
                 <Space
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0.05" />
-
             </LinearLayout>
 
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- RecyclerView para mostrar los mensajes -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_group_chat"
         android:layout_width="0dp"
@@ -83,6 +121,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Indicador de chat -->
     <TextView
         android:id="@+id/text_group_chat_indicator"
         android:layout_width="wrap_content"
@@ -91,6 +130,7 @@
         app:layout_constraintBottom_toTopOf="@id/view_group_chat"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Línea divisoria -->
     <View
         android:id="@+id/view_group_chat"
         android:layout_width="0dp"
@@ -100,6 +140,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Layout para el cuadro de mensaje -->
     <RelativeLayout
         android:id="@+id/layout_group_chat_chatbox"
         android:layout_width="0dp"
@@ -111,19 +152,31 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Icono para agregar opciones -->
+        <ImageButton
+            android:id="@+id/button_add_options"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackground"
+            android:contentDescription="@string/addOptions"
+            android:src="@drawable/baseline_add_24" />
+
         <EditText
             android:id="@+id/editGroupChatMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/button_add_options"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
-            android:layout_toStartOf="@+id/button_group_chat_send"
             android:background="@android:color/transparent"
-                android:hint="@string/enterMessage"
+            android:hint="@string/enterMessage"
             android:inputType="text"
             android:maxLines="6"
             tools:ignore="Autofill" />
 
+        <!-- Botón para enviar el mensaje -->
         <Button
             android:id="@+id/button_group_chat_send"
             android:layout_width="wrap_content"
@@ -132,6 +185,5 @@
             android:background="?attr/selectableItemBackground"
             android:text="@string/send"
             android:textColor="@color/colorPrimary" />
-
     </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

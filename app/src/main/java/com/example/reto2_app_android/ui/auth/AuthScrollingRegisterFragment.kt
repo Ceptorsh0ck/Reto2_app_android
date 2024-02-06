@@ -196,26 +196,6 @@ class AuthScrollingRegisterFragment : Fragment() {
     private fun dispatchTakePictureIntent() {
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
         try {
-//          Deprecated
-//          startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-
-
-//          Extra info para introducir al Intent
-//            if (multiple_files) {
-//                contentSelectionIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-//            }
-//            val intentArray: Array<Intent?>
-//            intentArray = if (takePictureIntent != null) {
-//                arrayOf(takePictureIntent)
-//            } else {
-//                arrayOfNulls(0)
-//            }
-//
-//            val chooserIntent = Intent(Intent.ACTION_CHOOSER)
-//            chooserIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent)
-//            chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray)
-//          takePictureIntent.putExtra(Intent.EXTRA_INTENT, contentSelectionIntent)
-//          takePictureIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, intentArray)
             startActivityIntent.launch(takePictureIntent)
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(activity, e.toString(), Toast.LENGTH_SHORT)
@@ -223,12 +203,21 @@ class AuthScrollingRegisterFragment : Fragment() {
     }
 
     private fun validatePhone(phone: Int): Boolean {
-        return phone.toString().length == 9
+       if (phone.toString().length == 9) {
+            return true
+        }
+        registerBinding.registerTelephone1.error = "Los telefonos deben tener un formato de 9 dígitos"
+        return false
     }
 
     private fun validateDNI(dni: String): Boolean {
         val dniRegex = """^\d{8}[a-zA-Z]$""".toRegex()
-        return dni.matches(dniRegex)
+        return if (dni.matches(dniRegex)) {
+            true
+        }else{
+            registerBinding.registerDocumentation.error = "El DNI debe tener 8 dígitos y una letra"
+            false
+        }
     }
 
     // Function checks all input values

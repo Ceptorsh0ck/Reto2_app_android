@@ -7,8 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
-import com.example.reto2_app_android.data.Chat
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
+import com.example.reto2_app_android.data.ChatShow
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonChatRepository
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
@@ -20,7 +19,6 @@ import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
 
 class HomeViewModelFactory(
     private val remoteChatRepository: CommonChatRepository,
@@ -32,10 +30,10 @@ class HomeViewModelFactory(
 
 }
 
-class HomeViewModel (
+class HomeViewModel(
     private val chatRepository: CommonChatRepository,
     private val roomChatRepository: CommonChatRepository
-) : ViewModel(){
+) : ViewModel() {
 
     private val _text = MutableLiveData<String>().apply {
         value = "This is home Fragment"
@@ -48,49 +46,108 @@ class HomeViewModel (
 
     private val _created = MutableLiveData<Resource<Int>>()
     val created: LiveData<Resource<Int>> get() = _created
+
+    private val _publicChats = MutableLiveData<Resource<List<ChatShow>>>()
+
+    val publicChats: LiveData<Resource<List<ChatShow>>> get() = _publicChats
+
+    val filteredChats: LiveData<Resource<List<ChatResponse_Chat>>> get() = _filteredChats
+    private val _filteredChats = MutableLiveData<Resource<List<ChatResponse_Chat>>>()
+
     init {
         getChatFromRoom()
         updateChatsList()
 
     }
-        fun getChatFromRoom(){
+
+    fun getChatFromRoom() {
         viewModelScope.launch {
             val roomResponse = getChatsFromRoom()
             _items.value = roomResponse
         }
     }
+
     fun onAddChat(isPublic: Boolean, name: String) {
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
-            _created.value = createNewChat(newChat)
+            val idRoom = createNewChat(newChat)
+            val idServer = insertChatServer(newChat).data!!.id
+            updateChat(idServer, idRoom.data!!)
+            _created.value = Resource.success(idServer)
         }
     }
+
+
+    fun onGetChatsFromUser(chatName: String, filterPrivacityChat: Boolean) {
+        viewModelScope.launch {
+            val currentChats = _items.value?.data
+            if (currentChats != null) {
+                val chatsFiltered = filterChatsByUser(currentChats, chatName, filterPrivacityChat)
+                _filteredChats.value = Resource.success(chatsFiltered)
+            }
+        }
+    }
+
+    fun filterChatsByUser(
+        chats: List<ChatResponse_Chat>,
+        nameChat: String,
+        filterPrivacityChat: Boolean
+    ): List<ChatResponse_Chat> {
+        return if (nameChat.isNotEmpty()) {
+            val filteredByName = chats.filter { it.name?.contains(nameChat, ignoreCase = true) == true }
+            if (filterPrivacityChat) {
+                filteredByName.filter { it.public } // Mostrar solo los chats públicos
+            } else {
+                filteredByName.filter { !it.public } // Mostrar solo los chats privados
+            }
+        } else {
+            if (filterPrivacityChat) {
+                chats.filter { it.public }
+            } else {
+                chats.filter { !it.public }
+            }
+        }
+    }
+
 
 
     private suspend fun createNewChat(newChat: ChatResponse_Chat): Resource<Int> {
         return withContext(Dispatchers.IO) {
-            val id= 0
-            chatRepository.createChat(newChat, id)
+            val id = 0
+            roomChatRepository.createChat(newChat)
         }
     }
 
-    fun updateChatsList(){
+    private suspend fun insertChatServer(newChat: ChatResponse_Chat) : Resource<ChatResponse_Chat> {
+        return withContext(Dispatchers.IO) {
+            val id = 0
+            chatRepository.createChatServer(newChat, id)
+        }
+    }
+
+    private suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int>? {
+        return withContext(Dispatchers.IO) {
+            roomChatRepository.updateChat(idServer, idRoom)
+        }
+    }
+
+    fun updateChatsList() {
         viewModelScope.launch {
             val repoResponse = getChatsFromRepository()
             repoResponse.data?.let { safeChatsInRoom(it, MyApp.db) }
         }
     }
 
-    suspend fun getChatsFromRoom(): Resource<List<ChatResponse_Chat>>{
-        return  withContext(Dispatchers.IO){
+    suspend fun getChatsFromRoom(): Resource<List<ChatResponse_Chat>> {
+        return withContext(Dispatchers.IO) {
             roomChatRepository.getChats()
         }
     }
 
-    suspend fun getChatsFromRepository(): Resource<List<ChatResponse_Chat>>{
-        return withContext((Dispatchers.IO)){
-            chatRepository.getChats();
+    suspend fun getChatsFromRepository(): Resource<List<ChatResponse_Chat>> {
+        return withContext((Dispatchers.IO)) {
+             chatRepository.getChats();
         }
     }
 
@@ -104,7 +161,7 @@ class HomeViewModel (
                 val roleDao = db.roleDao()
                 val userRoleDao = db.userRoleDao()
                 data.forEach {
-                    var roomId:Int? =1 ;
+                    var roomId: Int? = 1;
                     //Log.i("chats", it!!.id.toString())
                     val roomChat = it?.id?.let { it1 ->
                         RoomChat(
@@ -117,14 +174,14 @@ class HomeViewModel (
                     }
                     if (roomChat != null) {
                         roomId = chatDao.selectChatByServerId(roomChat.idServer)
-                        if(roomId == null){
+                        if (roomId == null) {
                             roomId = chatDao.insertChat(roomChat).toInt()
                         }
                     }
 
                     if (it != null) {
                         it.listUsers?.forEach {
-                            var userId:Int? = 1;
+                            var userId: Int? = 1;
                             val user = it.user.id?.let { it1 ->
                                 RoomUser(
                                     idServer = it1,
@@ -140,7 +197,7 @@ class HomeViewModel (
                             }
                             if (user != null) {
                                 userId = userDao.selectUserByServerId(user.idServer)
-                                if(userId == null){
+                                if (userId == null) {
                                     userId = userDao.insertUser(user).toInt()
                                 }
                             }
@@ -164,7 +221,7 @@ class HomeViewModel (
                     }
                     //Añadir a la base de datos los mensajes
                     if (it != null) {
-                        it.listMessages?.forEach{
+                        it.listMessages?.forEach {
                             val user = it.userId?.id?.let { it1 ->
                                 RoomUser(
                                     idServer = it1,
@@ -178,27 +235,27 @@ class HomeViewModel (
                                     firstLogin = null
                                 )
                             }
-                            var userId:Int? = 1;
+                            var userId: Int? = 1;
                             if (user != null) {
                                 userId = userDao.selectUserByServerId(user.idServer)
-                                if(userId == null){
-                                    userId =userDao.insertUser(user).toInt()
+                                if (userId == null) {
+                                    userId = userDao.insertUser(user).toInt()
                                 }
                             }
 
                             val message = RoomMessages(
-                                    idServer = it.id,
-                                    content = it.content,
-                                    dataType = it.dataType,
-                                    createdAt = it.createdAt,
-                                    updatedAt = it.updatedAt,
-                                    chatId = roomId!!,
-                                    userId = userId!!,
-                                    recived = null
-                                )
+                                idServer = it.id,
+                                content = it.content,
+                                dataType = it.dataType,
+                                createdAt = it.createdAt,
+                                updatedAt = it.updatedAt,
+                                chatId = roomId!!,
+                                userId = userId!!,
+                                recived = null
+                            )
                             if (message != null) {
-                                val idMessage:Int? = messagesDao.selectById(message.idServer)
-                                if(idMessage == null){
+                                val idMessage: Int? = messagesDao.selectById(message.idServer)
+                                if (idMessage == null) {
                                     messagesDao.insertMessage(message)
                                 }
                             }
@@ -208,11 +265,24 @@ class HomeViewModel (
             }
             getChatFromRoom()
             return true
-        }catch (e: Exception) {
+        } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
 
+    }
+
+    fun getAllPublicChat(userId: Int?) {
+        viewModelScope.launch {
+            val repoResponse = repositoryGetAllPublicChat(userId)
+            _publicChats.value = repoResponse
+        }
+    }
+
+    private suspend fun repositoryGetAllPublicChat(userId: Int?): Resource<List<ChatShow>> {
+        return withContext((Dispatchers.IO)) {
+            chatRepository.getPublicChat(userId!!)
+        }
     }
 
 

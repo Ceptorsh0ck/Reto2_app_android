@@ -11,19 +11,25 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
@@ -32,17 +38,17 @@ import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
+import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
+import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.Timer
-import java.util.TimerTask
 import javax.inject.Inject
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -61,10 +67,12 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var homeAdapter: HomeAdapter
     private val roomMessageRepository = RoomMessageDataSource();
     private val serverMessageRepository = RemoteMessagesDataSource();
+    private var userId = MyApp.userPreferences.getLoggedUser()!!.id
+    private lateinit var publicChatAdapter: PublicChatAdapter
     private val messagesViewModel: DashboardViewModel by viewModels {
         DashboardViewModelFactory(roomMessageRepository, serverMessageRepository)
     }
-    //private lateinit var myService: SocketIoService
+    private lateinit var myService: SocketIoService
 
     private val chatViewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(chatRepository, roomChatRepository)
@@ -89,6 +97,7 @@ class HomeFragment : Fragment(), LocationListener {
 
     }
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -104,7 +113,7 @@ class HomeFragment : Fragment(), LocationListener {
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-
+                    Log.i(TAG, "new user chat")
                     homeAdapter.submitList(it.data)
                 }
 
@@ -118,22 +127,177 @@ class HomeFragment : Fragment(), LocationListener {
             }
         }
 
-
-
-        binding.buttonLocation.setOnClickListener {
-            chatViewModel.updateChatsList()
-            /*if(checkLocationPermissions()) {
-                ubicacionObtenida = false
-                getLocation()
-            }*/
-        }
-
         binding.addNewChat.setOnClickListener {
-            Log.d("fff","bton")
             openNewChat()
         }
+        binding.buttonShowAllPublicChat.setOnClickListener {
+
+            val builder = AlertDialog.Builder(requireContext())
+            chatViewModel.getAllPublicChat(userId)
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.popup_add_people, null)
+
+            // Encuentra el RecyclerView en el diseño del popup
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewPublicChats)
+
+            // Configura el LinearLayoutManager (o cualquier otro LayoutManager que desees)
+            val layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.layoutManager = layoutManager
+
+            // Crea y configura el adaptador para el RecyclerView
+            publicChatAdapter = PublicChatAdapter()
+            recyclerView.adapter = publicChatAdapter
+
+            builder.setView(dialogView)
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+
+
+                // Iterar sobre los elementos del RecyclerView
+                for (i in 0 until recyclerView.childCount) {
+                    val selectedPeopleList = mutableListOf<AddPeopleResponse>()
+                    val view = recyclerView.getChildAt(i)
+                    val emailCheckBox = view.findViewById<CheckBox>(R.id.chatCheckBox)
+                    val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
+                    val chatId = chatIdTextView.text.toString().toInt()
+                    if (emailCheckBox.isChecked) {
+                        selectedPeopleList.add(AddPeopleResponse(userId!!, chatId, false))
+                        Log.i("lista de", selectedPeopleList.toString())
+                        messagesViewModel.updateChatUsers( chatId, selectedPeopleList)
+                    }
+                }
+
+            }
+            builder.setNegativeButton("Cancelar") { _, _ ->
+
+            }
+            val dialog = builder.create()
+            dialog.show()
+
+        }
+
+
+        binding.chatPrivacityFilter.setOnClickListener {
+            val searchTerm = binding.filterText.text.toString()
+            val filterPrivacityChat = binding.chatPrivacityFilter.isChecked
+            chatViewModel.onGetChatsFromUser(searchTerm, filterPrivacityChat)
+        }
+        binding.filterText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                count: Int,
+                after: Int
+            ) {
+            }
+
+            override fun onTextChanged(
+                charSequence: CharSequence?,
+                start: Int,
+                before: Int,
+                count: Int
+            ) {
+                val searchTerm = charSequence.toString()
+                chatViewModel.onGetChatsFromUser(searchTerm, binding.chatPrivacityFilter.isChecked)
+
+            }
+
+            override fun afterTextChanged(editable: Editable?) {}
+        })
+
+        chatViewModel.filteredChats.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    if (!it.data.isNullOrEmpty()) {
+                        homeAdapter.submitList(it.data)
+                        homeAdapter.notifyDataSetChanged()
+                    } else {
+                        Log.d("chats", "No hay chats con ese nombre")
+                    }
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.e("ListSongsActivity", "Error al cargar datos: ${it.message}")
+                }
+
+                Resource.Status.LOADING -> {
+                    Log.d("ListSongsActivity", "Cargando datos...")
+                }
+            }
+
+        }
+
+        messagesViewModel.addPeople.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    it.data!!.forEach {
+
+                        val mainActivity = activity as MainActivity
+                        myService = mainActivity.myService
+                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
+                    }
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+
+                }
+            }
+        }
+
+        chatViewModel.created.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    Log.i("dasd", "asdad")
+                    val mainActivity = activity as MainActivity
+                    myService = mainActivity.myService
+                    myService.addUsersToChats(userId!!, it.data!!, true)
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.e("ListSongsActivity", "Error al cargar datos: ${it.message}")
+                }
+
+                Resource.Status.LOADING -> {
+                    Log.d("ListSongsActivity", "Cargando datos...")
+                }
+            }
+
+        }
+
+
+
+        showAllPublicChat()
         return root
     }
+
+    private fun showAllPublicChat() {
+
+        chatViewModel.publicChats.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    Log.d("ListSongsActivity", it.data!!.toString())
+                    publicChatAdapter.submitList(it.data!!)
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "messages observe error")
+                    //Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+
+                Resource.Status.LOADING -> {
+                    // de momento
+                    Log.d(TAG, "messages observe loading")
+                    //val toast = Toast.makeText(this, "Cargando..", Toast.LENGTH_LONG)
+                    //toast.setGravity(Gravity.TOP, 0, 0)
+                    //toast.show()
+                }
+            }
+        }
+
+    }
+
 
     private fun openNewChat() {
         val builder = AlertDialog.Builder(requireContext())
@@ -174,7 +338,7 @@ class HomeFragment : Fragment(), LocationListener {
                     Log.d("Socket", "messages observe")
                     val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
                     id?.let {
-                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName)
+                        homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName, primerMensaje.dataType)
                         val recyclerView: RecyclerView = binding.chatList
                         recyclerView.scrollToPosition(0)
                     }
@@ -209,7 +373,7 @@ class HomeFragment : Fragment(), LocationListener {
         if (!ubicacionObtenida) {
             localizacion = location
             Log.i("GPS", "Latitude: " + location.latitude + " , Longitude: " + location.longitude)
-            openGoogleMaps(location.latitude, location.longitude)
+            //openGoogleMaps(location.latitude, location.longitude)
             ubicacionObtenida = true
         }
     }
@@ -264,7 +428,9 @@ class HomeFragment : Fragment(), LocationListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(chat:  Resource<List<ChatResponse_Chat>>) {
+        Log.i("aaa", "aaa")
         homeAdapter.submitList(chat.data)
     }
+
 
 }

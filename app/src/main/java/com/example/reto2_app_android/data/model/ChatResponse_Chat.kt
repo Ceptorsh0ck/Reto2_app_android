@@ -12,5 +12,6 @@ data class ChatResponse_Chat(
     val updatedAt: Date?,
     val listMessages: List<ChatResponse_Message>?,
     val listUsers: List<ChatResponse_UserMessage>?,
-    val public: Boolean
+    val public: Boolean,
+    val totalUsers: Int? = null
 ): Parcelable

@@ -4,6 +4,7 @@ import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.AuthenticationResponse
 import com.example.reto2_app_android.data.Chat
+import com.example.reto2_app_android.data.ChatShow
 import com.example.reto2_app_android.data.User
 import com.example.reto2_app_android.data.UserLogin
 import com.example.reto2_app_android.data.model.ChatResponese_NewChat
@@ -11,6 +12,8 @@ import com.example.reto2_app_android.data.UserNew
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_User
 import com.example.reto2_app_android.data.model.ChatResponse_UserMessage
+import com.example.reto2_app_android.ui.auth.PasswordRecoverRequest
+import com.example.reto2_app_android.utils.Resource
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -37,14 +40,15 @@ interface APIInterface {
     @PUT("auth/register")
     suspend fun registerUser(@Body user: UserNew): Response<UserNew>
 
-    @DELETE("chats/{chatId}/remove-users")
+    @POST("chats/{chatId}/remove-users")
     suspend fun deleteUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
 
-
-
     @POST("chats/{userId}")
-    suspend fun createChat(@Body chat: ChatResponse_Chat, @Path("userId") userId: Int): Response<Int>
+    suspend fun createChat(@Body chat: ChatResponse_Chat, @Path("userId") userId: Int): Response<ChatResponse_Chat>
 
+    @DELETE("chats/{id}")
+    suspend fun deleteChat(@Path("id") id: Int): Response<Void>
 
-
+    @GET("chats/public")
+    suspend fun getPublicChats(): Response<List<ChatShow>>
 }
