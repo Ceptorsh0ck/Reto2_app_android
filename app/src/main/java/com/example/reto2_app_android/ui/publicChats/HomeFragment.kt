@@ -26,8 +26,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
+import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
@@ -41,6 +43,7 @@ import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.utils.Resource
+import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -104,6 +107,7 @@ class HomeFragment : Fragment(), LocationListener {
 
         homeAdapter = HomeAdapter(::onChatListClickItem)
         binding.chatList.adapter = homeAdapter
+        binding.idUserName.text = "${R.string.hello}${MyApp.userPreferences.getLoggedUser()?.name}"
         onMessagesChange()
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
@@ -184,19 +188,28 @@ class HomeFragment : Fragment(), LocationListener {
         val builder = AlertDialog.Builder(requireContext())
         val inflater = layoutInflater
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
+        val validateUserRoles = ValidateUserRoles()
         builder.setView(dialogView)
         builder.setPositiveButton("Crear Chat") { _, _ ->
-
-            val name = dialogView.findViewById<EditText>(R.id.editTextChatName).text.toString()
+            val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
             val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
-            val isPublic = isPublicCheckBox.isChecked
+           val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
+            Log.d("Roles", roles.toString())
+            if(validateUserRoles.validateUserRoles(roles!!, RoleEnum.ADMINISTRADOR) || validateUserRoles.validateUserRoles(roles, RoleEnum.PROFESOR)) {
+                chatViewModel.onAddChat(
 
+                    isPublicCheckBox.isChecked,
+                    name.text.toString()
+                )
 
-            chatViewModel.onAddChat(
+            } else {
+                isPublicCheckBox.visibility = View.GONE
+                chatViewModel.onAddChat(
+                    false,
+                    name.text.toString()
+                )
 
-                isPublic,
-                name
-            )
+            }
 
         }
         builder.setNegativeButton("Cancelar") { _, _ ->
