@@ -142,15 +142,15 @@ class DashboardAdapter(
     inner class DashboardViewHolder(private val binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(message: MessageAdapter) {
-            val currentDate = Date()
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
+
             val timeFormat = SimpleDateFormat("HH:mm")
-            val formattedDate = dateFormat.format(currentDate)
-            val formattedTime = timeFormat.format(currentDate)
-            Log.i("llegada", message.dataType.toString())
+            val formattedDate = dateFormat.format(message.createdAt)
+            val formattedTime = timeFormat.format(message.createdAt)
+
             if (binding is ItemMessageMeBinding) {
-                binding.textViewChatMeDate.text = if (message.fecha !=null) message.fecha else formattedDate
-                binding.textViewChatMeTimestamp.text = if (message.hora !=null) message.hora else formattedTime
+                binding.textViewChatMeDate.text = if (message.createdAt != null) formattedDate else formattedDate.toString()
+                binding.textViewChatMeTimestamp.text = if (message.createdAt != null) formattedTime else formattedTime.toString()
 
                 if(message.dataType == RoomDataType.TEXT || message.dataType == RoomDataType.GPS){
                     binding.textViewChatMeMessage.text = message.text
