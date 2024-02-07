@@ -115,12 +115,22 @@ class AuthInitialFragment : Fragment() {
                 startActivity(intent)
                 activity?.finish()
             }else {
-                progressBar.progress = 0
-                progressBar.secondaryProgress = 0
-                progressBar.isIndeterminate = true
-                Toast.makeText(context,getString(R.string.noWifi), Toast.LENGTH_SHORT).show()
-                delay(2000)
-                Toast.makeText(context,getString(R.string.reconnecting), Toast.LENGTH_SHORT).show()
+//                progressBar.progress = 0
+//                progressBar.secondaryProgress = 0
+//                progressBar.isIndeterminate = true
+//                Toast.makeText(context,getString(R.string.noWifi), Toast.LENGTH_SHORT).show()
+//                delay(2000)
+//                progressBar.progress = progressBar.max
+//                Toast.makeText(context,getString(R.string.reconnecting), Toast.LENGTH_SHORT).show()
+
+                val newFragment = AuthLoginFragment()
+                val transaction = parentFragmentManager.beginTransaction()
+                transaction.replace(R.id.authFragmentContainerView, newFragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+
+                Toast.makeText(context,getString(R.string.offlineMode), Toast.LENGTH_SHORT).show()
+
 
             }
 

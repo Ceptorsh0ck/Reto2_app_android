@@ -15,12 +15,14 @@ class MyHostnameVerifier : HostnameVerifier {
             Log.d(TAG, "MyHostnameVerifier hostname: $hostname")
         }
 
-        Log.e(TAG, "MyHostnameVerifier verify KO")
-        if (hostname != null && (hostname == "10.0.2.2" || hostname == "10.5.7.16")
+        if (hostname != null
+            && hostname == "10.0.2.2"
+            || hostname == "10.5.7.28"
         // other hostnames
         ) {
             return true // true is is verified
         }
+        Log.e(TAG, "MyHostnameVerifier verify KO")
         return false
 
     }
