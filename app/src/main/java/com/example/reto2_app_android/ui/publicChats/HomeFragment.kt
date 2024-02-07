@@ -24,7 +24,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
@@ -38,7 +37,6 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
-import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
@@ -47,8 +45,6 @@ import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.Timer
-import java.util.TimerTask
 import javax.inject.Inject
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -197,7 +193,6 @@ class HomeFragment : Fragment(), LocationListener {
             Log.d("Roles", roles.toString())
             if(validateUserRoles.validateUserRoles(roles!!, RoleEnum.ADMINISTRADOR) || validateUserRoles.validateUserRoles(roles, RoleEnum.PROFESOR)) {
                 chatViewModel.onAddChat(
-
                     isPublicCheckBox.isChecked,
                     name.text.toString()
                 )
