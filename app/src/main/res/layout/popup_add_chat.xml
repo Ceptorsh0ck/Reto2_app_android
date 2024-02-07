@@ -6,10 +6,9 @@
     android:layout_gravity="center">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="277dp"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
+        android:layout_centerInParent="true"
         android:background="#FFFFFF"
         android:orientation="vertical"
         android:padding="16dp">
@@ -18,24 +17,24 @@
             android:id="@+id/textViewTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nuevo Chat"
+            android:gravity="center"
+            android:text="@string/newChat1"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:gravity="center"/>
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/editTextChatName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Nombre del Chat"/>
+            android:hint="@string/nameOfChat" />
 
         <CheckBox
             android:id="@+id/checkBoxPublic"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Chat Público"/>
+            android:text="@string/publicChat" />
 
 
     </LinearLayout>

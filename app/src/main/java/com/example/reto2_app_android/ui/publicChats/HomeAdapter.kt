@@ -88,6 +88,7 @@ class HomeAdapter(
         fun bind(chat: ChatResponse_Chat) {
             binding.TextViewChatName.text = chat.name
             binding.TextViewChatId.text = chat.id.toString()
+            binding.TextViewUserTotal.text = "Users: " + chat.totalUsers.toString()
             //TODO Hay que descomentar esta linea esta quitada para pruebas
             //binding.TextViewChatId.visibility = View.INVISIBLE
             if (chat.public) {

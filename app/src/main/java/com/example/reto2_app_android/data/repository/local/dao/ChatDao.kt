@@ -4,7 +4,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
+import retrofit2.http.DELETE
 
 
 @Dao
@@ -47,6 +49,12 @@ interface ChatDao {
 
     @Query("SELECT id from chats where id_server = :idServer")
     suspend fun selectChatByServerId(idServer: Int?): Int
+
+    @Query("Update chats set id_Server = :idServer where id = :idRoom")
+    suspend fun updateChat(idServer: Int, idRoom: Int): Int
+
+    @Query("Delete from chats where id = :id")
+    suspend fun deleteChat(id: Int)
 
 
 }

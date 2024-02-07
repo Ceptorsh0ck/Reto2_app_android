@@ -26,4 +26,7 @@ interface UserChatDao {
     @Query("SELECT user_chat.is_admin FROM user_chat WHERE chat_id = :chatId AND user_id = :userId")
     suspend fun isAdmin(chatId: Int, userId: Int?): Boolean
 
+    @Query("Select count(user_id) from user_chat where chat_id = :id ")
+    suspend fun getTotalUsers(id: Int): Int?
+
 }

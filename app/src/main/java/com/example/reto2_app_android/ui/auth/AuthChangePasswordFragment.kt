@@ -51,6 +51,7 @@ class AuthChangePasswordFragment : Fragment() {
         // Inflate the layout for this fragment
 
         changePasswordBinding = FragmentAuthChangePasswordBinding.inflate(layoutInflater,container,false)
+        changePasswordBinding.changePasswordButton.isEnabled = false
         if(MyApp.userPreferences.isRememberMeEnabled() && MyApp.userPreferences.getLoggedUser()?.firstLogin == true){
             MyApp.userPreferences.saveRememberMeStatus(false)
         }
@@ -85,7 +86,7 @@ class AuthChangePasswordFragment : Fragment() {
             val password2 = changePasswordBinding.changePassword2.text.toString()
             // TODO Comproprobar que Password1 cumple los requisitos y que Password2 es identica.
 
-            if(password1 == password2){
+            if(password1 == password2 && password1.length > 8 && password2.length > 8) {
                 userNew?.newPassword = password1
                 val newFragment = AuthScrollingRegisterFragment()
                 val args = Bundle()
@@ -97,12 +98,15 @@ class AuthChangePasswordFragment : Fragment() {
                 transaction.commit()
             }else{
                 changePasswordBinding.changePassword1.error = "Las contraseñas no coinciden"
-
             }
         }
 
         changePasswordBinding.changePasswordBackButton.setOnClickListener() {
-            parentFragmentManager.popBackStack()
+            val newFragment = AuthLoginFragment()
+            val transaction = parentFragmentManager.beginTransaction()
+            transaction.replace(R.id.authFragmentContainerView, newFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
         }
 
         return changePasswordBinding.root

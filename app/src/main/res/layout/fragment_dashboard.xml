@@ -45,6 +45,34 @@
                     android:paddingEnd="8dp"
                     android:textSize="18sp" />
 
+                <!-- Botón para salir del chat -->
+                <ImageButton
+                    android:id="@+id/button_toolbar_exit_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/deleteChat"
+                    android:padding="8dp"
+                    android:src="@drawable/baseline_exit_to_app_24"
+                    android:visibility="visible" />
+
+                <!-- Botón para eliminar chat -->
+                <ImageButton
+                    android:id="@+id/button_toolbar_delete_chat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/deleteChat"
+                    android:padding="8dp"
+                    android:src="@drawable/baseline_exit_to_app_24"
+                    android:visibility="gone" />
+
+                <!-- Espacio entre botones -->
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="0.05" />
+
                 <!-- Botón para eliminar personas del chat -->
                 <ImageButton
                     android:id="@+id/button_toolbar_delete_people_chat"
@@ -54,7 +82,7 @@
                     android:contentDescription="@string/eliminarPersona"
                     android:padding="8dp"
                     android:src="@drawable/delete_people_group"
-                    android:visibility="invisible" />
+                    android:visibility="gone" />
 
                 <!-- Espacio entre botones -->
                 <Space
@@ -71,7 +99,7 @@
                     android:contentDescription="@string/agregarPersona"
                     android:padding="8dp"
                     android:src="@drawable/add_people_group"
-                    android:visibility="invisible" />
+                    android:visibility="gone" />
 
                 <!-- Espacio entre botones -->
                 <Space

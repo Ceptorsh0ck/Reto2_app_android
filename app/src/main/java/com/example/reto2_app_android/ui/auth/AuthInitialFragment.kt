@@ -95,7 +95,7 @@ class AuthInitialFragment : Fragment() {
             delay(300)
             progressBar.incrementProgressBy(PROGRESS_INCREMENT)
         }
-        if (authActivity.networkConnectionManager.isNetworkConnected) {
+        if (!authActivity.networkConnectionManager.isNetworkConnected) {
 
             if(isUserLogged()){
                 val intent = Intent(activity, MainActivity::class.java)
@@ -115,6 +115,10 @@ class AuthInitialFragment : Fragment() {
                 startActivity(intent)
                 activity?.finish()
             }else {
+
+                delay(2000)
+                Toast.makeText(context,getString(R.string.noWifi), Toast.LENGTH_SHORT).show()
+
 //                progressBar.progress = 0
 //                progressBar.secondaryProgress = 0
 //                progressBar.isIndeterminate = true

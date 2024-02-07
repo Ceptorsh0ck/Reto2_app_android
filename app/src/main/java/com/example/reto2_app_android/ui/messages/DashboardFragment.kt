@@ -12,31 +12,21 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
-import android.opengl.Visibility
 import android.os.Bundle
-import android.os.Environment
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.CheckBox
-import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.motion.widget.Debug.getLocation
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -48,6 +38,7 @@ import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
@@ -58,17 +49,13 @@ import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.ui.messages.DeletePeopleAdapter
 import com.example.reto2_app_android.utils.Resource
+import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.IOException
 import java.io.InputStream
-import java.text.SimpleDateFormat
 import java.util.Base64
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 private const val ARG_CHAT = "chat"
@@ -239,7 +226,7 @@ class DashboardFragment : Fragment(), LocationListener {
 
     private fun bitmapToBase64(bitmap: Bitmap): String {
         val outputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 80, outputStream)
+        bitmap.compress(Bitmap.CompressFormat.PNG, 20, outputStream)
         val byteArray = outputStream.toByteArray()
         return Base64.getEncoder().encodeToString(byteArray)
     }
@@ -319,6 +306,8 @@ class DashboardFragment : Fragment(), LocationListener {
     }
 
     private fun isAdim() {
+
+
         viewModel.admin.observe(viewLifecycleOwner) { it ->
             when (it.status) {
                 Resource.Status.SUCCESS -> {
@@ -326,8 +315,23 @@ class DashboardFragment : Fragment(), LocationListener {
                     if(isAdmin){
                         binding.buttonToolbarAddPeopleChat.visibility = VISIBLE
                         binding.buttonToolbarDeletePeopleChat.visibility = VISIBLE
+                        binding.buttonToolbarExitChat.visibility = INVISIBLE
+                        binding.buttonToolbarDeleteChat.visibility = VISIBLE
+                    }else{
+                        binding.buttonToolbarAddPeopleChat.visibility = INVISIBLE
+                        binding.buttonToolbarDeletePeopleChat.visibility = INVISIBLE
+                        binding.buttonToolbarExitChat.visibility = VISIBLE
+                        binding.buttonToolbarDeleteChat.visibility = INVISIBLE
+
+                    }
+                    val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
+                    val validateUserRoles = ValidateUserRoles()
+                    val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
+                    if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+                        binding.buttonToolbarExitChat.visibility = INVISIBLE
                     }
                 }
+
                 Resource.Status.ERROR -> {
                     Log.d(TAG, "error al conectar...")
                 }
@@ -343,6 +347,7 @@ class DashboardFragment : Fragment(), LocationListener {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("lista de ", it.data.toString())
+
                     addPeopleAdapter.submitList(it.data)
                 }
                 Resource.Status.ERROR -> {
@@ -528,7 +533,7 @@ class DashboardFragment : Fragment(), LocationListener {
 
             val inflater = layoutInflater
             val dialogView = inflater.inflate(R.layout.popup_layout, null)
-
+            dialogView.findViewById<TextView>(R.id.titleTextView).text = "Añadir Usuario"
             // Encuentra el RecyclerView en el diseño del popup
             val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerView)
 
@@ -592,7 +597,7 @@ class DashboardFragment : Fragment(), LocationListener {
 
                 val selectedPeopleList = mutableListOf<AddPeopleResponse>()
 
-                // Iterar sobre los elementos del RecyclerView
+                // Iterar sombre los elementos del RecyclerView
                 for (i in 0 until recyclerView.childCount) {
                     val view = recyclerView.getChildAt(i)
                     val emailCheckBox = view.findViewById<CheckBox>(R.id.emailCheckBox)
@@ -613,6 +618,16 @@ class DashboardFragment : Fragment(), LocationListener {
             }
             val dialog = builder.create()
             dialog.show()
+        }
+
+        binding.buttonToolbarExitChat.setOnClickListener {
+            val selectedPeopleList = mutableListOf<AddPeopleResponse>()
+            selectedPeopleList.add(AddPeopleResponse(userId = userId!!, chat!!.id, false))
+            Log.i("chat", chat!!.id.toString())
+            viewModel.updateChatUsersDelete(chat!!.id, selectedPeopleList)
+        }
+        binding.buttonToolbarDeleteChat.setOnClickListener {
+            viewModel.deleteChat(chat!!.id)
         }
     }
 
@@ -648,7 +663,6 @@ class DashboardFragment : Fragment(), LocationListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(userDeleted: DeletePeople) {
-        Log.i("chatidddd", userDeleted.chatId.toString())
         if(chat!!.id == userDeleted.chatId){
             requireActivity().supportFragmentManager.popBackStack()
         }

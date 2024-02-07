@@ -26,5 +26,6 @@ interface CommonMessageRepository {
     suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
     suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>)
     suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean>
+    suspend fun deleteChat(id: Int)
 
 }

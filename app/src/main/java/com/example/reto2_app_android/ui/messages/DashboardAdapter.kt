@@ -152,11 +152,34 @@ class DashboardAdapter(
                 binding.textViewChatMeDate.text = if (message.createdAt != null) formattedDate else formattedDate.toString()
                 binding.textViewChatMeTimestamp.text = if (message.createdAt != null) formattedTime else formattedTime.toString()
 
-                if(message.dataType == RoomDataType.TEXT || message.dataType == RoomDataType.GPS){
+                if(message.dataType == RoomDataType.TEXT){
                     binding.textViewChatMeMessage.text = message.text
                     binding.textViewChatMeMessage.visibility = VISIBLE
                     binding.imageViewChatMyMessage.visibility = GONE
-                }else if(message.dataType == RoomDataType.IMAGE){
+                }else if(message.dataType == RoomDataType.GPS) {
+                    binding.textViewChatMeMessage.text = message.text
+                    binding.textViewChatMeMessage.visibility = VISIBLE
+                    binding.imageViewChatMyMessage.visibility = GONE
+                    binding.textViewChatMeMessage.setOnClickListener {
+                        Log.i("click", "click")
+                        // Dividir el texto del mensaje por la coma para obtener la latitud y longitud
+                        val coordinates = message.text.split(",")
+
+                        if (coordinates.size == 2) { // Verificar si se obtuvieron dos partes (latitud y longitud)
+                            val latitude = coordinates[0].toDouble()
+                            val longitude = coordinates[1].toDouble()
+
+                            // Crear un Intent para abrir Google Maps con las coordenadas
+                            val uri = "geo:$latitude,$longitude"
+                            val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                            mapIntent.setPackage("com.google.android.apps.maps") // Establecer el paquete de Google Maps
+                            binding.root.context.startActivity(mapIntent) // Usar binding.root.context para obtener el contexto
+                        } else {
+                            // Manejar el caso en que el formato del mensaje de GPS no sea el esperado
+                            // Puedes mostrar un mensaje de error o realizar otra acción adecuada
+                        }
+                    }
+                } else if(message.dataType == RoomDataType.IMAGE){
                     binding.textViewChatMeMessage.visibility = GONE
                     binding.imageViewChatMyMessage.visibility = VISIBLE
                     val imageData = message.text

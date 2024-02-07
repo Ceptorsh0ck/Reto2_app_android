@@ -19,14 +19,17 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
@@ -36,10 +39,12 @@ import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
+import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
+import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.utils.Resource
 import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
@@ -63,10 +68,12 @@ class HomeFragment : Fragment(), LocationListener {
     private lateinit var homeAdapter: HomeAdapter
     private val roomMessageRepository = RoomMessageDataSource();
     private val serverMessageRepository = RemoteMessagesDataSource();
+    private var userId = MyApp.userPreferences.getLoggedUser()!!.id
+    private lateinit var publicChatAdapter: PublicChatAdapter
     private val messagesViewModel: DashboardViewModel by viewModels {
         DashboardViewModelFactory(roomMessageRepository, serverMessageRepository)
     }
-    //private lateinit var myService: SocketIoService
+    private lateinit var myService: SocketIoService
 
     private val chatViewModel: HomeViewModel by viewModels {
         HomeViewModelFactory(chatRepository, roomChatRepository)
@@ -108,7 +115,7 @@ class HomeFragment : Fragment(), LocationListener {
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-
+                    Log.i(TAG, "new user chat")
                     homeAdapter.submitList(it.data)
                 }
 
@@ -125,6 +132,53 @@ class HomeFragment : Fragment(), LocationListener {
         binding.addNewChat.setOnClickListener {
             openNewChat()
         }
+        binding.buttonShowAllPublicChat.setOnClickListener {
+
+            val builder = AlertDialog.Builder(requireContext())
+            chatViewModel.getAllPublicChat(userId)
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.popup_add_people, null)
+
+            // Encuentra el RecyclerView en el diseño del popup
+            val recyclerView = dialogView.findViewById<RecyclerView>(R.id.recyclerViewPublicChats)
+
+            // Configura el LinearLayoutManager (o cualquier otro LayoutManager que desees)
+            val layoutManager = LinearLayoutManager(requireContext())
+            recyclerView.layoutManager = layoutManager
+
+            // Crea y configura el adaptador para el RecyclerView
+            publicChatAdapter = PublicChatAdapter()
+            recyclerView.adapter = publicChatAdapter
+
+            builder.setView(dialogView)
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+
+
+                // Iterar sobre los elementos del RecyclerView
+                for (i in 0 until recyclerView.childCount) {
+                    val selectedPeopleList = mutableListOf<AddPeopleResponse>()
+                    val view = recyclerView.getChildAt(i)
+                    val emailCheckBox = view.findViewById<CheckBox>(R.id.chatCheckBox)
+                    val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
+                    val chatId = chatIdTextView.text.toString().toInt()
+                    if (emailCheckBox.isChecked) {
+                        selectedPeopleList.add(AddPeopleResponse(userId!!, chatId, false))
+                        Log.i("lista de", selectedPeopleList.toString())
+                        messagesViewModel.updateChatUsers( chatId, selectedPeopleList)
+                    }
+                }
+
+            }
+            builder.setNegativeButton("Cancelar") { _, _ ->
+
+            }
+            val dialog = builder.create()
+            dialog.show()
+
+        }
+
+
         binding.chatPrivacityFilter.setOnClickListener {
             val searchTerm = binding.filterText.text.toString()
             val filterPrivacityChat = binding.chatPrivacityFilter.isChecked
@@ -175,36 +229,100 @@ class HomeFragment : Fragment(), LocationListener {
 
         }
 
+        messagesViewModel.addPeople.observe(viewLifecycleOwner) { it ->
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    it.data!!.forEach {
+
+                        val mainActivity = activity as MainActivity
+                        myService = mainActivity.myService
+                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
+                    }
+                }
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "error al conectar...")
+                }
+                Resource.Status.LOADING -> {
+
+                }
+            }
+        }
+
+        chatViewModel.created.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    Log.i("dasd", "asdad")
+                    val mainActivity = activity as MainActivity
+                    myService = mainActivity.myService
+                    myService.addUsersToChats(userId!!, it.data!!, true)
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.e("ListSongsActivity", "Error al cargar datos: ${it.message}")
+                }
+
+                Resource.Status.LOADING -> {
+                    Log.d("ListSongsActivity", "Cargando datos...")
+                }
+            }
+
+        }
+
+
+
+        showAllPublicChat()
         return root
     }
 
+    private fun showAllPublicChat() {
+
+        chatViewModel.publicChats.observe(viewLifecycleOwner) {
+            when (it.status) {
+                Resource.Status.SUCCESS -> {
+                    Log.d("ListSongsActivity", it.data!!.toString())
+                    publicChatAdapter.submitList(it.data!!)
+                }
+
+                Resource.Status.ERROR -> {
+                    Log.d(TAG, "messages observe error")
+                    //Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+
+                Resource.Status.LOADING -> {
+                    // de momento
+                    Log.d(TAG, "messages observe loading")
+                    //val toast = Toast.makeText(this, "Cargando..", Toast.LENGTH_LONG)
+                    //toast.setGravity(Gravity.TOP, 0, 0)
+                    //toast.show()
+                }
+            }
+        }
+
+    }
 
 
     private fun openNewChat() {
         val builder = AlertDialog.Builder(requireContext())
         val inflater = layoutInflater
+        val validateUserRoles = ValidateUserRoles()
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
         val validateUserRoles = ValidateUserRoles()
         builder.setView(dialogView)
+        val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
+        val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
+        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
+        if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+            isPublicCheckBox.visibility = View.GONE
+        }
         builder.setPositiveButton("Crear Chat") { _, _ ->
+
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
-            val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
-           val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
             Log.d("Roles", roles.toString())
-            if(validateUserRoles.validateUserRoles(roles!!, RoleEnum.ADMINISTRADOR) || validateUserRoles.validateUserRoles(roles, RoleEnum.PROFESOR)) {
-                chatViewModel.onAddChat(
-                    isPublicCheckBox.isChecked,
-                    name.text.toString()
-                )
-
-            } else {
-                isPublicCheckBox.visibility = View.GONE
-                chatViewModel.onAddChat(
-                    false,
-                    name.text.toString()
-                )
-
-            }
+            chatViewModel.onAddChat(
+                isPublicCheckBox.isChecked,
+                name.text.toString()
+            )
+  
 
         }
         builder.setNegativeButton("Cancelar") { _, _ ->
@@ -317,7 +435,9 @@ class HomeFragment : Fragment(), LocationListener {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(chat:  Resource<List<ChatResponse_Chat>>) {
+        Log.i("aaa", "aaa")
         homeAdapter.submitList(chat.data)
     }
+
 
 }

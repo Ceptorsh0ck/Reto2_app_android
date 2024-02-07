@@ -44,4 +44,8 @@ class RemoteMessagesDataSource: BaseDataSource(), CommonMessageRepository {
     override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun deleteChat(id: Int) {
+        RetrofitClient.apiInterface.deleteChat(id)
+    }
 }

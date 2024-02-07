@@ -7,29 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
-import androidx.room.Delete
-import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.MessageAdapter
-import com.example.reto2_app_android.data.MessageRecive
 import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
-import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.utils.Resource
-import com.example.socketapp.data.socket.SocketEvents
-import com.example.socketapp.data.socket.SocketMessageReq
-import com.example.socketapp.data.socket.SocketMessageRes
-import com.google.gson.Gson
-import io.socket.client.IO
-import io.socket.client.Socket
-import io.socket.emitter.Emitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.text.SimpleDateFormat
 import java.util.Date
 
 class DashboardViewModelFactory(
@@ -140,6 +127,29 @@ class DashboardViewModel (
         }
     }
 
+    fun deleteChat(id: Int) {
+        viewModelScope.launch {
+            try {
+                deleteChatRoom(id)
+                deleteChatServer(id)
+            } catch (e: Exception) {
+                // Manejar cualquier excepción que ocurra durante la eliminación del chat
+            }
+        }
+    }
+
+    private suspend fun deleteChatServer(id: Int) {
+        return withContext(Dispatchers.IO) {
+            serverMessageRepository.deleteChat(id)
+        }
+    }
+
+    private suspend fun deleteChatRoom(id: Int) {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.deleteChat(id)
+        }
+    }
+
     private suspend fun serverAddUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
         return withContext(Dispatchers.IO) {
             serverMessageRepository.addUsersToChats(idChat, list)
@@ -170,6 +180,7 @@ class DashboardViewModel (
             roomMessageRepository.getAllMessagesById(id);
         }
     }
+
 
     fun saveNewMessageRoom(message: String, socketRoom: Int, userId: Int, type: RoomDataType) {
         val roomMessage = RoomMessages(

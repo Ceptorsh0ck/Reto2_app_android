@@ -22,7 +22,6 @@ class RoomMessageDataSource: CommonMessageRepository {
     private val userDao: UserDao = MyApp.db.userDao()
     private val userChatDao: UserChatDao = MyApp.db.userChatDao()
     override suspend fun insertMessage(message: RoomMessages): Resource<List<MessageAdapter>> {
-        Log.d("insert", message.toString())
         if(messageDao.selectById(message.idServer) == null) {
             var chatId: Int? = chatDao.selectChatByServerId(message.chatId)
             if(chatId == null) {
@@ -104,6 +103,11 @@ class RoomMessageDataSource: CommonMessageRepository {
         val idUser = userDao.selectUserByServerId(userId)
         val idChat = chatDao.selectChatByServerId(chatId)
         return Resource.success(userChatDao.isAdmin(idChat, idUser))
+    }
+
+    override suspend fun deleteChat(id: Int) {
+        var chatRoom = chatDao.selectChatByServerId(id)
+        chatDao.deleteChat(chatRoom)
     }
 
 

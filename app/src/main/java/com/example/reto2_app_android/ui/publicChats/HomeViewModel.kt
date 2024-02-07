@@ -7,8 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
-import com.example.reto2_app_android.data.Chat
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
+import com.example.reto2_app_android.data.ChatShow
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonChatRepository
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
@@ -20,7 +19,6 @@ import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
 
 class HomeViewModelFactory(
     private val remoteChatRepository: CommonChatRepository,
@@ -49,6 +47,10 @@ class HomeViewModel(
     private val _created = MutableLiveData<Resource<Int>>()
     val created: LiveData<Resource<Int>> get() = _created
 
+    private val _publicChats = MutableLiveData<Resource<List<ChatShow>>>()
+
+    val publicChats: LiveData<Resource<List<ChatShow>>> get() = _publicChats
+
     val filteredChats: LiveData<Resource<List<ChatResponse_Chat>>> get() = _filteredChats
     private val _filteredChats = MutableLiveData<Resource<List<ChatResponse_Chat>>>()
 
@@ -69,9 +71,13 @@ class HomeViewModel(
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
-            _created.value = createNewChat(newChat)
+            val idRoom = createNewChat(newChat)
+            val idServer = insertChatServer(newChat).data!!.id
+            updateChat(idServer, idRoom.data!!)
+            _created.value = Resource.success(idServer)
         }
     }
+
 
     fun onGetChatsFromUser(chatName: String, filterPrivacityChat: Boolean) {
         viewModelScope.launch {
@@ -109,7 +115,20 @@ class HomeViewModel(
     private suspend fun createNewChat(newChat: ChatResponse_Chat): Resource<Int> {
         return withContext(Dispatchers.IO) {
             val id = 0
-            chatRepository.createChat(newChat, id)
+            roomChatRepository.createChat(newChat)
+        }
+    }
+
+    private suspend fun insertChatServer(newChat: ChatResponse_Chat) : Resource<ChatResponse_Chat> {
+        return withContext(Dispatchers.IO) {
+            val id = 0
+            chatRepository.createChatServer(newChat, id)
+        }
+    }
+
+    private suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int>? {
+        return withContext(Dispatchers.IO) {
+            roomChatRepository.updateChat(idServer, idRoom)
         }
     }
 
@@ -128,7 +147,7 @@ class HomeViewModel(
 
     suspend fun getChatsFromRepository(): Resource<List<ChatResponse_Chat>> {
         return withContext((Dispatchers.IO)) {
-            chatRepository.getChats();
+             chatRepository.getChats();
         }
     }
 
@@ -251,6 +270,19 @@ class HomeViewModel(
             return false
         }
 
+    }
+
+    fun getAllPublicChat(userId: Int?) {
+        viewModelScope.launch {
+            val repoResponse = repositoryGetAllPublicChat(userId)
+            _publicChats.value = repoResponse
+        }
+    }
+
+    private suspend fun repositoryGetAllPublicChat(userId: Int?): Resource<List<ChatShow>> {
+        return withContext((Dispatchers.IO)) {
+            chatRepository.getPublicChat(userId!!)
+        }
     }
 
 
