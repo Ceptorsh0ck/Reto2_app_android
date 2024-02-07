@@ -38,6 +38,7 @@ import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
@@ -48,6 +49,7 @@ import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.ui.messages.DeletePeopleAdapter
 import com.example.reto2_app_android.utils.Resource
+import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -304,6 +306,8 @@ class DashboardFragment : Fragment(), LocationListener {
     }
 
     private fun isAdim() {
+
+
         viewModel.admin.observe(viewLifecycleOwner) { it ->
             when (it.status) {
                 Resource.Status.SUCCESS -> {
@@ -320,7 +324,14 @@ class DashboardFragment : Fragment(), LocationListener {
                         binding.buttonToolbarDeleteChat.visibility = INVISIBLE
 
                     }
+                    val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
+                    val validateUserRoles = ValidateUserRoles()
+                    val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
+                    if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+                        binding.buttonToolbarExitChat.visibility = INVISIBLE
+                    }
                 }
+
                 Resource.Status.ERROR -> {
                     Log.d(TAG, "error al conectar...")
                 }
@@ -336,6 +347,7 @@ class DashboardFragment : Fragment(), LocationListener {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("lista de ", it.data.toString())
+
                     addPeopleAdapter.submitList(it.data)
                 }
                 Resource.Status.ERROR -> {

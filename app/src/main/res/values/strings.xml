@@ -223,6 +223,9 @@
     <string name="eliminarUsuario">Eliminar Usuario</string>
     <string name="chatsPublicos">Chats Publicos</string>
     <string name="location">Ubicación</string>
+    <string name="newChat1">Nuevo Chat</string>
+    <string name="nameOfChat">Nombre del Chat</string>
+    <string name="publicChat">Chat Público</string>
     <string-array name="options_array">
         <item>Ubicación</item>
         <item>Archivo</item>

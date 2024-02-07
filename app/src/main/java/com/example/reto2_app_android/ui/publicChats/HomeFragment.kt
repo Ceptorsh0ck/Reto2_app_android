@@ -31,6 +31,7 @@ import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
+import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
@@ -46,6 +47,7 @@ import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
 import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.utils.Resource
+import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -302,19 +304,22 @@ class HomeFragment : Fragment(), LocationListener {
     private fun openNewChat() {
         val builder = AlertDialog.Builder(requireContext())
         val inflater = layoutInflater
+        val validateUserRoles = ValidateUserRoles()
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
         builder.setView(dialogView)
+        val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
+        val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
+        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
+        if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+            isPublicCheckBox.visibility = View.GONE
+        }
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
-            val name = dialogView.findViewById<EditText>(R.id.editTextChatName).text.toString()
-            val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
-            val isPublic = isPublicCheckBox.isChecked
-
-
+            val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
+            Log.d("Roles", roles.toString())
             chatViewModel.onAddChat(
-
-                isPublic,
-                name
+                isPublicCheckBox.isChecked,
+                name.text.toString()
             )
 
         }
