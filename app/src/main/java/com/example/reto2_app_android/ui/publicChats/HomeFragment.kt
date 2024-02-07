@@ -103,7 +103,7 @@ class HomeFragment : Fragment(), LocationListener {
 
         homeAdapter = HomeAdapter(::onChatListClickItem)
         binding.chatList.adapter = homeAdapter
-        binding.idUserName.text = "${R.string.hello}${MyApp.userPreferences.getLoggedUser()?.name}"
+        binding.idUserName.text = "Hola, ${MyApp.userPreferences.getLoggedUser()?.name}!"
         onMessagesChange()
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
