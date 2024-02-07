@@ -41,6 +41,7 @@ import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSourc
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
+import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
@@ -306,7 +307,6 @@ class HomeFragment : Fragment(), LocationListener {
         val inflater = layoutInflater
         val validateUserRoles = ValidateUserRoles()
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
-        val validateUserRoles = ValidateUserRoles()
         builder.setView(dialogView)
         val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
         val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)

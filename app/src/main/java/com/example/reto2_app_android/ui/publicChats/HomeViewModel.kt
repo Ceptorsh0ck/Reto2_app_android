@@ -67,7 +67,7 @@ class HomeViewModel(
         }
     }
 
-    fun onAddChat(isPublic: Boolean, name: String) {
+    fun     onAddChat(isPublic: Boolean, name: String) {
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
@@ -114,15 +114,15 @@ class HomeViewModel(
 
     private suspend fun createNewChat(newChat: ChatResponse_Chat): Resource<Int> {
         return withContext(Dispatchers.IO) {
-            val id = 0
+
             roomChatRepository.createChat(newChat)
         }
     }
 
     private suspend fun insertChatServer(newChat: ChatResponse_Chat) : Resource<ChatResponse_Chat> {
         return withContext(Dispatchers.IO) {
-            val id = 0
-            chatRepository.createChatServer(newChat, id)
+
+            chatRepository.createChatServer(newChat, MyApp.userPreferences.getLoggedUser()!!.id!!)
         }
     }
 

@@ -13,7 +13,7 @@ object RetrofitClientLaravel {
 
     // esta es la ip a la que vamos a hacer peticiones (es localhost pero desde el emulador no deja)
     // NOTE acordarse de que hace falta actualizar el manifest
-    const val API_URI = "http://10.5.7.212/api/"
+    const val API_URI = "http://10.5.7.214/api/"
 
 
     var client = OkHttpClient.Builder().addInterceptor {chain ->
