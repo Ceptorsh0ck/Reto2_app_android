@@ -1,8 +1,4 @@
 package com.example.reto2_app_android.data.services
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializer
-import java.lang.reflect.Type
-import java.text.SimpleDateFormat
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.app.Notification
 import android.app.NotificationChannel
@@ -17,13 +13,12 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.MyApp.Companion.context
 import com.example.reto2_app_android.R
@@ -31,24 +26,23 @@ import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
-import com.example.reto2_app_android.data.repository.CommonMessageRepository
 import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.RoomUserDataSource
-import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
-import com.example.reto2_app_android.data.repository.local.tables.RoomUser
-import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
 import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
 import com.example.reto2_app_android.ui.MainActivity
-import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
+import com.example.reto2_app_android.utils.MyHostnameVerifier
+import com.example.reto2_app_android.utils.MyTrustManager
 import com.example.reto2_app_android.utils.Resource
 import com.example.socketapp.data.socket.SocketEvents
 import com.example.socketapp.data.socket.SocketMessageReq
 import com.example.socketapp.data.socket.SocketMessageRes
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import io.socket.client.IO
 import io.socket.client.Socket
@@ -58,12 +52,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import org.greenrobot.eventbus.EventBus
 import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
+import java.lang.reflect.Type
+import java.text.SimpleDateFormat
 import java.util.Base64
 import java.util.Date
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
 
 class SocketIoService : Service() {
     private val serviceInitializedLiveData = MutableLiveData<Boolean>()
@@ -76,7 +76,7 @@ class SocketIoService : Service() {
     private val TAG = "SocketIoService"
     private lateinit var mSocket: Socket
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
-    private val SOCKET_HOST = "http://10.5.7.15:8085/"
+    private val SOCKET_HOST = "https://10.5.7.18:8085/"
     private val AUTHORIZATION_HEADER = "Authorization"
 
     private val _connected = MutableLiveData<Resource<Boolean>>()
@@ -200,6 +200,17 @@ class SocketIoService : Service() {
         val headers = mutableMapOf<String, MutableList<String>>()
         headers[AUTHORIZATION_HEADER] = mutableListOf("Bearer ${MyApp.userPreferences.fetchAuthToken()}")
         options.extraHeaders = headers
+        options.secure = true
+        val certificatesManager = MyTrustManager(context)
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf<TrustManager>(certificatesManager.trustManager), null)
+        val okHttpClient = OkHttpClient.Builder()
+            .hostnameVerifier(MyHostnameVerifier())
+            .sslSocketFactory(sslContext.socketFactory, certificatesManager.trustManager)
+            .readTimeout(1, TimeUnit.MINUTES)
+            .build()
+        options.callFactory = okHttpClient
+        options.webSocketFactory = okHttpClient
         return options
     }
 
@@ -400,18 +411,26 @@ class SocketIoService : Service() {
         }
     }
 
-    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType){
 
-        var newMessage: String? = null
-        if(type == RoomDataType.FILE){
-            newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
-        }else{
-            Log.i("asd", "sadsd")
-            newMessage = message
+
+    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType) {
+        try {
+            var newMessage: String? = null
+            if (type == RoomDataType.FILE) {
+                newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
+            } else {
+                newMessage = message
+            }
+
+            val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
+            val jsonObject = JSONObject(Gson().toJson(socketMessage))
+
+            mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
+        } catch (e: OutOfMemoryError) {
+            Toast.makeText(context, "El archivo es demasiado grande", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error al enviar el mensaje", Toast.LENGTH_SHORT).show()
         }
-        val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
-        val jsonObject = JSONObject(Gson().toJson(socketMessage))
-        mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
 
     fun addUsersToChats(userId: Int, chatId: Int, admin: Boolean) {
