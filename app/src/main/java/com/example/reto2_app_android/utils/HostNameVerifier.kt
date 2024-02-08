@@ -17,7 +17,6 @@ class MyHostnameVerifier : HostnameVerifier {
 
         if (hostname != null
             && hostname == "10.0.2.2"
-            || hostname == "10.5.7.28"
         // other hostnames
         ) {
             return true // true is is verified

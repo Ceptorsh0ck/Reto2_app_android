@@ -67,7 +67,7 @@ class HomeViewModel(
         }
     }
 
-    fun     onAddChat(isPublic: Boolean, name: String) {
+    fun onAddChat(isPublic: Boolean, name: String) {
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
