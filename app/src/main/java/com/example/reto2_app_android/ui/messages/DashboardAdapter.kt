@@ -145,8 +145,8 @@ class DashboardAdapter(
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
 
             val timeFormat = SimpleDateFormat("HH:mm")
-            val formattedDate = dateFormat.format(message.createdAt)
-            val formattedTime = timeFormat.format(message.createdAt)
+            val formattedDate = message.createdAt?.let { dateFormat.format(it) }
+            val formattedTime = message.createdAt?.let { timeFormat.format(it) }
 
             if (binding is ItemMessageMeBinding) {
                 binding.textViewChatMeDate.text = if (message.createdAt != null) formattedDate else formattedDate.toString()

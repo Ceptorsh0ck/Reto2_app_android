@@ -88,16 +88,9 @@ class DashboardViewModel (
         viewModelScope.launch {
             try {
                 deleteChatRoom(id)
-                deleteChatServer(id)
             } catch (e: Exception) {
                 // Manejar cualquier excepción que ocurra durante la eliminación del chat
             }
-        }
-    }
-
-    private suspend fun deleteChatServer(id: Int) {
-        return withContext(Dispatchers.IO) {
-            serverMessageRepository.deleteChat(id)
         }
     }
 

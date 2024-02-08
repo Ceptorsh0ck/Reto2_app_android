@@ -8,11 +8,11 @@ import java.util.Date
 data class ChatResponse_Chat(
     var id: Int,
     val name: String?,
-    val createdAt: Date?,
-    val updatedAt: Date?,
+    var createdAt: Date?,
+    var updatedAt: Date?,
     val listMessages: List<ChatResponse_Message>?,
     val listUsers: List<ChatResponse_UserMessage>?,
-    val public: Boolean,
+    val aIsPublic: Boolean,
     val totalUsers: Int? = null,
     var idRoom: Int? = null,
 ): Parcelable

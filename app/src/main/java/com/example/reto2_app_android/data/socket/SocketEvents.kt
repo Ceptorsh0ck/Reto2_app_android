@@ -14,4 +14,6 @@ enum class SocketEvents(val value: String) {
     ON_CREATE_CHAT_SEND("create chat send"),
     ON_CREATE_CHAT_RECIVE("create chat recive"),
     ON_CREATE_CHAT_RECIVE_ID("create chat recive id"),
+    ON_DELETE_CHAT_SEND("delete chat send"),
+    ON_DELETE_CHAT_RECIVE("delete chat recive"),
 }

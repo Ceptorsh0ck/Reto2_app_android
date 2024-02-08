@@ -27,6 +27,7 @@ class RoomMessageDataSource: CommonMessageRepository {
             if(chatId == null) {
                 chatId = message.chatId
             }
+            Log.i("aa", message.toString())
             var userId: Int? = userDao.selectUserByServerId(message.userId)
             Log.d("insert", message.userId.toString() + "SADA")
             if(userId == null) {

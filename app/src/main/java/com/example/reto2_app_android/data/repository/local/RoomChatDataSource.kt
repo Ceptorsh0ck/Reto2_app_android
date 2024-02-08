@@ -1,11 +1,9 @@
 package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.ChatShow
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_Message
 import com.example.reto2_app_android.data.model.ChatResponse_User
@@ -22,7 +20,6 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
  
 import com.example.reto2_app_android.utils.Resource
-import retrofit2.Response
 import java.util.Date
 
 class RoomChatDataSource: CommonChatRepository {
@@ -60,7 +57,7 @@ class RoomChatDataSource: CommonChatRepository {
             id = 0,
             idServer= null,
             name = chat.name,
-            isPublic = chat.public,
+            isPublic = chat.aIsPublic,
             createdAt = Date(),
             updatedAt = Date()
         )
@@ -158,7 +155,7 @@ class RoomChatDataSource: CommonChatRepository {
             val roomChat = RoomChat(
                     idServer = chat.id,
                     name = chat.name,
-                    isPublic = chat.public,
+                    isPublic = chat.aIsPublic,
                     createdAt = chat.createdAt,
                     updatedAt = chat.updatedAt
                 )

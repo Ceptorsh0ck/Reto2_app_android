@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.publicChats
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -68,6 +69,7 @@ class HomeViewModel(
     }
 
     fun onAddChat(isPublic: Boolean, name: String) {
+        Log.i("asdsa", isPublic.toString());
         var newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
@@ -96,15 +98,15 @@ class HomeViewModel(
         return if (nameChat.isNotEmpty()) {
             val filteredByName = chats.filter { it.name?.contains(nameChat, ignoreCase = true) == true }
             if (filterPrivacityChat) {
-                filteredByName.filter { it.public } // Mostrar solo los chats públicos
+                filteredByName.filter { it.aIsPublic } // Mostrar solo los chats públicos
             } else {
-                filteredByName.filter { !it.public } // Mostrar solo los chats privados
+                filteredByName.filter { !it.aIsPublic } // Mostrar solo los chats privados
             }
         } else {
             if (filterPrivacityChat) {
-                chats.filter { it.public }
+                chats.filter { it.aIsPublic }
             } else {
-                chats.filter { !it.public }
+                chats.filter { !it.aIsPublic }
             }
         }
     }
@@ -160,7 +162,7 @@ class HomeViewModel(
                         RoomChat(
                             idServer = it1,
                             name = it!!.name,
-                            isPublic = it!!.public,
+                            isPublic = it!!.aIsPublic,
                             createdAt = it!!.createdAt,
                             updatedAt = it!!.updatedAt
                         )

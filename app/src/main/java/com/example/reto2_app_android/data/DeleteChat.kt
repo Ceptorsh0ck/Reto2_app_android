@@ -5,9 +5,6 @@ import kotlinx.android.parcel.Parcelize
 
 
 @Parcelize
-data class CrateChat (
-    val userId: Int,
-    val name: String,
-    val aIsPublic: Boolean,
-    val roomChatId: Int
+data class DeleteChat (
+    val chatId: Int,
 ): Parcelable

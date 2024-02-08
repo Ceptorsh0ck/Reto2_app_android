@@ -45,9 +45,11 @@ import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
-import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.utils.Resource
 import com.example.reto2_app_android.utils.ValidateUserRoles
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -164,6 +166,8 @@ class HomeFragment : Fragment(), LocationListener {
                     val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
                     val chatId = chatIdTextView.text.toString().toInt()
                     if (emailCheckBox.isChecked) {
+                        val mainActivity = activity as MainActivity
+                        myService = mainActivity.myService
                         myService.addUsersToChats(userId!!, chatId, false)
                     }
                 }
@@ -234,7 +238,7 @@ class HomeFragment : Fragment(), LocationListener {
                     Log.i("dasd", "asdad")
                     val mainActivity = activity as MainActivity
                     myService = mainActivity.myService
-                    myService.createChat(userId!!, it.data!!.name!!, it.data!!.public, it.data!!.id!!)
+                    myService.createChat(userId!!, it.data!!.name!!, it.data!!.aIsPublic, it.data!!.id!!)
                 }
 
                 Resource.Status.ERROR -> {
@@ -289,7 +293,7 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setView(dialogView)
         val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
         val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
-        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
+        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.PROFESOR)
         if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
             isPublicCheckBox.visibility = View.GONE
         }
@@ -428,5 +432,13 @@ class HomeFragment : Fragment(), LocationListener {
         homeAdapter.submitList(chat.data)
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(chat:  Boolean) {
+        GlobalScope.launch {
+            Log.i("aa1111a", "aaa") // Esto se ejecuta de forma asíncrona dentro de la corrutina
+            kotlinx.coroutines.delay(200) // Espera 200 milisegundos
+            chatViewModel.getChatFromRoom() // Llama a la función getChatFromRoom() después de 200 milisegundos
+        }
+    }
 
 }
