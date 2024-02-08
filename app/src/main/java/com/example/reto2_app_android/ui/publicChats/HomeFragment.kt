@@ -111,6 +111,7 @@ class HomeFragment : Fragment(), LocationListener {
 
         homeAdapter = HomeAdapter(::onChatListClickItem)
         binding.chatList.adapter = homeAdapter
+        binding.idUserName.text = "Hola, ${MyApp.userPreferences.getLoggedUser()?.name}!"
         onMessagesChange()
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
@@ -163,9 +164,7 @@ class HomeFragment : Fragment(), LocationListener {
                     val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
                     val chatId = chatIdTextView.text.toString().toInt()
                     if (emailCheckBox.isChecked) {
-                        selectedPeopleList.add(AddPeopleResponse(userId!!, chatId, false))
-                        Log.i("lista de", selectedPeopleList.toString())
-                        messagesViewModel.updateChatUsers( chatId, selectedPeopleList)
+                        myService.addUsersToChats(userId!!, chatId, false)
                     }
                 }
 
@@ -229,32 +228,13 @@ class HomeFragment : Fragment(), LocationListener {
 
         }
 
-        messagesViewModel.addPeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        val mainActivity = activity as MainActivity
-                        myService = mainActivity.myService
-                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-
         chatViewModel.created.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("dasd", "asdad")
                     val mainActivity = activity as MainActivity
                     myService = mainActivity.myService
-                    myService.addUsersToChats(userId!!, it.data!!, true)
+                    myService.createChat(userId!!, it.data!!.name!!, it.data!!.public, it.data!!.id!!)
                 }
 
                 Resource.Status.ERROR -> {
@@ -316,11 +296,22 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
-            Log.d("Roles", roles.toString())
-            chatViewModel.onAddChat(
-                isPublicCheckBox.isChecked,
-                name.text.toString()
-            )
+            if(!name.text.isNullOrBlank()){
+                Log.d("Roles", roles.toString())
+                if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+                    chatViewModel.onAddChat(
+                        true,
+                        name.text.toString()
+                    )
+                }else{
+                    chatViewModel.onAddChat(
+                        isPublicCheckBox.isChecked,
+                        name.text.toString()
+                    )
+                }
+            }
+
+
 
         }
         builder.setNegativeButton("Cancelar") { _, _ ->

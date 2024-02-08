@@ -70,7 +70,7 @@ class HomeAdapter(
                 content = content,
                 createdAt = Date(),
                 updatedAt = Date(),
-                userId = newUser 
+                userId = newUser
             )
 
             itemToMove = itemToMove.copy(listMessages = (itemToMove.listMessages.orEmpty() + newMessage))

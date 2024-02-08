@@ -44,8 +44,8 @@ class HomeViewModel(
 
     val items: LiveData<Resource<List<ChatResponse_Chat>>> get() = _items
 
-    private val _created = MutableLiveData<Resource<Int>>()
-    val created: LiveData<Resource<Int>> get() = _created
+    private val _created = MutableLiveData<Resource<ChatResponse_Chat>>()
+    val created: LiveData<Resource<ChatResponse_Chat>> get() = _created
 
     private val _publicChats = MutableLiveData<Resource<List<ChatShow>>>()
 
@@ -68,13 +68,12 @@ class HomeViewModel(
     }
 
     fun onAddChat(isPublic: Boolean, name: String) {
-        val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
+        var newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
             val idRoom = createNewChat(newChat)
-            val idServer = insertChatServer(newChat).data!!.id
-            updateChat(idServer, idRoom.data!!)
-            _created.value = Resource.success(idServer)
+            newChat.id = idRoom.data!!;
+            _created.value = Resource.success(newChat)
         }
     }
 
@@ -126,12 +125,6 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int>? {
-        return withContext(Dispatchers.IO) {
-            roomChatRepository.updateChat(idServer, idRoom)
-        }
-    }
-
     fun updateChatsList() {
         viewModelScope.launch {
             val repoResponse = getChatsFromRepository()
@@ -147,7 +140,7 @@ class HomeViewModel(
 
     suspend fun getChatsFromRepository(): Resource<List<ChatResponse_Chat>> {
         return withContext((Dispatchers.IO)) {
-             chatRepository.getChats();
+            chatRepository.getChats();
         }
     }
 

@@ -17,6 +17,7 @@ import android.os.Binder
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,6 +29,7 @@ import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.MyApp.Companion.context
 import com.example.reto2_app_android.R
 import com.example.reto2_app_android.data.AddPeopleResponse
+import com.example.reto2_app_android.data.CrateChat
 import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
@@ -287,6 +289,12 @@ class SocketIoService : Service() {
         }
     }
 
+    suspend fun updateChat(chat: ChatResponse_Chat) {
+        return  withContext(Dispatchers.IO){
+            chatMessageDataSource.updateChat(chat)
+        }
+    }
+
     fun saveNewMessageRoom(message: SocketMessageRes) {
         // message: String, socketRoom: Int, userId: Int
         try {
@@ -400,18 +408,26 @@ class SocketIoService : Service() {
         }
     }
 
-    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType){
 
-        var newMessage: String? = null
-        if(type == RoomDataType.FILE){
-            newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
-        }else{
-            Log.i("asd", "sadsd")
-            newMessage = message
+
+    fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType) {
+        try {
+            var newMessage: String? = null
+            if (type == RoomDataType.FILE) {
+                newMessage = getBase64FromFile(Uri.parse(message), context) ?: ""
+            } else {
+                newMessage = message
+            }
+
+            val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
+            val jsonObject = JSONObject(Gson().toJson(socketMessage))
+
+            mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
+        } catch (e: OutOfMemoryError) {
+            Toast.makeText(context, "El archivo es demasiado grande", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error al enviar el mensaje", Toast.LENGTH_SHORT).show()
         }
-        val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
-        val jsonObject = JSONObject(Gson().toJson(socketMessage))
-        mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
     }
 
     fun addUsersToChats(userId: Int, chatId: Int, admin: Boolean) {
@@ -424,5 +440,11 @@ class SocketIoService : Service() {
         val socketMessage = AddPeopleResponse(userId, chatId, admin)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_DELETE_USER_CHAT_SEND.value, jsonObject)
+    }
+
+    fun createChat(userId: Int, chatName: String, isPublic: Boolean, roomChatId: Int) {
+        val socketMessage = CrateChat(userId, chatName, isPublic, roomChatId)
+        val jsonObject = JSONObject(Gson().toJson(socketMessage))
+        mSocket.emit(SocketEvents.ON_CREATE_CHAT_SEND.value, jsonObject)
     }
 }

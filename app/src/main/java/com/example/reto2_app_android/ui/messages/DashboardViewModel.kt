@@ -56,36 +56,12 @@ class DashboardViewModel (
 
     val usersDelete: MutableLiveData<Resource<List<AddPeople>>> get() = _usersDelete
 
-    private val _addPeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
-
-    val addPeople: MutableLiveData<Resource<List<AddPeopleResponse>>> get() = _addPeople
-
-    private val _deletePeople = MutableLiveData<Resource<List<AddPeopleResponse>>>()
-
-    val deletePeople: MutableLiveData<Resource<List<AddPeopleResponse>>> get() = _deletePeople
-
 
     private val _updateMessage = MutableLiveData<Resource<List<MessageAdapter>>>()
     val updateMessage: MutableLiveData<Resource<List<MessageAdapter>>> get() = _updateMessage
 
     private val _admin = MutableLiveData<Resource<Boolean>>()
     val admin: MutableLiveData<Resource<Boolean>> get() = _admin
-
-
-    /*fun startSocket() {
-        val socketOptions = createSocketOptions();
-        mSocket = IO.socket(SOCKET_HOST, socketOptions);
-
-        mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
-        mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
-
-        mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
-        mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
-        viewModelScope.launch {
-            connect()
-        }
-    }*/
-
 
     fun getAllMessages(id: Int) {
         viewModelScope.launch {
@@ -105,25 +81,6 @@ class DashboardViewModel (
         viewModelScope.launch {
             val serverResponse = getUsersFromServerToDelete(idChat)
             _usersDelete.value = serverResponse
-        }
-    }
-
-    fun updateChatUsers(idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
-        viewModelScope.launch {
-            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
-            Log.d(TAG, list.toString())
-            val serverResponse = serverAddUserToRoom(idChat, list)
-            _addPeople.value = Resource.success(list)
-        }
-    }
-
-    fun updateChatUsersDelete(idChat: Int, selectedPeopleList: MutableList<AddPeopleResponse>) {
-        viewModelScope.launch {
-            val list: List<AddPeopleResponse> = selectedPeopleList.toList()
-            Log.d(TAG, list.toString())
-            val serverResponse = serverDeleteUserToRoom(idChat, list)
-            Log.i("delete", "delete from room")
-            _deletePeople.value = Resource.success(list)
         }
     }
 
@@ -147,18 +104,6 @@ class DashboardViewModel (
     private suspend fun deleteChatRoom(id: Int) {
         return withContext(Dispatchers.IO) {
             roomMessageRepository.deleteChat(id)
-        }
-    }
-
-    private suspend fun serverAddUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
-        return withContext(Dispatchers.IO) {
-            serverMessageRepository.addUsersToChats(idChat, list)
-        }
-    }
-
-    private suspend fun serverDeleteUserToRoom(idChat: Int, list: List<AddPeopleResponse>) {
-        return withContext(Dispatchers.IO) {
-            serverMessageRepository.deleteUsersToChats(idChat, list)
         }
     }
 
