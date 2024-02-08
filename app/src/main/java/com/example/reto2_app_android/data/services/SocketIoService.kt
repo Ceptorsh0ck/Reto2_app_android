@@ -472,6 +472,7 @@ class SocketIoService : Service() {
             }
 
             val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
+            Log.d(TAG, socketMessage.toString())
             val jsonObject = JSONObject(Gson().toJson(socketMessage))
 
             mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
