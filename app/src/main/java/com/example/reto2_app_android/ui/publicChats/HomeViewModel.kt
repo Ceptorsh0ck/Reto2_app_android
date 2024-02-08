@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.publicChats
 
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -71,10 +72,16 @@ class HomeViewModel(
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
-            val idRoom = createNewChat(newChat)
-            val idServer = insertChatServer(newChat).data!!.id
-            updateChat(idServer, idRoom.data!!)
-            _created.value = Resource.success(idServer)
+            try {
+                val idRoom = createNewChat(newChat)
+
+                val idServer = insertChatServer(newChat).data!!.id
+                updateChat(idServer, idRoom.data!!)
+                _created.value = Resource.success(idServer)
+            } catch (e: Exception) {
+                  _created.value = Resource.error(e.message.toString(), null)
+            }
+
         }
     }
 

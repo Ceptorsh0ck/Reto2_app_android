@@ -303,6 +303,7 @@ class HomeFragment : Fragment(), LocationListener {
 
 
     private fun openNewChat() {
+
         val builder = AlertDialog.Builder(requireContext())
         val inflater = layoutInflater
         val validateUserRoles = ValidateUserRoles()
@@ -317,11 +318,16 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
-            Log.d("Roles", roles.toString())
-            chatViewModel.onAddChat(
-                isPublicCheckBox.isChecked,
-                name.text.toString()
-            )
+            try {
+                chatViewModel.onAddChat(
+                    isPublicCheckBox.isChecked,
+                    name.text.toString()
+                )
+
+            }catch (e: Exception) {
+                Toast.makeText(context, "Error al crear el chat", Toast.LENGTH_LONG).show()
+            }
+
   
 
         }
