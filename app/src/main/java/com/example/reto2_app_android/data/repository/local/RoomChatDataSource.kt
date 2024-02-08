@@ -1,10 +1,9 @@
 package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AddPeopleResponse
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
+import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_Message
 import com.example.reto2_app_android.data.model.ChatResponse_User
@@ -19,7 +18,8 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
- 
+import com.example.reto2_app_android.data.socket.SocketMessageResUpdate
+
 import com.example.reto2_app_android.utils.Resource
 import java.util.Date
 
@@ -30,10 +30,22 @@ class RoomChatDataSource: CommonChatRepository {
     private val userCharDao: UserChatDao = MyApp.db.userChatDao()
     private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt()
 
-    override suspend fun createChat(chat: ChatResponse_Chat, userId: Int ): Resource<Int> {
+    override suspend fun createChat(chat: ChatResponse_Chat, userId1: Int ): Resource<Int> {
         try {
-            val roomChat = convertToRoomChat(chat, userId)
+            val roomChat = convertToRoomChat(chat)
             val chatIds = chatDao.insertChats(roomChat)
+
+            val userChat = RoomUserChat(
+                userId = userId!!,
+                chatId = chatIds.toInt(),
+                isAdmin = true,
+                createdAt = Date(),
+                updatedAt = Date()
+            )
+
+            val userRoom=userDao.selectUserByServerId(userId)
+
+            val insertUserChat = userCharDao.insertUserChat(userChat)
 
             // Si estás insertando un solo elemento, puedes acceder al primer elemento del array
             val chatId = chatIds?.toInt() ?: -1
@@ -45,16 +57,19 @@ class RoomChatDataSource: CommonChatRepository {
             return Resource.error("Error creating chat: ${e.message}")
         }
     }
-    private fun convertToRoomChat(chat: ChatResponse_Chat, userId: Int): RoomChat {
+    private fun convertToRoomChat(chat: ChatResponse_Chat): RoomChat {
+
         return RoomChat(
-            id = 0,
+            id = chat.id,
             idServer= null,
             name = chat.name,
             isPublic = chat.public,
             createdAt = Date(),
             updatedAt = Date()
         )
+
     }
+
     override suspend fun getChats(): Resource<List<ChatResponse_Chat>> {
         if (userId != null) {
             val response = chatDao.getChatsByUserId(userId)

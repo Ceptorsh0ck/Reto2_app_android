@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 
 
@@ -26,6 +27,9 @@ interface ChatDao {
    /* @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChat1(chat: RoomChat): Long
 */
+
+
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertChats(chat: RoomChat): Long
 

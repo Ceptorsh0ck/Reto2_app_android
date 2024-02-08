@@ -33,7 +33,6 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
 import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
-import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
@@ -41,8 +40,6 @@ import com.example.reto2_app_android.utils.Resource
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import java.util.Timer
-import java.util.TimerTask
 import javax.inject.Inject
 
 private const val LOG_TAG = "AudioRecordTest"
@@ -137,10 +134,12 @@ class HomeFragment : Fragment(), LocationListener {
             val isPublic = isPublicCheckBox.isChecked
 
 
+
             chatViewModel.onAddChat(
 
                 isPublic,
-                name
+                name,
+
             )
 
         }

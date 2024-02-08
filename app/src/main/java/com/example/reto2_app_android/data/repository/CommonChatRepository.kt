@@ -1,8 +1,6 @@
 package com.example.reto2_app_android.data.repository
 
 import com.example.reto2_app_android.data.AddPeopleResponse
-import com.example.reto2_app_android.data.Chat
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.utils.Resource
 

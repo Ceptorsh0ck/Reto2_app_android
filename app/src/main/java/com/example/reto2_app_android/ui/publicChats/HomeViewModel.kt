@@ -1,5 +1,7 @@
 package com.example.reto2_app_android.ui.publicChats
 
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -7,10 +9,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.reto2_app_android.MyApp
-import com.example.reto2_app_android.data.Chat
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.repository.CommonChatRepository
+import com.example.reto2_app_android.data.repository.local.dao.UserDao
 import com.example.reto2_app_android.data.repository.local.database.AppDatabase
 import com.example.reto2_app_android.data.repository.local.tables.RoomChat
 import com.example.reto2_app_android.data.repository.local.tables.RoomMessages
@@ -20,21 +21,25 @@ import com.example.reto2_app_android.utils.Resource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
-
+private val userId: Int? = MyApp.userPreferences.getLoggedUser()?.id?.toInt();
 class HomeViewModelFactory(
     private val remoteChatRepository: CommonChatRepository,
-    private val roomChatRepository: CommonChatRepository
+    private val roomChatRepository: CommonChatRepository,
+
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
-        return HomeViewModel(remoteChatRepository, roomChatRepository) as T
+        return HomeViewModel(remoteChatRepository, roomChatRepository ) as T
     }
+
+
 
 }
 
 class HomeViewModel (
     private val chatRepository: CommonChatRepository,
-    private val roomChatRepository: CommonChatRepository
+    private val roomChatRepository: CommonChatRepository,
+
+
 ) : ViewModel(){
 
     private val _text = MutableLiveData<String>().apply {
@@ -48,9 +53,15 @@ class HomeViewModel (
 
     private val _created = MutableLiveData<Resource<Int>>()
     val created: LiveData<Resource<Int>> get() = _created
+    private val _idServers = MutableLiveData<List<Int>>()
+    val idServers: LiveData<List<Int>> get() = _idServers
+
+
     init {
+
         getChatFromRoom()
         updateChatsList()
+
 
     }
         fun getChatFromRoom(){
@@ -58,22 +69,34 @@ class HomeViewModel (
             val roomResponse = getChatsFromRoom()
             _items.value = roomResponse
         }
+
     }
     fun onAddChat(isPublic: Boolean, name: String) {
-        val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
-
+        val id = userId
+        val newChat = ChatResponse_Chat(0,  name, null, null, null, null, isPublic)
+Log.d("rom nuevo", newChat.toString())
         viewModelScope.launch {
-            _created.value = createNewChat(newChat)
+            _created.value = createNewChat(newChat, id!!)
+            insertChatServer(newChat, userId)
         }
     }
 
-
-    private suspend fun createNewChat(newChat: ChatResponse_Chat): Resource<Int> {
+    private suspend fun insertChatServer(newChat: ChatResponse_Chat, userId: Int) {
         return withContext(Dispatchers.IO) {
-            val id= 0
-            chatRepository.createChat(newChat, id)
+            chatRepository.createChat(newChat, userId)
         }
     }
+
+
+    private suspend fun createNewChat(newChat: ChatResponse_Chat, id:Int): Resource<Int> {
+        return withContext(Dispatchers.IO) {
+
+
+            roomChatRepository.createChat(newChat, id)
+
+        }
+    }
+
 
     fun updateChatsList(){
         viewModelScope.launch {

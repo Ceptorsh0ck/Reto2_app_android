@@ -29,9 +29,11 @@ class HomeAdapter(
 
     override fun onBindViewHolder(holder: HomeViewHolder, position: Int) {
         val  chat = getItem(position)
+
         holder.bind(chat)
         holder.itemView.setOnClickListener {
             onClickListener(chat)
+
         }
     }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {

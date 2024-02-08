@@ -13,7 +13,7 @@ object RetrofitClient {
 
     // esta es la ip a la que vamos a hacer peticiones (es localhost pero desde el emulador no deja)
     // NOTE acordarse de que hace falta actualizar el manifest
-    const val API_URI = "http://192.168.1.153:8080/api/"
+    const val API_URI = "http://192.168.1.17:8080/api/"
 
 
     var client = OkHttpClient.Builder().addInterceptor {chain ->
