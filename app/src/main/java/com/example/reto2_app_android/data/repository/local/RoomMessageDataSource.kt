@@ -89,14 +89,6 @@ class RoomMessageDataSource: CommonMessageRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
-    }
-
-    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
-    }
-
     override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
         Log.i("asddsada", chatId.toString() + "aa" + userId.toString())
 

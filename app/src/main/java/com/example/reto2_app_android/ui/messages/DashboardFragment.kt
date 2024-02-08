@@ -124,14 +124,10 @@ class DashboardFragment : Fragment(), LocationListener {
         }
         viewModel.isAdmin(chat!!.id, userId)
 
-
-
-
         isAdim()
         multimedia()
         binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
-        returnServerUsersAdd()
         returnServerUsers()
         llamadaAMetodoDelServicio()
         onClickTeclado(binding)
@@ -374,43 +370,10 @@ class DashboardFragment : Fragment(), LocationListener {
         }
     }
 
-    private fun returnServerUsersAdd() {
-        viewModel.addPeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-        viewModel.deletePeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-    }
 
 
-    fun llamadaAMetodoDelServicio() {
+
+fun llamadaAMetodoDelServicio() {
         //val intent = Intent(requireContext(), SocketIoService::class.java)
         //requireContext().startService(intent)
 
@@ -566,7 +529,9 @@ class DashboardFragment : Fragment(), LocationListener {
                     }
                 }
                 Log.i("lista de", selectedPeopleList.toString())
-                viewModel.updateChatUsers( chat!!.id, selectedPeopleList)
+                selectedPeopleList.forEach{
+                    myService.addUsersToChats(it.userId, it.chatId, it.admin)
+                }
             }
             builder.setNegativeButton("Cancelar") { _, _ ->
 
@@ -611,7 +576,9 @@ class DashboardFragment : Fragment(), LocationListener {
                     }
                 }
                 Log.i("lista de", selectedPeopleList.toString())
-                viewModel.updateChatUsersDelete( chat!!.id, selectedPeopleList)
+                selectedPeopleList.forEach{
+                    myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
+                }
             }
             builder.setNegativeButton("Cancelar") { _, _ ->
 
@@ -624,7 +591,9 @@ class DashboardFragment : Fragment(), LocationListener {
             val selectedPeopleList = mutableListOf<AddPeopleResponse>()
             selectedPeopleList.add(AddPeopleResponse(userId = userId!!, chat!!.id, false))
             Log.i("chat", chat!!.id.toString())
-            viewModel.updateChatUsersDelete(chat!!.id, selectedPeopleList)
+            selectedPeopleList.forEach{
+                myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
+            }
         }
         binding.buttonToolbarDeleteChat.setOnClickListener {
             viewModel.deleteChat(chat!!.id)

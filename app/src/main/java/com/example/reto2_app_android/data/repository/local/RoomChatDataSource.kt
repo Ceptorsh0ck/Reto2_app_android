@@ -138,7 +138,18 @@ class RoomChatDataSource: CommonChatRepository {
     }
 
     override suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int> {
-        return Resource.success(chatDao.updateChat(idServer, idRoom))
+        TODO("Not yet implemented")
+    }
+
+    suspend fun updateChat(chat: ChatResponse_Chat): Resource<Int> {
+        chatDao.updateChat(chat.id, chat.idRoom!!)
+        chat.listMessages?.forEach {
+            val roomUserChat = RoomUserChat(it.id!!, chat.idRoom!!, true, Date(), Date())
+            userCharDao.insertUserChat(roomUserChat)
+        }
+
+
+        return Resource.success(chat.id)
     }
 
     override suspend fun addchat(chat: ChatResponse_Chat) {

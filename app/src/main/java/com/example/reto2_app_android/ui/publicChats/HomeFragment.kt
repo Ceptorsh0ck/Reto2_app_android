@@ -41,6 +41,7 @@ import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSourc
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentHomeBinding
+import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
@@ -163,9 +164,7 @@ class HomeFragment : Fragment(), LocationListener {
                     val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
                     val chatId = chatIdTextView.text.toString().toInt()
                     if (emailCheckBox.isChecked) {
-                        selectedPeopleList.add(AddPeopleResponse(userId!!, chatId, false))
-                        Log.i("lista de", selectedPeopleList.toString())
-                        messagesViewModel.updateChatUsers( chatId, selectedPeopleList)
+                        myService.addUsersToChats(userId!!, chatId, false)
                     }
                 }
 
@@ -229,32 +228,13 @@ class HomeFragment : Fragment(), LocationListener {
 
         }
 
-        messagesViewModel.addPeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        val mainActivity = activity as MainActivity
-                        myService = mainActivity.myService
-                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-
         chatViewModel.created.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("dasd", "asdad")
                     val mainActivity = activity as MainActivity
                     myService = mainActivity.myService
-                    myService.addUsersToChats(userId!!, it.data!!, true)
+                    myService.createChat(userId!!, it.data!!.name!!, it.data!!.public, it.data!!.id!!)
                 }
 
                 Resource.Status.ERROR -> {
@@ -306,7 +286,6 @@ class HomeFragment : Fragment(), LocationListener {
         val inflater = layoutInflater
         val validateUserRoles = ValidateUserRoles()
         val dialogView = inflater.inflate(R.layout.popup_add_chat, null)
-        val validateUserRoles = ValidateUserRoles()
         builder.setView(dialogView)
         val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
         val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
@@ -317,11 +296,21 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
-            Log.d("Roles", roles.toString())
-            chatViewModel.onAddChat(
-                isPublicCheckBox.isChecked,
-                name.text.toString()
-            )
+            if(!name.text.isNullOrBlank()){
+                Log.d("Roles", roles.toString())
+                if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+                    chatViewModel.onAddChat(
+                        true,
+                        name.text.toString()
+                    )
+                }else{
+                    chatViewModel.onAddChat(
+                        isPublicCheckBox.isChecked,
+                        name.text.toString()
+                    )
+                }
+            }
+
   
 
         }
