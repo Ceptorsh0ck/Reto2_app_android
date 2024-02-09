@@ -37,7 +37,7 @@ Para el apartado de Android se ha utilizado:
 
 Los mensajes pueden ser de:
 
-- Texto plano (hasta 300 caracteres).
+- Texto plano.
 - Imagen obtenida por la cámara del dispositivo.
 - Fichero obtenido del dispositivo.
 - Posición GPS del móvil.
@@ -49,7 +49,7 @@ Los mensajes pueden contener:
 - Texto plano: visualización del texto y su emisor.
 - Imagen: muestra la imagen en el dispositivo.
 - Fichero: se guarda en el dispositivo.
-- Posición GPS: se muestra en un mapa.
+- Posición GPS: se muestra en coordenadas, pero al hacer click lleva a maps.
 
 ## Seguridad
 
