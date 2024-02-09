@@ -13,7 +13,6 @@ object JWTUtils {
         try {
             val tokenBody = token.split(".")[1]
             val decodedTokenString = getJson(tokenBody)
-            Log.d("JWTUtils", "decoded: $decodedTokenString")
             val jsonObject = JSONObject(decodedTokenString)
             val id = jsonObject.getInt("id")
             val name = jsonObject.getString("name")

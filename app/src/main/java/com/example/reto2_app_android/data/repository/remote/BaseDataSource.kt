@@ -27,7 +27,6 @@ abstract class BaseDataSource {
     }
 
     private fun <T> error(message: String): Resource<T> {
-        Log.e(MyApp.context.getString(R.string.app_name), message)
         return Resource.error("Network call has failed for a following reason: $message")
     }
 }

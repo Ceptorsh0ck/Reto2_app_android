@@ -19,7 +19,7 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomUserRol
 
 @Database(
     entities = [RoomUser::class, RoomChat::class, RoomMessages::class, RoomUserChat::class, RoomUserRol::class, RoomRole::class],
-    version = 2
+    version = 3
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

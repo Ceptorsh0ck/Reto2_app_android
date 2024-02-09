@@ -28,7 +28,6 @@ class RoomMessageDataSource: CommonMessageRepository {
                 chatId = message.chatId
             }
             var userId: Int? = userDao.selectUserByServerId(message.userId)
-            Log.d("insert", message.userId.toString() + "SADA")
             if(userId == null) {
                 userId = message.userId
             }
@@ -49,8 +48,6 @@ class RoomMessageDataSource: CommonMessageRepository {
                 recived = false
             )
 
-            Log.i("ad1111", message.toString())
-            Log.i("ad1111", message1.toString())
             val insertResult = messageDao.insertMessage(message1)
             return Resource.success(messageDao.getMessageById(insertResult.toInt()))  // Assuming you want to return Int
         }
@@ -74,10 +71,8 @@ class RoomMessageDataSource: CommonMessageRepository {
 
     override suspend fun getMessagesNoSended(): Resource<List<SocketMessageReq>> {
 
-        Log.i("Reconezion", "funcion2")
         val listMessages = messageDao.getMessagesNoSended();
 
-        Log.i("Reconezion", listMessages.toString())
         return Resource.success(listMessages)
     }
 
@@ -89,16 +84,7 @@ class RoomMessageDataSource: CommonMessageRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
-    }
-
-    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
-    }
-
     override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
-        Log.i("asddsada", chatId.toString() + "aa" + userId.toString())
 
         val idUser = userDao.selectUserByServerId(userId)
         val idChat = chatDao.selectChatByServerId(chatId)

@@ -1,5 +1,6 @@
 package com.example.reto2_app_android.ui.publicChats
 
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -45,8 +46,8 @@ class HomeViewModel(
 
     val items: LiveData<Resource<List<ChatResponse_Chat>>> get() = _items
 
-    private val _created = MutableLiveData<Resource<Int>>()
-    val created: LiveData<Resource<Int>> get() = _created
+    private val _created = MutableLiveData<Resource<ChatResponse_Chat>>()
+    val created: LiveData<Resource<ChatResponse_Chat>> get() = _created
 
     private val _publicChats = MutableLiveData<Resource<List<ChatShow>>>()
 
@@ -72,16 +73,9 @@ class HomeViewModel(
         val newChat = ChatResponse_Chat(0, name, null, null, null, null, isPublic)
 
         viewModelScope.launch {
-            try {
-                val idRoom = createNewChat(newChat)
-
-                val idServer = insertChatServer(newChat).data!!.id
-                updateChat(idServer, idRoom.data!!)
-                _created.value = Resource.success(idServer)
-            } catch (e: Exception) {
-                  _created.value = Resource.error(e.message.toString(), null)
-            }
-
+            val idRoom = createNewChat(newChat)
+            val newChat1 = ChatResponse_Chat(idRoom.data!!, name, null, null, null, null, isPublic)
+            _created.value = Resource.success(newChat1)
         }
     }
 
@@ -104,15 +98,15 @@ class HomeViewModel(
         return if (nameChat.isNotEmpty()) {
             val filteredByName = chats.filter { it.name?.contains(nameChat, ignoreCase = true) == true }
             if (filterPrivacityChat) {
-                filteredByName.filter { it.public } // Mostrar solo los chats públicos
+                filteredByName.filter { it.aIsPublic } // Mostrar solo los chats públicos
             } else {
-                filteredByName.filter { !it.public } // Mostrar solo los chats privados
+                filteredByName.filter { !it.aIsPublic } // Mostrar solo los chats privados
             }
         } else {
             if (filterPrivacityChat) {
-                chats.filter { it.public }
+                chats.filter { it.aIsPublic }
             } else {
-                chats.filter { !it.public }
+                chats.filter { !it.aIsPublic }
             }
         }
     }
@@ -130,12 +124,6 @@ class HomeViewModel(
         return withContext(Dispatchers.IO) {
 
             chatRepository.createChatServer(newChat, MyApp.userPreferences.getLoggedUser()!!.id!!)
-        }
-    }
-
-    private suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int>? {
-        return withContext(Dispatchers.IO) {
-            roomChatRepository.updateChat(idServer, idRoom)
         }
     }
 
@@ -169,12 +157,11 @@ class HomeViewModel(
                 val userRoleDao = db.userRoleDao()
                 data.forEach {
                     var roomId: Int? = 1;
-                    //Log.i("chats", it!!.id.toString())
                     val roomChat = it?.id?.let { it1 ->
                         RoomChat(
                             idServer = it1,
                             name = it!!.name,
-                            isPublic = it!!.public,
+                            isPublic = it!!.aIsPublic,
                             createdAt = it!!.createdAt,
                             updatedAt = it!!.updatedAt
                         )

@@ -55,6 +55,8 @@ interface ChatDao {
 
     @Query("Delete from chats where id = :id")
     suspend fun deleteChat(id: Int)
+    @Query("SELECT is_Public from chats where id = :id")
+    suspend fun getIsPublic(id: Int): Boolean
 
 
 }

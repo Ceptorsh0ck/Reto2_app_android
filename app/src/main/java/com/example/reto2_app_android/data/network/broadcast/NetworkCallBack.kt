@@ -20,14 +20,11 @@ class NetworkCallBack (private val context: Context) : ConnectivityManager.Netwo
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onAvailable(network: Network) {
-        showToast("Conexión a red establecida")
     }
 
     override fun onLost(network: Network) {
-        showToast("Conexión a red perdida")
     }
 }

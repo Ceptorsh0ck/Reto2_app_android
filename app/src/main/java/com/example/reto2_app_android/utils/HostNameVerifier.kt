@@ -12,7 +12,6 @@ class MyHostnameVerifier : HostnameVerifier {
 
         // only for debug
         if (hostname != null) {
-            Log.d(TAG, "MyHostnameVerifier hostname: $hostname")
         }
 
         if (hostname != null
@@ -21,7 +20,6 @@ class MyHostnameVerifier : HostnameVerifier {
         ) {
             return true // true is is verified
         }
-        Log.e(TAG, "MyHostnameVerifier verify KO")
         return false
 
     }

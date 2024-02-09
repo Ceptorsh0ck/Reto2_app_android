@@ -1,11 +1,9 @@
 package com.example.reto2_app_android.data.repository.local
 
 import android.util.Log
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.ChatShow
-import com.example.reto2_app_android.data.model.ChatResponese_NewChat
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.ChatResponse_Message
 import com.example.reto2_app_android.data.model.ChatResponse_User
@@ -22,7 +20,6 @@ import com.example.reto2_app_android.data.repository.local.tables.RoomUser
 import com.example.reto2_app_android.data.repository.local.tables.RoomUserChat
  
 import com.example.reto2_app_android.utils.Resource
-import retrofit2.Response
 import java.util.Date
 
 class RoomChatDataSource: CommonChatRepository {
@@ -39,7 +36,6 @@ class RoomChatDataSource: CommonChatRepository {
 
             // Si estás insertando un solo elemento, puedes acceder al primer elemento del array
             val chatId = chatIds?.toInt() ?: -1
-
             return Resource.success(chatId.toInt())
         } catch (e: Exception) {
             // Maneja cualquier excepción que pueda ocurrir durante la operación
@@ -60,7 +56,7 @@ class RoomChatDataSource: CommonChatRepository {
             id = 0,
             idServer= null,
             name = chat.name,
-            isPublic = chat.public,
+            isPublic = chat.aIsPublic,
             createdAt = Date(),
             updatedAt = Date()
         )
@@ -69,11 +65,10 @@ class RoomChatDataSource: CommonChatRepository {
         if (userId != null) {
             val response = chatDao.getChatsByUserId(userId)
             val user = ChatResponse_User()
-            Log.i("RoomChatD" +
-                    "ataSource", response.toString());
             user.listChats = emptyList()
             if (response != null) {
                 response.forEach {
+                    val isPublic = chatDao.getIsPublic(it.id)
                     val mesage = messageDao.getLastMessageByRoomId(it.id)
                     val chatMessageList = mutableListOf<ChatResponse_Message>()
                     val chatMessage: ChatResponse_Message? = mesage?.let { it1 ->
@@ -106,7 +101,6 @@ class RoomChatDataSource: CommonChatRepository {
                             null,
                             null
                         )
-                        Log.i("messages change", chatMessageUser.toString())
                         chatMessage.userId = chatMessageUser
                     } else {
                         // Manejar el caso cuando chatMessage es nulo
@@ -120,11 +114,10 @@ class RoomChatDataSource: CommonChatRepository {
                         it.updatedAt,
                         chatMessageList,
                         null,
-                        it.isPublic,
+                        isPublic,
                         totalUsers
                     )
 
-                    Log.i("RoomChatDataSour1ce", chat.toString())
                     user.listChats = user.listChats?.plus(chat)
                 }
 
@@ -138,16 +131,27 @@ class RoomChatDataSource: CommonChatRepository {
     }
 
     override suspend fun updateChat(idServer: Int, idRoom: Int): Resource<Int> {
-        return Resource.success(chatDao.updateChat(idServer, idRoom))
+        TODO("Not yet implemented")
+    }
+
+    suspend fun updateChat(chat: ChatResponse_Chat): Resource<Int> {
+        chatDao.updateChat(chat.id, chat.idRoom!!)
+        chat.listMessages?.forEach {
+            val roomUserChat = RoomUserChat(it.id!!, chat.idRoom!!, true, Date(), Date())
+
+            userCharDao.insertUserChat(roomUserChat)
+        }
+
+
+        return Resource.success(chat.id)
     }
 
     override suspend fun addchat(chat: ChatResponse_Chat) {
             var roomId:Int? =1 ;
-            //Log.i("chats", it!!.id.toString())
             val roomChat = RoomChat(
                     idServer = chat.id,
                     name = chat.name,
-                    isPublic = chat.public,
+                    isPublic = chat.aIsPublic,
                     createdAt = chat.createdAt,
                     updatedAt = chat.updatedAt
                 )
@@ -243,7 +247,6 @@ class RoomChatDataSource: CommonChatRepository {
             userCharDao.deleteUserChat(chatId, userId)
         }
         catch (e: Exception) {
-            Log.e("error", e.message.toString())
         }
     }
 

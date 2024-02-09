@@ -29,7 +29,6 @@ class SettingsFragment : PreferenceFragmentCompat(),Preference.OnPreferenceChang
     }
 
     override fun onPreferenceChange(preference: Preference, newValue: Any?): Boolean {
-        Log.i("Preference","Preference: "+preference.toString()+" - newValue: "+newValue.toString())
         when(preference.key.toString()) {
             "language" -> {
                 MyApp.rootPreferences.changeLanguage(newValue.toString())

@@ -1,7 +1,6 @@
 package com.example.reto2_app_android.ui.publicChats
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -91,7 +90,7 @@ class HomeAdapter(
             binding.TextViewUserTotal.text = "Users: " + chat.totalUsers.toString()
             //TODO Hay que descomentar esta linea esta quitada para pruebas
             //binding.TextViewChatId.visibility = View.INVISIBLE
-            if (chat.public) {
+            if (chat.aIsPublic) {
                 binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_open)
             } else {
                 binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_close)

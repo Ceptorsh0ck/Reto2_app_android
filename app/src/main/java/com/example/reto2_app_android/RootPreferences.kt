@@ -53,7 +53,6 @@ class RootPreferences() {
 
     fun checkSettings() {
         //Creamos variables de configuracion
-        Log.i("Locale",Locale.getDefault().toString())
         var language = ""
         var theme = ""
         //Buscamos el idioma del sistema operativo android
@@ -65,7 +64,6 @@ class RootPreferences() {
 
         val configArray = fetchAppConfig()
         if (configArray != null) {
-            Log.i("RootPreferences", "Root Preferences")
             for (config in configArray) {
                 //Cada item del array tiene nombreSettings=valor por lo que la el siguiente codigo separa el String en un array de 2 campos.
                 val array = config.toString().split("=").toTypedArray()
@@ -78,39 +76,30 @@ class RootPreferences() {
                         theme = array.elementAt(1).toString()
                     }
                 }
-                Log.i("RootPreferences",config.toString())
             }
-            Log.i("RootPreferences","--------------")
         }
         // Si no habia nada configurado en RootPreferences, entra
         if (language.isBlank()) {
-            Log.d("RootPreferences","No hay lenguaje en rootPreferences")
             language = if(localeArray.contains(systemLocale)) {
-                Log.d("RootPreferences","Language se rellena con el systemLocale")
                 saveLanguage(systemLocale)
                 systemLocale
             } else {
-                Log.d("RootPreferences","Language se rellena con el defaultLanguage")
                 defaultLanguage
             }
         }
         if (theme.isBlank()) {
-            Log.i("RootPreferences - Theme","No hay theme en rootReferences")
             theme = defaultTheme
         }
-        Log.i("Locale",Locale.getDefault().toString())
     }
 
 
     fun changeLanguage(language: String){
-        Log.i("rootPreferences - Cambia lenguaje a: ",language)
         context.getSystemService(
             LocaleManager::class.java
         )?.applicationLocales = LocaleList(Locale.forLanguageTag(language))
     }
 
     fun changeTheme(theme: String) {
-        Log.i("rootPreferences - Cambia tema a: ",theme)
         when (theme) {
             context.getString(R.string.theme_value_auto) -> {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)

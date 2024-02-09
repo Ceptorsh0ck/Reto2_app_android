@@ -35,13 +35,8 @@ interface APIInterface {
     @GET("{chatId}/getUserToDelete")
     suspend fun getAllUsersToDeleteIntoChat(@Path("chatId") chatId: Int): Response<List<AddPeople>>
 
-    @POST("chats/{chatId}/add-users")
-    suspend fun addUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
     @PUT("auth/register")
     suspend fun registerUser(@Body user: UserNew): Response<UserNew>
-
-    @POST("chats/{chatId}/remove-users")
-    suspend fun deleteUsersToChats(@Path("chatId") chatId: Int, @Body list: List<AddPeopleResponse>)
 
     @POST("chats/{userId}")
     suspend fun createChat(@Body chat: ChatResponse_Chat, @Path("userId") userId: Int): Response<ChatResponse_Chat>

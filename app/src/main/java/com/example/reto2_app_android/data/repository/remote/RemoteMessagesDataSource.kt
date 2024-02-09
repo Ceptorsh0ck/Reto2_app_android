@@ -33,13 +33,6 @@ class RemoteMessagesDataSource: BaseDataSource(), CommonMessageRepository {
         RetrofitClient.apiInterface.getAllUsersToDeleteIntoChat(idChat)
     }
 
-    override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-        RetrofitClient.apiInterface.addUsersToChats(idChat, list)
-    }
-
-    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-        RetrofitClient.apiInterface.deleteUsersToChats(idChat, list)
-    }
 
     override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {
         TODO("Not yet implemented")
