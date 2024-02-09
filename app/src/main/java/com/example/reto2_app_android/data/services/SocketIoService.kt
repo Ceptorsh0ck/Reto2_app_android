@@ -11,7 +11,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Binder
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -183,6 +185,7 @@ class SocketIoService : Service() {
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
         mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
+        mSocket.on(SocketEvents.ON_CONNECT.value, onSendeMessages())
         mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
@@ -192,6 +195,12 @@ class SocketIoService : Service() {
         mSocket.on(SocketEvents.ON_CREATE_CHAT_RECIVE.value, onCreateChat())
         mSocket.on(SocketEvents.ON_DELETE_CHAT_RECIVE.value, onDeleteChat())
         mSocket.connect()
+    }
+
+    private fun onSendeMessages(): Emitter.Listener {
+        return Emitter.Listener {
+            onSendMessagesWhenConnectionGoBack()
+        }
     }
 
     private fun onDeleteChat(): Emitter.Listener? {
@@ -259,6 +268,7 @@ class SocketIoService : Service() {
     private fun onConnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "conectado")
+            onSendMessagesWhenConnectionGoBack()
         }
     }
 
@@ -460,7 +470,23 @@ class SocketIoService : Service() {
         }
     }
 
+    private fun onSendMessagesWhenConnectionGoBack() {
+        val handler = Handler(Looper.getMainLooper())
+        handler.postDelayed({
+            CoroutineScope(Dispatchers.Main).launch {
+                val resoponse = getMessagesNoSendedFromRoom()
+                resoponse.data!!.forEach{
+                    onSaveMessage(it.message, "Group- " +  it.room, it.idRoom, it.type)
+                }
+            }
+        }, 2000)
+    }
 
+    private suspend fun getMessagesNoSendedFromRoom(): Resource<List<SocketMessageReq>>  {
+        return withContext(Dispatchers.IO) {
+            roomMessageRepository.getMessagesNoSended()
+        }
+    }
 
     fun onSaveMessage(message: String, socketRoom: String, idServer: Int, type: RoomDataType) {
         try {
