@@ -127,6 +127,19 @@ class DashboardAdapter(
         binding.root.context.startActivity(intent)
     }
 
+    private fun openFile1(fileUri: String, binding: ItemMessageOtherBinding) {
+
+        val resolver = binding.root.context.applicationContext.contentResolver
+        val readOnlyMode = "r"
+        val uri = Uri.parse(fileUri)
+        resolver.openFileDescriptor(uri, readOnlyMode).use { pfd ->
+            // Perform operations on "pfd".
+        }
+
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(fileUri))
+        binding.root.context.startActivity(intent)
+    }
+
     private fun loadThumbnailIntoImageView(context: Context, fileUri: String, imageView: ImageView) {
         val contentResolver = context.contentResolver
         val uri = Uri.parse(fileUri)
@@ -149,8 +162,8 @@ class DashboardAdapter(
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
 
             val timeFormat = SimpleDateFormat("HH:mm")
-            val formattedDate = dateFormat.format(message.createdAt)
-            val formattedTime = timeFormat.format(message.createdAt)
+            val formattedDate = message.createdAt?.let { dateFormat.format(it) }
+            val formattedTime = message.createdAt?.let { timeFormat.format(it) }
 
             if (binding is ItemMessageMeBinding) {
                 binding.textViewChatMeDate.text = if (message.createdAt != null) formattedDate else formattedDate.toString()
@@ -245,6 +258,23 @@ class DashboardAdapter(
                     val imageData = message.text
                     val imageBitmap = convertImageDataToBitmap(imageData)
                     binding.imageViewChatOtherMessage.setImageBitmap(imageBitmap)
+                }else if(message.dataType == RoomDataType.FILE){
+                    binding.textViewChatOtherMessage.visibility = VISIBLE
+                    binding.imageViewChatOtherMessage.visibility = VISIBLE
+
+                    val fileUri = message.text // Suponiendo que la URL o la URI del archivo está en message.text
+
+                    val fileName = getFileNameFromUri(fileUri)
+
+                    binding.textViewChatOtherMessage.text = fileName
+
+                    // Cargar miniatura en la vista de imagen
+                    loadThumbnailIntoImageView(binding.root.context.applicationContext, fileUri, binding.imageViewChatOtherMessage)
+
+                    // Manejar clics en la vista previa del archivo
+                    binding.imageViewChatOtherMessage.setOnClickListener {
+                        openFile1(fileUri, binding)
+                    }
                 }
 
 

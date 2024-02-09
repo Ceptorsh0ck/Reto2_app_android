@@ -15,6 +15,6 @@ interface UserDao {
     @Query("Select users.* from users where users.id = :userId")
     suspend fun selectUserOfMessage(userId: Int): RoomUser
 
-    @Query("Select users.id from users where users.id_server = :idServer")
+    @Query("Select id from users where id_server = :idServer")
     suspend fun selectUserByServerId(idServer: Int?): Int
 }

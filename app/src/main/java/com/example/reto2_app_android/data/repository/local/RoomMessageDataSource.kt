@@ -27,6 +27,7 @@ class RoomMessageDataSource: CommonMessageRepository {
             if(chatId == null) {
                 chatId = message.chatId
             }
+            Log.i("aa", message.toString())
             var userId: Int? = userDao.selectUserByServerId(message.userId)
             Log.d("insert", message.userId.toString() + "SADA")
             if(userId == null) {
@@ -87,14 +88,6 @@ class RoomMessageDataSource: CommonMessageRepository {
 
     override suspend fun getAllUsersToDeleteIntoChat(idChat: Int): Resource<List<AddPeople>> {
         TODO("Not yet implemented")
-    }
-
-    override suspend fun addUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
-    }
-
-    override suspend fun deleteUsersToChats(idChat: Int, list: List<AddPeopleResponse>) {
-
     }
 
     override suspend fun isAdmin(chatId: Int, userId: Int?): Resource<Boolean> {

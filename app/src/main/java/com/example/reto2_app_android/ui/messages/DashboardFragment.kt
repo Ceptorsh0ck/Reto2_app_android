@@ -34,20 +34,25 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBindings
 import com.example.reto2_app_android.MyApp
 import com.example.reto2_app_android.R
+import com.example.reto2_app_android.data.AddPeople
 import com.example.reto2_app_android.data.AddPeopleResponse
 import com.example.reto2_app_android.data.DeletePeople
 import com.example.reto2_app_android.data.MessageAdapter
 import com.example.reto2_app_android.data.model.ChatResponse_Chat
 import com.example.reto2_app_android.data.model.RoleEnum
 import com.example.reto2_app_android.data.network.NetworkConnectionManager
+import com.example.reto2_app_android.data.repository.local.RoomChatDataSource
 import com.example.reto2_app_android.data.repository.local.RoomMessageDataSource
 import com.example.reto2_app_android.data.repository.local.tables.RoomDataType
+import com.example.reto2_app_android.data.repository.remote.RemoteChatsDataSource
 import com.example.reto2_app_android.data.repository.remote.RemoteMessagesDataSource
 import com.example.reto2_app_android.data.services.SocketIoService
 import com.example.reto2_app_android.databinding.FragmentDashboardBinding
 import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.ui.messages.DeletePeopleAdapter
+import com.example.reto2_app_android.ui.publicChats.HomeViewModel
+import com.example.reto2_app_android.ui.publicChats.HomeViewModelFactory
 import com.example.reto2_app_android.utils.Resource
 import com.example.reto2_app_android.utils.ValidateUserRoles
 import org.greenrobot.eventbus.EventBus
@@ -94,6 +99,12 @@ class DashboardFragment : Fragment(), LocationListener {
     private val viewModel: DashboardViewModel by viewModels {
         DashboardViewModelFactory(roomMessageRepository, serverMessageRepository)
     }
+
+    private val chatRepository = RemoteChatsDataSource();
+    private val roomChatRepository = RoomChatDataSource();
+    private val chatViewModel: HomeViewModel by viewModels {
+        HomeViewModelFactory(chatRepository, roomChatRepository)
+    }
     private var lastMessage: String = ""
     private var chat: ChatResponse_Chat? = null
     private val binding get() = _binding!!
@@ -124,14 +135,10 @@ class DashboardFragment : Fragment(), LocationListener {
         }
         viewModel.isAdmin(chat!!.id, userId)
 
-
-
-
         isAdim()
         multimedia()
         binding.textToolbarChatName.text = chat!!.name
         viewModel.getAllMessages(chat!!.id)
-        returnServerUsersAdd()
         returnServerUsers()
         llamadaAMetodoDelServicio()
         onClickTeclado(binding)
@@ -347,14 +354,16 @@ class DashboardFragment : Fragment(), LocationListener {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("lista de ", it.data.toString())
-
-                    addPeopleAdapter.submitList(it.data)
+                    val filteredList = it.data?.filter { user ->
+                        user.userId != userId
+                    }
+                    addPeopleAdapter.submitList(filteredList)
                 }
                 Resource.Status.ERROR -> {
                     Log.d(TAG, "error al conectar...")
                 }
                 Resource.Status.LOADING -> {
-
+                    // Puedes agregar un código de carga aquí si lo necesitas
                 }
             }
         }
@@ -374,43 +383,10 @@ class DashboardFragment : Fragment(), LocationListener {
         }
     }
 
-    private fun returnServerUsersAdd() {
-        viewModel.addPeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-        viewModel.deletePeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-    }
 
 
-    fun llamadaAMetodoDelServicio() {
+
+fun llamadaAMetodoDelServicio() {
         //val intent = Intent(requireContext(), SocketIoService::class.java)
         //requireContext().startService(intent)
 
@@ -566,7 +542,9 @@ class DashboardFragment : Fragment(), LocationListener {
                     }
                 }
                 Log.i("lista de", selectedPeopleList.toString())
-                viewModel.updateChatUsers( chat!!.id, selectedPeopleList)
+                selectedPeopleList.forEach{
+                    myService.addUsersToChats(it.userId, it.chatId, it.admin)
+                }
             }
             builder.setNegativeButton("Cancelar") { _, _ ->
 
@@ -611,7 +589,9 @@ class DashboardFragment : Fragment(), LocationListener {
                     }
                 }
                 Log.i("lista de", selectedPeopleList.toString())
-                viewModel.updateChatUsersDelete( chat!!.id, selectedPeopleList)
+                selectedPeopleList.forEach{
+                    myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
+                }
             }
             builder.setNegativeButton("Cancelar") { _, _ ->
 
@@ -624,10 +604,17 @@ class DashboardFragment : Fragment(), LocationListener {
             val selectedPeopleList = mutableListOf<AddPeopleResponse>()
             selectedPeopleList.add(AddPeopleResponse(userId = userId!!, chat!!.id, false))
             Log.i("chat", chat!!.id.toString())
-            viewModel.updateChatUsersDelete(chat!!.id, selectedPeopleList)
+            selectedPeopleList.forEach{
+                myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
+            }
         }
         binding.buttonToolbarDeleteChat.setOnClickListener {
             viewModel.deleteChat(chat!!.id)
+            myService.deleteChat(chatId = chat!!.id)
+            chatViewModel.getChatFromRoom()
+            requireActivity().supportFragmentManager.popBackStack()
+
+
         }
     }
 

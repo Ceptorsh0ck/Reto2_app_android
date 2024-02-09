@@ -45,9 +45,11 @@ import com.example.reto2_app_android.ui.MainActivity
 import com.example.reto2_app_android.ui.dashboard.DashboardFragment
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModel
 import com.example.reto2_app_android.ui.dashboard.DashboardViewModelFactory
-import com.example.reto2_app_android.ui.messages.AddPeopleAdapter
 import com.example.reto2_app_android.utils.Resource
 import com.example.reto2_app_android.utils.ValidateUserRoles
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.time.delay
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -164,9 +166,9 @@ class HomeFragment : Fragment(), LocationListener {
                     val chatIdTextView = view.findViewById<TextView>(R.id.idChatTextView)
                     val chatId = chatIdTextView.text.toString().toInt()
                     if (emailCheckBox.isChecked) {
-                        selectedPeopleList.add(AddPeopleResponse(userId!!, chatId, false))
-                        Log.i("lista de", selectedPeopleList.toString())
-                        messagesViewModel.updateChatUsers( chatId, selectedPeopleList)
+                        val mainActivity = activity as MainActivity
+                        myService = mainActivity.myService
+                        myService.addUsersToChats(userId!!, chatId, false)
                     }
                 }
 
@@ -230,32 +232,13 @@ class HomeFragment : Fragment(), LocationListener {
 
         }
 
-        messagesViewModel.addPeople.observe(viewLifecycleOwner) { it ->
-            when (it.status) {
-                Resource.Status.SUCCESS -> {
-                    it.data!!.forEach {
-
-                        val mainActivity = activity as MainActivity
-                        myService = mainActivity.myService
-                        myService.addUsersToChats(it.userId, it.chatId, it.admin)
-                    }
-                }
-                Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
-                }
-                Resource.Status.LOADING -> {
-
-                }
-            }
-        }
-
         chatViewModel.created.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     Log.i("dasd", "asdad")
                     val mainActivity = activity as MainActivity
                     myService = mainActivity.myService
-                    myService.addUsersToChats(userId!!, it.data!!, true)
+                    myService.createChat(userId!!, it.data!!.name!!, it.data!!.aIsPublic, it.data!!.id!!)
                 }
 
                 Resource.Status.ERROR -> {
@@ -303,7 +286,6 @@ class HomeFragment : Fragment(), LocationListener {
 
 
     private fun openNewChat() {
-
         val builder = AlertDialog.Builder(requireContext())
         val inflater = layoutInflater
         val validateUserRoles = ValidateUserRoles()
@@ -318,14 +300,19 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setPositiveButton("Crear Chat") { _, _ ->
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
-            try {
-                chatViewModel.onAddChat(
-                    isPublicCheckBox.isChecked,
-                    name.text.toString()
-                )
-
-            }catch (e: Exception) {
-                Toast.makeText(context, "Error al crear el chat", Toast.LENGTH_LONG).show()
+            if(!name.text.isNullOrBlank()){
+                Log.d("Roles", roles.toString())
+                if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
+                    chatViewModel.onAddChat(
+                        true,
+                        name.text.toString()
+                    )
+                }else{
+                    chatViewModel.onAddChat(
+                        isPublicCheckBox.isChecked,
+                        name.text.toString()
+                    )
+                }
             }
 
   
@@ -445,5 +432,13 @@ class HomeFragment : Fragment(), LocationListener {
         homeAdapter.submitList(chat.data)
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onNotificationEmployee(chat:  Boolean) {
+        GlobalScope.launch {
+            Log.i("aa1111a", "aaa") // Esto se ejecuta de forma asíncrona dentro de la corrutina
+            kotlinx.coroutines.delay(200) // Espera 200 milisegundos
+            chatViewModel.getChatFromRoom() // Llama a la función getChatFromRoom() después de 200 milisegundos
+        }
+    }
 
 }
