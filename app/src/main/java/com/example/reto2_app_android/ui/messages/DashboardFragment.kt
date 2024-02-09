@@ -221,7 +221,6 @@ class DashboardFragment : Fragment(), LocationListener {
         selectedFileUri?.let { uri ->
             // Aquí puedes realizar las acciones necesarias con la URI del archivo
             // Por ejemplo, puedes enviar la URI a otra actividad o fragmento
-            Log.i("URL", uri.toString())
             chat?.id?.let { chatId ->
                 userId?.let { userId ->
                     viewModel.saveNewMessageRoom(uri.toString(), chatId, userId, RoomDataType.FILE)
@@ -272,7 +271,6 @@ class DashboardFragment : Fragment(), LocationListener {
     override fun onLocationChanged(location: Location) {
         if (!ubicacionObtenida) {
             localizacion = location
-            Log.i("GPS", "Latitude: " + location.latitude + " , Longitude: " + location.longitude)
             chat?.id?.let { chatId ->
                 userId?.let { userId ->
                     viewModel.saveNewMessageRoom(location.latitude.toString() + "," + location.longitude.toString(), chatId, userId, RoomDataType.GPS)
@@ -340,7 +338,6 @@ class DashboardFragment : Fragment(), LocationListener {
                 }
 
                 Resource.Status.ERROR -> {
-                    Log.d(TAG, "error al conectar...")
                 }
                 Resource.Status.LOADING -> {
 
@@ -353,7 +350,6 @@ class DashboardFragment : Fragment(), LocationListener {
         viewModel.users.observe(viewLifecycleOwner) { it ->
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("lista de ", it.data.toString())
                     val filteredList = it.data?.filter { user ->
                         user.userId != userId
                     }
@@ -370,7 +366,6 @@ class DashboardFragment : Fragment(), LocationListener {
         viewModel.usersDelete.observe(viewLifecycleOwner) { it ->
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("lista de ", it.data.toString())
                     deletePeopleAdapter.submitList(it.data)
                 }
                 Resource.Status.ERROR -> {
@@ -436,7 +431,6 @@ fun llamadaAMetodoDelServicio() {
         viewModel.message.observe(viewLifecycleOwner) {
             when (it.status){
                 Resource.Status.SUCCESS-> {
-                    Log.i("gaardado en room", it.data!!.first().text.toString())
 
                     messageAdapter.addMessages(it.data!!)
                     val recyclerView: RecyclerView = binding.recyclerGroupChat
@@ -463,7 +457,6 @@ fun llamadaAMetodoDelServicio() {
 
     private fun onMessagesChange() {
         viewModel.messages.observe(viewLifecycleOwner) {
-            Log.d(TAG, "messages change")
             when (it.status) {
                 Resource.Status.SUCCESS -> {
                     if(chat?.id == it.data!!.last().room.last().toString().toInt()){
@@ -497,7 +490,6 @@ fun llamadaAMetodoDelServicio() {
                 lastMessage = message
                 chat?.id?.let { chatId ->
                     userId?.let { userId ->
-                        Log.i("chat", chatId.toString())
                         viewModel.saveNewMessageRoom(lastMessage, chatId, userId, RoomDataType.TEXT)
                     }
                 }
@@ -541,7 +533,6 @@ fun llamadaAMetodoDelServicio() {
                         selectedPeopleList.add(AddPeopleResponse(id, chat!!.id, adminCheckBox.isChecked))
                     }
                 }
-                Log.i("lista de", selectedPeopleList.toString())
                 selectedPeopleList.forEach{
                     myService.addUsersToChats(it.userId, it.chatId, it.admin)
                 }
@@ -588,7 +579,6 @@ fun llamadaAMetodoDelServicio() {
                         selectedPeopleList.add(AddPeopleResponse(id, chat!!.id, false))
                     }
                 }
-                Log.i("lista de", selectedPeopleList.toString())
                 selectedPeopleList.forEach{
                     myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
                 }
@@ -603,7 +593,6 @@ fun llamadaAMetodoDelServicio() {
         binding.buttonToolbarExitChat.setOnClickListener {
             val selectedPeopleList = mutableListOf<AddPeopleResponse>()
             selectedPeopleList.add(AddPeopleResponse(userId = userId!!, chat!!.id, false))
-            Log.i("chat", chat!!.id.toString())
             selectedPeopleList.forEach{
                 myService.deleteUsersToChats(it.userId, it.chatId, it.admin)
             }
@@ -642,7 +631,6 @@ fun llamadaAMetodoDelServicio() {
     }
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(message: List<MessageAdapter>) {
-        Log.d("chats", "onNot")
         messageAdapter.addMessages(message)
         val recyclerView: RecyclerView = binding.recyclerGroupChat
         recyclerView.scrollToPosition(messageAdapter.itemCount - 1)

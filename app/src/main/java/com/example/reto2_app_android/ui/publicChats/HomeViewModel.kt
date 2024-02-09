@@ -74,8 +74,8 @@ class HomeViewModel(
 
         viewModelScope.launch {
             val idRoom = createNewChat(newChat)
-            newChat.id = idRoom.data!!;
-            _created.value = Resource.success(newChat)
+            val newChat1 = ChatResponse_Chat(idRoom.data!!, name, null, null, null, null, isPublic)
+            _created.value = Resource.success(newChat1)
         }
     }
 
@@ -157,7 +157,6 @@ class HomeViewModel(
                 val userRoleDao = db.userRoleDao()
                 data.forEach {
                     var roomId: Int? = 1;
-                    //Log.i("chats", it!!.id.toString())
                     val roomChat = it?.id?.let { it1 ->
                         RoomChat(
                             idServer = it1,

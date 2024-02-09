@@ -91,9 +91,9 @@ class HomeAdapter(
             //TODO Hay que descomentar esta linea esta quitada para pruebas
             //binding.TextViewChatId.visibility = View.INVISIBLE
             if (chat.aIsPublic) {
-                binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_close)
-            } else {
                 binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_open)
+            } else {
+                binding.TextViewNumberOfNewMessages.setImageResource(R.drawable.lock_close)
             }
 
             if(!chat.listMessages?.isEmpty()!!){

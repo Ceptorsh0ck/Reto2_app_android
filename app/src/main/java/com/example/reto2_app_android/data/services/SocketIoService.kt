@@ -156,9 +156,7 @@ class SocketIoService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("services", "onStartCommand")
         val contentText = "ElorChat"
-        Log.i("services", startId.toString())
         startForeground(notificationId, createNotification(contentText))
         startSocket()
         return START_NOT_STICKY
@@ -172,7 +170,6 @@ class SocketIoService : Service() {
             mSocket.disconnect()
         }
         serviceScope.cancel()
-        Log.i("Service","Destroy")
     }
 
 
@@ -185,7 +182,6 @@ class SocketIoService : Service() {
         mSocket = IO.socket(SOCKET_HOST, socketOptions)
 
         mSocket.on(SocketEvents.ON_CONNECT.value, onConnect())
-        mSocket.on(SocketEvents.ON_CONNECT.value, onSendeMessages())
         mSocket.on(SocketEvents.ON_DISCONNECT.value, onDisconnect())
         mSocket.on(SocketEvents.ON_MESSAGE_RECEIVED.value, onNewMessage())
         mSocket.on(SocketEvents.ON_SEND_ID_MESSAGE.value, onReciveMessageId())
@@ -197,18 +193,10 @@ class SocketIoService : Service() {
         mSocket.connect()
     }
 
-    private fun onSendeMessages(): Emitter.Listener {
-        return Emitter.Listener {
-            onSendMessagesWhenConnectionGoBack()
-        }
-    }
-
     private fun onDeleteChat(): Emitter.Listener? {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
-            Log.d("Socket", "mensaje recibido on new message ${receivedMessage}")
             if (receivedMessage is JSONObject) {
-                Log.d("Socket", "mensaje recibido on new message ${args}")
                 /*val jsonObjectString = receivedMessage.toString()
                 val chat = Gson().fromJson(jsonObjectString, ChatResponse_Chat::class.java)
                 chat.createdAt = Date()
@@ -225,7 +213,6 @@ class SocketIoService : Service() {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
             if (receivedMessage is JSONObject) {
-                Log.d("Socket", "mensaje recibido on new message ${receivedMessage}")
                 val jsonObjectString = receivedMessage.toString()
                 val chat = Gson().fromJson(jsonObjectString, ChatResponse_Chat::class.java)
                 chat.createdAt = Date()
@@ -268,7 +255,7 @@ class SocketIoService : Service() {
     private fun onConnect(): Emitter.Listener {
         return Emitter.Listener {
             Log.d("Socket", "conectado")
-            onSendMessagesWhenConnectionGoBack()
+           //onSendMessagesWhenConnectionGoBack()
         }
     }
 
@@ -283,11 +270,9 @@ class SocketIoService : Service() {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
             if (receivedMessage is JSONObject) {
-                Log.d("Socket", "mensaje recibido on new message ${receivedMessage}")
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageRes::class.java)
                 // Modifica el valor del LiveData en el hilo principal utilizando postValue()
-                Log.d("Socket", "mensaje recibido on new message ${message}")
                 saveNewMessageRoom(message)
                 // _messagesFromOtherServer.postValue(Resource.success(message))
             }
@@ -297,7 +282,6 @@ class SocketIoService : Service() {
     private fun onDeleteUserChatRecive(): Emitter.Listener {
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
-            Log.i("recive nuevo chat asdsadsaads", "hola")
             if(receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, AddPeopleResponse::class.java)
@@ -332,7 +316,6 @@ class SocketIoService : Service() {
 
         return Emitter.Listener { args ->
             val receivedMessage = args[0]
-            Log.i("recive nuevo chat", "hola")
             if(receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = gson.fromJson(jsonObjectString, ChatResponse_Chat::class.java)
@@ -382,7 +365,6 @@ class SocketIoService : Service() {
                 if (roomMessage != null) {
                     val roomResponse = safeMessageInRomm(roomMessage)
                     val userIdRoom = getUserIdRoom(roomMessage.userId)
-                    Log.d(TAG, userIdRoom.data.toString())
                     val roomMessageToSow = RoomMessages(
                         content = message.message,
                         dataType = message.dataType,
@@ -411,7 +393,6 @@ class SocketIoService : Service() {
                 }
             }
         } catch (e: Exception) {
-            Log.e("Socket", "error en recepcion de msg $message.toString()")
         }
 
     }
@@ -446,7 +427,6 @@ class SocketIoService : Service() {
             if (receivedMessage is JSONObject) {
                 val jsonObjectString = receivedMessage.toString()
                 val message = Gson().fromJson(jsonObjectString, SocketMessageResUpdate::class.java)
-                Log.i("Socket id", message.toString())
                 serviceScope.launch {
                     if (message != null) {
                         val roomResponse = roomMessageRepository.updateMessage(message)
@@ -498,14 +478,11 @@ class SocketIoService : Service() {
             }
 
             val socketMessage = SocketMessageReq(socketRoom, newMessage, idServer, type)
-            Log.d(TAG, socketMessage.toString())
             val jsonObject = JSONObject(Gson().toJson(socketMessage))
 
             mSocket.emit(SocketEvents.ON_SEND_MESSAGE.value, jsonObject)
         } catch (e: OutOfMemoryError) {
-            Toast.makeText(context, "El archivo es demasiado grande", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
-            Toast.makeText(context, "Error al enviar el mensaje", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -522,14 +499,12 @@ class SocketIoService : Service() {
     }
 
     fun createChat(userId: Int, chatName: String, isPublic: Boolean, roomChatId: Int) {
-        Log.i("isPublic", isPublic.toString())
         val socketMessage = CrateChat(userId, chatName, isPublic, roomChatId)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_CREATE_CHAT_SEND.value, jsonObject)
     }
 
     fun deleteChat(chatId: Int) {
-        Log.i("dsd", "golaaaa")
         val socketMessage = DeleteChat(chatId)
         val jsonObject = JSONObject(Gson().toJson(socketMessage))
         mSocket.emit(SocketEvents.ON_DELETE_CHAT_SEND.value, jsonObject)

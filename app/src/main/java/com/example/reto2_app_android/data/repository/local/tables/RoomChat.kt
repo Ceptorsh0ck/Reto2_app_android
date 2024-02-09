@@ -14,14 +14,14 @@ data class RoomChat (
     @PrimaryKey(autoGenerate = true) var id: Int = 0,
     @ColumnInfo(name = "id_server") val idServer: Int? = null,
     @ColumnInfo(name ="name") val name: String?,
-    @ColumnInfo(name ="is_Public") val isPublic: Boolean,
+    @ColumnInfo(name ="is_Public") var isPublic: Boolean,
     @ColumnInfo(name ="created_at") val createdAt: Date?,
     @ColumnInfo(name ="updated_at") val updatedAt: Date?
 
-   /* @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
-    @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
-    val createdAt: Date? = null,
-    @ColumnInfo(name = "updated_at", defaultValue = "CURRENT_TIMESTAMP")
-    @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
-    val updatedAt: Date? = null*/
+    /* @ColumnInfo(name = "created_at", defaultValue = "CURRENT_TIMESTAMP")
+     @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
+     val createdAt: Date? = null,
+     @ColumnInfo(name = "updated_at", defaultValue = "CURRENT_TIMESTAMP")
+     @TypeConverters(Converters::class) // Puedes necesitar esta anotación si Room no maneja directamente Date
+     val updatedAt: Date? = null*/
 )

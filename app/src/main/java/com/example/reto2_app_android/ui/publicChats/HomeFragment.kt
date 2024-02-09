@@ -118,7 +118,6 @@ class HomeFragment : Fragment(), LocationListener {
         chatViewModel.items.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i(TAG, "new user chat")
                     homeAdapter.submitList(it.data)
                 }
 
@@ -217,7 +216,6 @@ class HomeFragment : Fragment(), LocationListener {
                         homeAdapter.submitList(it.data)
                         homeAdapter.notifyDataSetChanged()
                     } else {
-                        Log.d("chats", "No hay chats con ese nombre")
                     }
                 }
 
@@ -235,7 +233,6 @@ class HomeFragment : Fragment(), LocationListener {
         chatViewModel.created.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.i("dasd", "asdad")
                     val mainActivity = activity as MainActivity
                     myService = mainActivity.myService
                     myService.createChat(userId!!, it.data!!.name!!, it.data!!.aIsPublic, it.data!!.id!!)
@@ -263,12 +260,10 @@ class HomeFragment : Fragment(), LocationListener {
         chatViewModel.publicChats.observe(viewLifecycleOwner) {
             when (it.status) {
                 Resource.Status.SUCCESS -> {
-                    Log.d("ListSongsActivity", it.data!!.toString())
                     publicChatAdapter.submitList(it.data!!)
                 }
 
                 Resource.Status.ERROR -> {
-                    Log.d(TAG, "messages observe error")
                     //Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
                 }
 
@@ -301,7 +296,6 @@ class HomeFragment : Fragment(), LocationListener {
 
             val name = dialogView.findViewById<EditText>(R.id.editTextChatName)
             if(!name.text.isNullOrBlank()){
-                Log.d("Roles", roles.toString())
                 if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
                     chatViewModel.onAddChat(
                         true,
@@ -335,7 +329,6 @@ class HomeFragment : Fragment(), LocationListener {
                 Resource.Status.SUCCESS -> {
 
                     val primerMensaje =  it.data?.first()!!
-                    Log.d("Socket", "messages observe")
                     val id = primerMensaje.room.substring(primerMensaje.room.length - 1).toIntOrNull()
                     id?.let {
                         homeAdapter.scrollToItemById(it, primerMensaje.text, primerMensaje.authorId!!, primerMensaje.authorName, primerMensaje.dataType)
@@ -372,7 +365,6 @@ class HomeFragment : Fragment(), LocationListener {
     override fun onLocationChanged(location: Location) {
         if (!ubicacionObtenida) {
             localizacion = location
-            Log.i("GPS", "Latitude: " + location.latitude + " , Longitude: " + location.longitude)
             //openGoogleMaps(location.latitude, location.longitude)
             ubicacionObtenida = true
         }
@@ -421,21 +413,18 @@ class HomeFragment : Fragment(), LocationListener {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(message: RoomMessages) {
         // viewModel.updateEmployeeList()
-        Toast.makeText(context, message.toString(), Toast.LENGTH_LONG).show()
         chatViewModel.getChatFromRoom()
 
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(chat:  Resource<List<ChatResponse_Chat>>) {
-        Log.i("aaa", "aaa")
         homeAdapter.submitList(chat.data)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onNotificationEmployee(chat:  Boolean) {
         GlobalScope.launch {
-            Log.i("aa1111a", "aaa") // Esto se ejecuta de forma asíncrona dentro de la corrutina
             kotlinx.coroutines.delay(200) // Espera 200 milisegundos
             chatViewModel.getChatFromRoom() // Llama a la función getChatFromRoom() después de 200 milisegundos
         }

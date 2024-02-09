@@ -60,10 +60,8 @@ class AuthLoginFragment : Fragment() {
         // Inflate the layout for this fragment
         loginBinding = FragmentAuthLoginBinding.inflate(layoutInflater, container, false)
         val args = arguments
-        Log.d(TAG, "JON: $args")
         if (args != null) {
             val loginUsername = args.getString("email")
-            Log.d(TAG, "JON: $loginUsername")
             if (loginUsername != null) {
                 loginUsername?.let {
                     loginBinding.loginUsername.setText(it)

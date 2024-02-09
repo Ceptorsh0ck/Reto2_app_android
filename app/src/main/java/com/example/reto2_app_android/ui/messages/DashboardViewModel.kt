@@ -130,7 +130,6 @@ class DashboardViewModel (
             userId = userId,
             recived = false
         )
-        Log.i("hola", roomMessage.toString())
         viewModelScope.launch {
             if (roomMessage != null) {
                 val roomResponse = safeMessageInRomm(roomMessage)

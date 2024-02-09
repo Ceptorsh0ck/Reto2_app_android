@@ -171,14 +171,7 @@ class AuthScrollingRegisterFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult(),
         ActivityResultCallback<ActivityResult> {
             val requestCode = it.data?.extras?.getInt(REQUEST_CODE)
-            Log.i(
-                "Gorka-Prueba",
-                "Request Code: " + requestCode.toString() + " / " + REQUEST_IMAGE_CAPTURE.toString()
-            )
-            Log.i(
-                "Gorka-Prueba",
-                "Result Code: " + it.resultCode.toString() + " / " + AppCompatActivity.RESULT_OK
-            )
+
             if (it.resultCode == AppCompatActivity.RESULT_OK) {
                 val imageBitmap = it.data?.extras?.getParcelable("data", Bitmap::class.java)
                 imageBitmap?.let {

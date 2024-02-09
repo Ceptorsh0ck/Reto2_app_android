@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName ="chats")
 data class Chat(
     @PrimaryKey(autoGenerate = true) val id: Int?,
-    val isPublic: Boolean,
+    val public: Boolean,
     val name: String,
     val messages: Boolean,
     val users: List<UserChat>,

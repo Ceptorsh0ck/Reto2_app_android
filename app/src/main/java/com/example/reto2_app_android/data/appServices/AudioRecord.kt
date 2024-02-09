@@ -62,7 +62,6 @@ class AudioRecord: AppCompatActivity(),AndroidServices {
                 prepare()
                 start()
             } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
             }
         }
     }
@@ -82,7 +81,6 @@ class AudioRecord: AppCompatActivity(),AndroidServices {
             try {
                 prepare()
             } catch (e: IOException) {
-                Log.e(LOG_TAG, "prepare() failed")
             }
 
             start()

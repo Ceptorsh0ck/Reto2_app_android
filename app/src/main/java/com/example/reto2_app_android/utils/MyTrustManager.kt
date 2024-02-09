@@ -24,19 +24,15 @@ class MyTrustManager(val context: Context) {
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
             if (chain.isNotEmpty() && chain[0] == myCert) {
                 // El certificado del cliente es el mismo que tu certificado público
-                Log.d(TAG, "checkClientTrusted ok")
             } else {
-                Log.e(TAG, "checkClientTrusted KO")
                 throw CertificateException("El certificado del cliente no es válido.")
             }
         }
 
         override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
             if (chain.isNotEmpty() && chain[0] == myCert) {
-                Log.d(TAG, "checkServerTrusted ok")
                 // El certificado del servidor es el mismo que tu certificado público
             } else {
-                Log.e(TAG, "checkServerTrusted KO")
                 throw CertificateException("El certificado del servidor no es válido.")
             }
         }
@@ -45,7 +41,6 @@ class MyTrustManager(val context: Context) {
 
     private fun loadCertificate(): X509Certificate? {
 
-        Log.d(TAG, "loadCertificate")
         val certificateFactory = CertificateFactory.getInstance("X.509")
         val certificadoResId = R.raw.certificate
 
@@ -55,7 +50,6 @@ class MyTrustManager(val context: Context) {
             inputStream.close()
             return myCert
         } catch (ex: IOException) {
-            Log.e(TAG, "loadCertificate IOException")
         }
         return null
     }

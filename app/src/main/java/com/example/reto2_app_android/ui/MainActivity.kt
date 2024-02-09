@@ -86,7 +86,6 @@ class MainActivity : AppCompatActivity() {
                             wifiIcon.setIcon(R.drawable.wifi_off)
                         }
                         //Habria que cambiar el logo dependiendo de si esta online u offline
-                        Log.i("Gorka", res)
                         //tvIsNetworkConnected.setText(res)
                     }
                     .launchIn(lifecycleScope)
@@ -97,7 +96,6 @@ class MainActivity : AppCompatActivity() {
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 when (menuItem.itemId) {
                     R.id.action_logout -> {
-                        Log.i("Gorka - Menu", "Logout")
                         if (MyApp.userPreferences.getLoggedUser() != null) {
                             myService.onDestroy()
                             val intent = Intent(this@MainActivity, AuthActivity::class.java)
@@ -152,11 +150,9 @@ class MainActivity : AppCompatActivity() {
             override fun run() {
                 if (::myService.isInitialized) {
                     isConnected = true
-                    Log.d("MainActivity", "myService is initialized")
                     timer.cancel() // Detiene el temporizador una vez que se inicializa myService
                 } else {
                     isConnected = false
-                    Log.d("MainActivity", "myService is not initialized yet")
                 }
             }
         }, delay, period)
