@@ -197,10 +197,43 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
     <!-- Chats miniature -->
-    <string name="chats_name">Nombre del chat</string>
-    <string name="last_messaga">Ultimo mensanje</string>
+    <string name="chats_name">Chat Name</string>
+    <string name="last_messaga">Last Message</string>
     <string name="last_message_time">00:00</string>
     <string name="messages_not_read">11</string>
-    <string name="agregarPersona">agregar persona</string>
+
+    <string name="btn_connect">Connect</string>
+    <string name="noMesages">No messages</string>
+    <string name="emptyLogin">Fill in all fields</string>
+    <string name="agregarPersona">Add person</string>
+    <string name="eliminarPersona">Delete person</string>
+    <string name="deleteChat">Delete chat</string>
+    <string name="enterMessage">Send message</string>
+    <string name="send">Send</string>
+    <string name="addOptions">Add options</string>
+    <string name="invalidRegister">Invalid fields in registration</string>
+    <string name="photo">Photo</string>
+    <string name="file">File</string>
+    <string name="anadirUsuario">Add User</string>
+    <string name="eliminarUsuario">Delete User</string>
+    <string name="chatsPublicos">Public Chats</string>
+    <string name="location">Location</string>
+    <string name="newChat1">New Chat</string>
+    <string name="nameOfChat">Chat Name</string>
+    <string name="publicChat">Public Chat</string>
+    <string-array name="options_array">
+        <item>Location</item>
+        <item>File</item>
+        <item>Photo</item>
+    </string-array>
+    <string name="email">Email</string>
+    <string name="recover">Send email</string>
+    <string name="recoverPasswordEmail">Recover password</string>
+    <string name="invalidPhone">Invalid format</string>
+    <string name="passwords_no_coinciden">Passwords do not match</string>
+    <string name="offlineMode">Offline Mode</string>
+    <string name="hello">"Hello, "</string>
+    <string name="add">Add</string>
+    <string name="filter">filter</string>>
 
 </resources>
