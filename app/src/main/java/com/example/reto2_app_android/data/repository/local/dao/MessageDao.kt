@@ -28,6 +28,6 @@ interface MessageDao {
     @Query("SELECT messages.id from messages where messages.id_server = :idServer")
     suspend fun selectById(idServer: Int?): Int
 
-    @Query("SELECT messages.chat_id as room, messages.content as message, messages.id as idRoom, messages.data_type as type from messages where messages.id_server = null")
+    @Query("SELECT messages.chat_id as room, messages.content as message, messages.id as idRoom, messages.data_type as type from messages where messages.id_server IS NULL")
     suspend fun getMessagesNoSended(): List<SocketMessageReq>
 }
