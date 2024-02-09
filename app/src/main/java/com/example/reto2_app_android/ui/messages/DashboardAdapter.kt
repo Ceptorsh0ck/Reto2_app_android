@@ -14,6 +14,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -155,6 +156,9 @@ class DashboardAdapter(
     inner class DashboardViewHolder(private val binding: ViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(message: MessageAdapter) {
+            try {
+
+
             val dateFormat = SimpleDateFormat("dd/MM/yyyy")
 
             val timeFormat = SimpleDateFormat("HH:mm")
@@ -214,6 +218,7 @@ class DashboardAdapter(
                     // Manejar clics en la vista previa del archivo
                     binding.imageViewChatMyMessage.setOnClickListener {
                         openFile(fileUri, binding)
+
                     }
                 }
 
@@ -278,6 +283,9 @@ class DashboardAdapter(
                 val index = message.authorName.indexOf('@')
                 val nombreUsuario = if (index != -1) message.authorName.substring(0, index) else message.authorName
                 binding.textViewChatOtherUser.text = nombreUsuario
+            }
+            } catch (e: Exception) {
+                Toast.makeText(binding.root.context, "Error al cargar los mensajes", Toast.LENGTH_SHORT).show()
             }
         }
     }

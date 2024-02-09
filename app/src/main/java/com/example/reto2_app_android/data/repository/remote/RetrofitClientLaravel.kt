@@ -15,7 +15,6 @@ object RetrofitClientLaravel {
     // NOTE acordarse de que hace falta actualizar el manifest
     const val API_URI = "http://10.5.7.212/api/"
 
-
     var client = OkHttpClient.Builder().addInterceptor {chain ->
         val authToken = MyApp.userPreferences.fetchAuthToken()
         if (authToken != null) {

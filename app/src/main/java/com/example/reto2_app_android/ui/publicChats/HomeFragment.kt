@@ -293,7 +293,7 @@ class HomeFragment : Fragment(), LocationListener {
         builder.setView(dialogView)
         val roles =  MyApp.userPreferences.getLoggedUser()?.listRoles
         val isPublicCheckBox = dialogView.findViewById<CheckBox>(R.id.checkBoxPublic)
-        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.PROFESOR)
+        val listRolesPermitidos: List<RoleEnum> = listOf(RoleEnum.ADMINISTRADOR, RoleEnum.PROFESOR)
         if(!validateUserRoles.validateUserRoles(roles!!, listRolesPermitidos)) {
             isPublicCheckBox.visibility = View.GONE
         }

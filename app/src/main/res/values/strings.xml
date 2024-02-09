@@ -213,7 +213,7 @@
     <string name="agregarPersona">agregar persona</string>
     <string name="eliminarPersona">eliminar persona</string>
     <string name="deleteChat">eliminar chat</string>
-    <string name="enterMessage">Inserta message</string>
+    <string name="enterMessage">Enviar mensaje</string>
     <string name="send">Enviar</string>
     <string name="addOptions">Agregar opciones</string>
     <string name="invalidRegister">Campos no validos en el registro</string>
@@ -238,4 +238,6 @@
     <string name="passwords_no_coinciden">Las contraseñas no coinciden</string>
     <string name="offlineMode">Modo Offline</string>
     <string name="hello">"Hola, "</string>
+    <string name="add">añadir</string>
+    <string name="filter">filtrar</string>
 </resources>
